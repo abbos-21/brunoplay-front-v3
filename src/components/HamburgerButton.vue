@@ -1,11 +1,20 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+defineProps<{
+  modelValue: boolean
+}>()
 
-const open = ref(false)
+const emit = defineEmits<{
+  (e: 'update:modelValue', value: boolean): void
+}>()
 </script>
 
 <template>
-  <button type="button" class="menu-button" @click="open = !open" :class="{ open }">
+  <button
+    type="button"
+    class="menu-button"
+    @click="emit('update:modelValue', !modelValue)"
+    :class="{ open: modelValue }"
+  >
     <span class="burger-piece"></span>
     <span class="burger-piece"></span>
     <span class="burger-piece"></span>

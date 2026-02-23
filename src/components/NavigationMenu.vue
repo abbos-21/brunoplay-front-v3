@@ -6,7 +6,7 @@ import { RouterLink } from 'vue-router'
 <template>
   <div class="absolute bottom-0 left-0 right-0 w-full p-2">
     <nav
-      class="bg-[#fbe166] bg-[#fbe166] rounded-full shadow-[0px_4px_4px_rgba(0,0,0,0.25),inset_0px_0px_4px_2px_rgba(0,0,0,0.25)] flex justify-between items-start"
+      class="bg-[#fbe166] bg-[#fbe166] rounded-full shadow-[0px_4px_4px_rgba(0,0,0,0.25),inset_0px_0px_4px_2px_rgba(0,0,0,0.25)] flex justify-between items-start overflow-x-auto"
     >
       <RouterLink
         to="/"
