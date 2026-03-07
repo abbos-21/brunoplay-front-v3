@@ -11,7 +11,9 @@ const isMenuOpen = ref(false)
 </script>
 
 <template>
-  <div class="w-full h-full bg-home p-2 relative flex flex-col justify-between items-center">
+  <div
+    class="w-full h-full bg-home p-4 relative flex flex-col justify-between items-center overflow-hidden"
+  >
     <div class="w-full flex justify-between items-center">
       <CoinBalance />
 
@@ -27,8 +29,8 @@ const isMenuOpen = ref(false)
       class="w-36 absolute inset-1/2 -translate-x-1/2 -translate-y-1/2"
     />
 
-    <div class="mb-20 flex items-end justify-between w-full">
-      <div class="flex flex-col items-center -ms-2">
+    <div class="mb-24 flex items-end justify-between w-full">
+      <div class="flex flex-col items-center -ms-4">
         <RouterLink to="/"> <img :src="CalendarImage" alt="Calendar" class="w-20" /> </RouterLink>
         <RouterLink to="/">
           <img :src="PuzzleImage" alt="Puzzle" class="w-20" />
@@ -37,32 +39,32 @@ const isMenuOpen = ref(false)
 
       <button
         type="button"
-        class="fishing-button w-fit py-1 px-5 font-bold text-white outlined [--outline:#532B23] text-2xl cursor-pointer mb-10 ms-2"
+        class="fishing-button w-fit py-1 px-5 font-bold text-white outlined [--outline:#532B23] text-2xl cursor-pointer mb-10 ms-4"
       >
         Fishing
       </button>
 
       <div class="w-20"></div>
     </div>
-  </div>
 
-  <div v-if="isMenuOpen" class="fixed inset-0 bg-black/40 z-40" @click="isMenuOpen = false" />
+    <div v-if="isMenuOpen" class="absolute inset-0 bg-black/40 z-40" @click="isMenuOpen = false" />
 
-  <!-- Slide Panel -->
-  <div
-    class="fixed top-0 right-0 h-full w-[90%] z-50 transition-transform duration-300 ease-out py-1"
-    :class="isMenuOpen ? 'translate-x-0' : 'translate-x-full'"
-  >
-    <div class="bg-[#FBE166] h-full rounded-s-lg p-2">
-      <!-- <div class="p-4 font-bold text-xl">Menu</div> -->
+    <!-- Slide Panel -->
+    <div
+      class="absolute top-0 right-0 h-full w-[90%] z-50 transition-transform duration-300 ease-out py-1"
+      :class="isMenuOpen ? 'translate-x-0' : 'translate-x-full'"
+    >
+      <div class="bg-[#FBE166] h-full rounded-s-lg p-2">
+        <!-- <div class="p-4 font-bold text-xl">Menu</div> -->
 
-      <button
-        type="button"
-        @click="isMenuOpen = false"
-        class="close-menu-button w-10 h-10 p-2 rounded-full flex justify-center items-center"
-      >
-        <ArrowLeftSVG class="w-full" />
-      </button>
+        <button
+          type="button"
+          @click="isMenuOpen = false"
+          class="close-menu-button w-10 h-10 p-2 rounded-full flex justify-center items-center"
+        >
+          <ArrowLeftSVG class="w-full" />
+        </button>
+      </div>
     </div>
   </div>
 </template>
