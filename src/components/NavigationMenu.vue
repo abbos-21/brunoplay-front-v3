@@ -4,49 +4,49 @@ import { RouterLink } from 'vue-router'
 </script>
 
 <template>
-  <div class="absolute bottom-0 left-0 right-0 w-full p-4">
+  <div class="absolute bottom-0 left-0 right-0 w-full p-2 sm:p-4">
     <nav
       class="bg-[#fbe166] bg-[#fbe166] rounded-full shadow-[0px_4px_4px_rgba(0,0,0,0.25),inset_0px_0px_4px_2px_rgba(0,0,0,0.25)] flex justify-between items-start scrollbar"
     >
       <RouterLink
         to="/"
-        class="nav-item h-18 aspect-square flex flex-col items-center justify-center rounded-full"
+        class="nav-item h-14 sm:h-18 aspect-square flex flex-col items-center justify-center rounded-full"
         active-class="active"
       >
-        <img :src="FishingImage" alt="Fishing" class="w-8" />
-        <h1 class="outlined [--outline:#532B23] -mt-3 font-bold">Fishing</h1>
+        <img :src="FishingImage" alt="Fishing" class="w-6 sm:w-8" />
+        <h1 class="outlined [--outline:#532B23] -mt-2 sm:-mt-3 font-bold text-xs sm:text-sm">Fishing</h1>
       </RouterLink>
       <RouterLink
         to="/shop"
-        class="nav-item h-18 aspect-square flex flex-col items-center justify-center rounded-full"
+        class="nav-item h-14 sm:h-18 aspect-square flex flex-col items-center justify-center rounded-full"
         active-class="active"
       >
-        <img :src="ShopImage" alt="Shop" class="w-11" />
-        <h1 class="outlined [--outline:#532B23] -mt-3 font-bold">Shop</h1>
+        <img :src="ShopImage" alt="Shop" class="w-8 sm:w-11" />
+        <h1 class="outlined [--outline:#532B23] -mt-2 sm:-mt-3 font-bold text-xs sm:text-sm">Shop</h1>
       </RouterLink>
       <RouterLink
         to="/games"
-        class="nav-item h-18 aspect-square flex flex-col items-center justify-center rounded-full"
+        class="nav-item h-14 sm:h-18 aspect-square flex flex-col items-center justify-center rounded-full"
         active-class="active"
       >
-        <img :src="GamesImage" alt="Games" class="w-12" />
-        <h1 class="outlined [--outline:#532B23] -mt-3 font-bold">Games</h1>
+        <img :src="GamesImage" alt="Games" class="w-9 sm:w-12" />
+        <h1 class="outlined [--outline:#532B23] -mt-2 sm:-mt-3 font-bold text-xs sm:text-sm">Games</h1>
       </RouterLink>
       <RouterLink
         to="/tasks"
-        class="nav-item h-18 aspect-square flex flex-col items-center justify-center rounded-full"
+        class="nav-item h-14 sm:h-18 aspect-square flex flex-col items-center justify-center rounded-full"
         active-class="active"
       >
-        <img :src="TasksImage" alt="Tasks" class="w-10" />
-        <h1 class="outlined [--outline:#532B23] -mt-3 font-bold">Tasks</h1>
+        <img :src="TasksImage" alt="Tasks" class="w-7 sm:w-10" />
+        <h1 class="outlined [--outline:#532B23] -mt-2 sm:-mt-3 font-bold text-xs sm:text-sm">Tasks</h1>
       </RouterLink>
       <RouterLink
         to="/friends"
-        class="nav-item h-18 aspect-square flex flex-col items-center justify-center rounded-full"
+        class="nav-item h-14 sm:h-18 aspect-square flex flex-col items-center justify-center rounded-full"
         active-class="active"
       >
-        <img :src="FriendsImage" alt="Friends" class="w-8" />
-        <h1 class="outlined [--outline:#532B23] -mt-3 font-bold">Friends</h1>
+        <img :src="FriendsImage" alt="Friends" class="w-6 sm:w-8" />
+        <h1 class="outlined [--outline:#532B23] -mt-2 sm:-mt-3 font-bold text-xs sm:text-sm">Friends</h1>
       </RouterLink>
     </nav>
   </div>

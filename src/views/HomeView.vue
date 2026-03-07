@@ -17,7 +17,7 @@ const isMenuOpen = ref(false)
     <div class="w-full flex justify-between items-center">
       <CoinBalance />
 
-      <div class="flex items-center gap-6">
+      <div class="flex items-center gap-3 sm:gap-6">
         <EnergyLevel />
         <HamburgerButton v-model="isMenuOpen" />
       </div>
@@ -26,25 +26,25 @@ const isMenuOpen = ref(false)
     <ProgressBar
       :current-value="120"
       :max-value="300"
-      class="w-36 absolute inset-1/2 -translate-x-1/2 -translate-y-1/2"
+      class="w-28 sm:w-36 absolute inset-1/2 -translate-x-1/2 -translate-y-1/2"
     />
 
     <div class="mb-24 flex items-end justify-between w-full">
       <div class="flex flex-col items-center -ms-4">
-        <RouterLink to="/"> <img :src="CalendarImage" alt="Calendar" class="w-20" /> </RouterLink>
+        <RouterLink to="/"> <img :src="CalendarImage" alt="Calendar" class="w-14 sm:w-20" /> </RouterLink>
         <RouterLink to="/">
-          <img :src="PuzzleImage" alt="Puzzle" class="w-20" />
+          <img :src="PuzzleImage" alt="Puzzle" class="w-14 sm:w-20" />
         </RouterLink>
       </div>
 
       <button
         type="button"
-        class="fishing-button w-fit py-1 px-5 font-bold text-white outlined [--outline:#532B23] text-2xl cursor-pointer mb-10 ms-4"
+        class="fishing-button w-fit py-1 px-3 sm:px-5 font-bold text-white outlined [--outline:#532B23] text-xl sm:text-2xl cursor-pointer mb-10 ms-4"
       >
         Fishing
       </button>
 
-      <div class="w-20"></div>
+      <div class="w-14 sm:w-20"></div>
     </div>
 
     <div v-if="isMenuOpen" class="absolute inset-0 bg-black/40 z-40" @click="isMenuOpen = false" />
