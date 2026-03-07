@@ -17,7 +17,7 @@ const isMenuOpen = ref(false)
       <HamburgerButton v-model="isMenuOpen" />
     </div>
 
-    <div class="grid grid-cols-2 gap-8 px-2 mt-4 text-xl">
+    <div class="grid grid-cols-2 gap-4 px-2 mt-4 text-base sm:text-xl">
       <RouterLink to="/" class="navigation-button active"> Cards </RouterLink>
       <RouterLink to="/" class="navigation-button"> Boosters </RouterLink>
     </div>
@@ -28,20 +28,20 @@ const isMenuOpen = ref(false)
           <img :src="MiningRate" alt="mining-rate" class="w-full" />
 
           <span
-            class="current-lvl absolute bottom-0 left-1/2 -translate-x-1/2 font-bold text-lg px-4 text-center"
+            class="current-lvl absolute bottom-0 left-1/2 -translate-x-1/2 font-bold text-sm sm:text-base px-2 sm:px-4 text-center whitespace-nowrap"
           >
             Lvl: 1
           </span>
         </div>
 
-        <div class="flex-1 flex flex-col items-center justify-between py-2">
-          <h1 class="font-bold text-[#552A0F] text-2xl">Mining rate</h1>
+        <div class="flex-1 flex flex-col items-center justify-between py-2 min-w-0 pr-8">
+          <h1 class="font-bold text-[#552A0F] text-lg sm:text-2xl text-center">Mining rate</h1>
 
           <p
-            class="font-bold text-[#890D00] text-xl border-b border-dashed border-black flex items-center gap-1"
+            class="font-bold text-[#890D00] text-base sm:text-xl border-b border-dashed border-black flex items-center gap-1 whitespace-nowrap"
           >
             0.01
-            <svg class="w-4" viewBox="0 0 27 17" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <svg class="w-3 sm:w-4 shrink-0" viewBox="0 0 27 17" fill="none" xmlns="http://www.w3.org/2000/svg">
               <path
                 d="M17 5.8L14.8 2.88C14.8 2.10667 15.0267 1.44 15.48 0.880004C15.9333 0.293337 16.64 3.8147e-06 17.6 3.8147e-06C18.0267 3.8147e-06 18.48 0.120004 18.96 0.360005C19.44 0.573338 19.96 0.920005 20.52 1.4L26.04 6.00001C26.2267 6.24001 26.3733 6.54667 26.48 6.92001C26.5867 7.29334 26.64 7.70667 26.64 8.16C26.64 8.8 26.5333 9.29334 26.32 9.64C26.1333 9.98667 25.88 10.2933 25.56 10.56L17.92 16.64C16.9333 16.4 16.2533 16.04 15.88 15.56C15.5067 15.08 15.32 14.5733 15.32 14.04C15.32 13.48 15.44 12.9733 15.68 12.52C15.92 12.0667 16.2 11.6 16.52 11.12L17 10.52H0.64C0.506667 10.2533 0.36 9.92 0.2 9.52001C0.0666667 9.12 1.49012e-08 8.69334 1.49012e-08 8.24001C1.49012e-08 7.38667 0.186667 6.77334 0.56 6.4C0.96 6 1.48 5.8 2.12 5.8H17Z"
                 fill="#890D00"
@@ -51,7 +51,7 @@ const isMenuOpen = ref(false)
           </p>
           <button
             type="button"
-            class="upgrade-button text-xl px-4 py-px outlined [--outline:#D76826] font-bold relative"
+            class="upgrade-button text-base sm:text-xl px-3 sm:px-4 py-px outlined [--outline:#D76826] font-bold relative"
           >
             Upgrade
             <svg
@@ -66,7 +66,7 @@ const isMenuOpen = ref(false)
 
         <button
           type="button"
-          class="requirements-button absolute top-2 right-2 w-10 h-10 flex justify-center items-center rounded-full"
+          class="requirements-button absolute top-2 right-2 w-8 h-8 sm:w-10 sm:h-10 flex justify-center items-center rounded-full shrink-0"
         >
           <ExclamationSVG class="w-3" />
         </button>
@@ -77,20 +77,20 @@ const isMenuOpen = ref(false)
           <img :src="CoinCapacity" alt="coin-capacity" class="w-full" />
 
           <span
-            class="current-lvl absolute bottom-0 left-1/2 -translate-x-1/2 font-bold text-lg px-4 text-center"
+            class="current-lvl absolute bottom-0 left-1/2 -translate-x-1/2 font-bold text-sm sm:text-base px-2 sm:px-4 text-center whitespace-nowrap"
           >
             Lvl: 1
           </span>
         </div>
 
-        <div class="flex-1 flex flex-col items-center justify-between py-2">
-          <h1 class="font-bold text-[#552A0F] text-2xl">Coin capacity</h1>
+        <div class="flex-1 flex flex-col items-center justify-between py-2 min-w-0 pr-8">
+          <h1 class="font-bold text-[#552A0F] text-lg sm:text-2xl text-center">Coin capacity</h1>
 
           <p
-            class="font-bold text-[#890D00] text-xl border-b border-dashed border-black flex items-center gap-1"
+            class="font-bold text-[#890D00] text-base sm:text-xl border-b border-dashed border-black flex items-center gap-1 whitespace-nowrap"
           >
             100
-            <svg class="w-4" viewBox="0 0 27 17" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <svg class="w-3 sm:w-4 shrink-0" viewBox="0 0 27 17" fill="none" xmlns="http://www.w3.org/2000/svg">
               <path
                 d="M17 5.8L14.8 2.88C14.8 2.10667 15.0267 1.44 15.48 0.880004C15.9333 0.293337 16.64 3.8147e-06 17.6 3.8147e-06C18.0267 3.8147e-06 18.48 0.120004 18.96 0.360005C19.44 0.573338 19.96 0.920005 20.52 1.4L26.04 6.00001C26.2267 6.24001 26.3733 6.54667 26.48 6.92001C26.5867 7.29334 26.64 7.70667 26.64 8.16C26.64 8.8 26.5333 9.29334 26.32 9.64C26.1333 9.98667 25.88 10.2933 25.56 10.56L17.92 16.64C16.9333 16.4 16.2533 16.04 15.88 15.56C15.5067 15.08 15.32 14.5733 15.32 14.04C15.32 13.48 15.44 12.9733 15.68 12.52C15.92 12.0667 16.2 11.6 16.52 11.12L17 10.52H0.64C0.506667 10.2533 0.36 9.92 0.2 9.52001C0.0666667 9.12 1.49012e-08 8.69334 1.49012e-08 8.24001C1.49012e-08 7.38667 0.186667 6.77334 0.56 6.4C0.96 6 1.48 5.8 2.12 5.8H17Z"
                 fill="#890D00"
@@ -100,7 +100,7 @@ const isMenuOpen = ref(false)
           </p>
           <button
             type="button"
-            class="upgrade-button text-xl px-4 py-px outlined [--outline:#D76826] font-bold relative"
+            class="upgrade-button text-base sm:text-xl px-3 sm:px-4 py-px outlined [--outline:#D76826] font-bold relative"
           >
             Upgrade
             <svg
@@ -115,7 +115,7 @@ const isMenuOpen = ref(false)
 
         <button
           type="button"
-          class="requirements-button absolute top-2 right-2 w-10 h-10 flex justify-center items-center rounded-full"
+          class="requirements-button absolute top-2 right-2 w-8 h-8 sm:w-10 sm:h-10 flex justify-center items-center rounded-full shrink-0"
         >
           <ExclamationSVG class="w-3" />
         </button>
@@ -126,20 +126,20 @@ const isMenuOpen = ref(false)
           <img :src="EnergyRate" alt="energy-rate" class="w-full" />
 
           <span
-            class="current-lvl absolute bottom-0 left-1/2 -translate-x-1/2 font-bold text-lg px-4 text-center"
+            class="current-lvl absolute bottom-0 left-1/2 -translate-x-1/2 font-bold text-sm sm:text-base px-2 sm:px-4 text-center whitespace-nowrap"
           >
             Lvl: 1
           </span>
         </div>
 
-        <div class="flex-1 flex flex-col items-center justify-between py-2">
-          <h1 class="font-bold text-[#552A0F] text-2xl">Energy rate</h1>
+        <div class="flex-1 flex flex-col items-center justify-between py-2 min-w-0 pr-8">
+          <h1 class="font-bold text-[#552A0F] text-lg sm:text-2xl text-center">Energy rate</h1>
 
           <p
-            class="font-bold text-[#890D00] text-xl border-b border-dashed border-black flex items-center gap-1"
+            class="font-bold text-[#890D00] text-base sm:text-xl border-b border-dashed border-black flex items-center gap-1 whitespace-nowrap"
           >
             800
-            <svg class="w-4" viewBox="0 0 27 17" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <svg class="w-3 sm:w-4 shrink-0" viewBox="0 0 27 17" fill="none" xmlns="http://www.w3.org/2000/svg">
               <path
                 d="M17 5.8L14.8 2.88C14.8 2.10667 15.0267 1.44 15.48 0.880004C15.9333 0.293337 16.64 3.8147e-06 17.6 3.8147e-06C18.0267 3.8147e-06 18.48 0.120004 18.96 0.360005C19.44 0.573338 19.96 0.920005 20.52 1.4L26.04 6.00001C26.2267 6.24001 26.3733 6.54667 26.48 6.92001C26.5867 7.29334 26.64 7.70667 26.64 8.16C26.64 8.8 26.5333 9.29334 26.32 9.64C26.1333 9.98667 25.88 10.2933 25.56 10.56L17.92 16.64C16.9333 16.4 16.2533 16.04 15.88 15.56C15.5067 15.08 15.32 14.5733 15.32 14.04C15.32 13.48 15.44 12.9733 15.68 12.52C15.92 12.0667 16.2 11.6 16.52 11.12L17 10.52H0.64C0.506667 10.2533 0.36 9.92 0.2 9.52001C0.0666667 9.12 1.49012e-08 8.69334 1.49012e-08 8.24001C1.49012e-08 7.38667 0.186667 6.77334 0.56 6.4C0.96 6 1.48 5.8 2.12 5.8H17Z"
                 fill="#890D00"
@@ -149,7 +149,7 @@ const isMenuOpen = ref(false)
           </p>
           <button
             type="button"
-            class="upgrade-button text-xl px-4 py-px outlined [--outline:#D76826] font-bold relative"
+            class="upgrade-button text-base sm:text-xl px-3 sm:px-4 py-px outlined [--outline:#D76826] font-bold relative"
           >
             Upgrade
             <svg
@@ -164,7 +164,7 @@ const isMenuOpen = ref(false)
 
         <button
           type="button"
-          class="requirements-button absolute top-2 right-2 w-10 h-10 flex justify-center items-center rounded-full"
+          class="requirements-button absolute top-2 right-2 w-8 h-8 sm:w-10 sm:h-10 flex justify-center items-center rounded-full shrink-0"
         >
           <ExclamationSVG class="w-3" />
         </button>
@@ -245,6 +245,7 @@ const isMenuOpen = ref(false)
     inset 0px 2px 2px #ffe120;
   border-radius: 16px;
   color: #410200;
+  white-space: nowrap;
 }
 
 .upgrade-button {
