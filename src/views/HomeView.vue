@@ -5,6 +5,7 @@ import EnergyLevel from '@/components/EnergyLevel.vue'
 import HamburgerButton from '@/components/HamburgerButton.vue'
 import ProgressBar from '@/components/ProgressBar.vue'
 import SlidePanel from '@/components/SlidePanel.vue'
+import PuzzlePanel from '@/components/PuzzlePanel.vue'
 import { CalendarImage, PuzzleImage } from '@/assets/images'
 import { useFishingStore } from '@/stores/fishing'
 import { useDailyStore } from '@/stores/daily'
@@ -12,6 +13,7 @@ import { useFormatters } from '@/composables/useFormatters'
 import { usePolling } from '@/composables/usePolling'
 
 const isMenuOpen = ref(false)
+const isPuzzleOpen = ref(false)
 const fishing = useFishingStore()
 
 const daily = useDailyStore()
@@ -64,10 +66,8 @@ async function handleFishing() {
 
     <div class="mb-24 flex items-end justify-between w-full">
       <div class="flex flex-col items-center -ms-4">
-        <RouterLink to="/"
-          ><img :src="CalendarImage" alt="Calendar" class="w-14 sm:w-20"
-        /></RouterLink>
-        <RouterLink to="/"><img :src="PuzzleImage" alt="Puzzle" class="w-14 sm:w-20" /></RouterLink>
+        <button><img :src="CalendarImage" alt="Calendar" class="w-14 sm:w-20" /></button>
+        <button @click="isPuzzleOpen = true"><img :src="PuzzleImage" alt="Puzzle" class="w-14 sm:w-20" /></button>
       </div>
 
       <button
@@ -76,8 +76,7 @@ async function handleFishing() {
         :disabled="collecting || fishing.isLoading"
         class="bg-[#fbe166] border border-[#552a0f] shadow-[inset_0px_-3px_4px_#935324] rounded-xl w-fit py-1 px-3 sm:px-5 font-bold text-white outlined [--outline:#532B23] text-xl sm:text-2xl cursor-pointer mb-10 ms-4"
       >
-        <span v-if="collecting || fishing.isLoading">...</span>
-        <span v-else-if="!fishing.isFishing">Fishing</span>
+        <span v-if="!fishing.isFishing">Fishing</span>
         <span v-else-if="canCollect">Collect </span>
         <!-- <span v-else>Fishing... wait for tank to fill</span> -->
       </button>
@@ -86,5 +85,6 @@ async function handleFishing() {
     </div>
 
     <SlidePanel v-model="isMenuOpen" />
+    <PuzzlePanel v-model="isPuzzleOpen" />
   </div>
 </template>

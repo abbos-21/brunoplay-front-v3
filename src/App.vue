@@ -13,7 +13,7 @@ onMounted(() => {
 
 <template>
   <div class="w-screen h-screen flex justify-start items-center">
-    <div v-if="auth.isLoading">Loading...</div>
+    <!-- <div v-if="auth.isLoading">Loading...</div>
 
     <div v-else-if="auth.state === 'error'">
       <p>{{ auth.error }}</p>
@@ -23,11 +23,11 @@ onMounted(() => {
     <div v-else-if="auth.isAuthenticated" class="w-full h-full max-w-md relative">
       <RouterView />
       <NavigationMenu />
-    </div>
+    </div> -->
 
-    <!-- <div class="w-full h-full max-w-md relative">
+    <div class="w-full h-full max-w-md relative">
       <RouterView />
       <NavigationMenu />
-    </div> -->
+    </div>
   </div>
 </template>
