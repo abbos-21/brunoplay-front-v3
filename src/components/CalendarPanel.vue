@@ -1,10 +1,15 @@
 <script setup lang="ts">
-// import { CoinImage } from '@/assets/images'
-// import { TickSVG } from '@/assets/svgs'
-// import { useDailyStore } from '@/stores/daily'
+import { CoinImage } from '@/assets/images'
+import { TickSVG } from '@/assets/svgs'
+import { useDailyStore } from '@/stores/daily'
 
 defineProps<{ modelValue: boolean }>()
 const emit = defineEmits<{ (e: 'update:modelValue', value: boolean): void }>()
+
+const daily = useDailyStore()
+async function handleClaim() {
+  await daily.claimDaily()
+}
 </script>
 
 <template>
@@ -86,10 +91,72 @@ const emit = defineEmits<{ (e: 'update:modelValue', value: boolean): void }>()
         </svg>
       </button>
 
-      <h1 class="font-bold text-3xl text-center text-[#552a0f]">Daily Combo</h1>
+      <h1 class="font-bold text-3xl text-center text-[#552a0f]">Daily Activity</h1>
       <h2 class="font-bold text-lg text-center text-[rgba(85,42,15,.7)]">
-        Place the pictures in the correct order to collect the reward = coins
+        Visit daily to grow your streak and unlock the maximum reward after 10 days in a row.
       </h2>
+
+      <div
+        class="flex gap-2 flex-wrap justify-center items-center mt-2"
+        v-if="daily.activityStatus"
+      >
+        <div
+          v-for="day in daily.activityStatus.streakRewards"
+          :key="day.day"
+          class="shadow bg-[#fde7b8] rounded-xl py-2 px-3 font-bold text-[#552A0F] flex flex-col items-center"
+          :class="{
+            'border border-[#1BB33F] relative': day.claimed,
+            'border border-[#cf8741]': !day.claimed,
+          }"
+        >
+          <h3>Day {{ day.day }}</h3>
+          <div class="flex gap-1 items-center">
+            <img :src="CoinImage" alt="coin-image" class="w-5" />
+            <span>{{ day.coins }}</span>
+          </div>
+
+          <span
+            v-if="day.claimed"
+            class="absolute w-6 aspect-square rounded-full bg-[#1BB33F] -top-1.5 -right-1.5 text-white flex justify-center items-center"
+          >
+            <TickSVG class="w-3.5" />
+          </span>
+        </div>
+
+        <!-- <div
+          class="shadow bg-[#fde7b8] border border-[#1BB33F] rounded-xl py-2 px-3 font-bold text-[#552A0F] relative"
+        >
+          <h3>Day 1</h3>
+          <div class="flex gap-1 items-center">
+            <img :src="CoinImage" alt="coin-image" class="w-5" />
+            <span>10</span>
+          </div>
+
+          <span
+            class="absolute w-6 aspect-square rounded-full bg-[#1BB33F] -top-1.5 -right-1.5 text-white flex justify-center items-center"
+          >
+            <TickSVG class="w-3.5" />
+          </span>
+        </div>
+        <div
+          class="shadow bg-[#fde7b8] border border-[#cf8741] rounded-xl py-2 px-3 font-bold text-[#552A0F]"
+        >
+          <h3>Day 2</h3>
+          <div class="flex gap-1 items-center">
+            <img :src="CoinImage" alt="coin-image" class="w-5" />
+            <span>10</span>
+          </div>
+        </div> -->
+      </div>
+
+      <button
+        type="button"
+        :disabled="!daily.activityStatus?.canClaim || daily.isLoading"
+        @click="handleClaim"
+        class="claim bg-[#5edf3d] text-white font-bold text-3xl rounded-full border border-[#552a0f] mt-4 px-5 py-[2px] disabled:bg-slate-400"
+      >
+        {{ daily.activityStatus?.canClaim ? 'Claim' : 'Claimed' }}
+      </button>
     </div>
   </div>
 </template>

@@ -1,12 +1,12 @@
 <script setup lang="ts">
 import { onMounted, computed, ref } from 'vue'
 import CoinBalance from '@/components/CoinBalance.vue'
-import EnergyLevel from '@/components/EnergyLevel.vue'
+// import EnergyLevel from '@/components/EnergyLevel.vue'
 import HamburgerButton from '@/components/HamburgerButton.vue'
 import ProgressBar from '@/components/ProgressBar.vue'
 import SlidePanel from '@/components/SlidePanel.vue'
 import PuzzlePanel from '@/components/PuzzlePanel.vue'
-import PuzzlePanelNew from '@/components/PuzzlePanelNew.vue'
+import CalendarPanel from '@/components/CalendarPanel.vue'
 import { CalendarImage, PuzzleImage } from '@/assets/images'
 import { useFishingStore } from '@/stores/fishing'
 import { useDailyStore } from '@/stores/daily'
@@ -14,6 +14,7 @@ import { useFormatters } from '@/composables/useFormatters'
 import { usePolling } from '@/composables/usePolling'
 
 const isMenuOpen = ref(false)
+const isCalendarOpen = ref(false)
 const isPuzzleOpen = ref(false)
 const fishing = useFishingStore()
 
@@ -40,7 +41,7 @@ async function handleFishing() {
       collecting.value = true
       await fishing.collect()
     }
-  } catch (e: any) {
+  } catch {
   } finally {
     collecting.value = false
   }
@@ -67,8 +68,10 @@ async function handleFishing() {
 
     <div class="mb-24 flex items-end justify-between w-full">
       <div class="flex flex-col items-center -ms-4">
-        <button><img :src="CalendarImage" alt="Calendar" class="w-14 sm:w-20" /></button>
-        <button @click="isPuzzleOpen = true">
+        <button type="button" @click="isCalendarOpen = true">
+          <img :src="CalendarImage" alt="Calendar" class="w-14 sm:w-20" />
+        </button>
+        <button type="button" @click="isCalendarOpen = true">
           <img :src="PuzzleImage" alt="Puzzle" class="w-14 sm:w-20" />
         </button>
       </div>
@@ -88,6 +91,7 @@ async function handleFishing() {
     </div>
 
     <SlidePanel v-model="isMenuOpen" />
+    <CalendarPanel v-model="isCalendarOpen" />
     <PuzzlePanel v-model="isPuzzleOpen" />
   </div>
 </template>
