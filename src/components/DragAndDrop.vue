@@ -20,15 +20,17 @@ const sourceImages: ImageItem[] = [
 ]
 
 const gallery = ref<ImageItem[]>([...sourceImages])
-const container = ref<ImageItem[]>([])
+
+// ✅ FIXED GRID (IMPORTANT)
+const container = ref<(ImageItem | null)[]>(Array(MAX_CELLS).fill(null))
 
 const dragItem = ref<ImageItem | null>(null)
 const overIndex = ref<number | null>(null)
 
-const isFull = computed(() => container.value.length >= MAX_CELLS)
+const isFull = computed(() => container.value.every((cell) => cell !== null))
 
 function isUsed(id: number) {
-  return container.value.some((i) => i.id === id)
+  return container.value.some((i) => i?.id === id)
 }
 
 /* ───────── Desktop Drag ───────── */
@@ -40,16 +42,18 @@ function onDragStart(item: ImageItem) {
 function onDropToContainer(index: number) {
   if (!dragItem.value) return
 
-  const exists = isUsed(dragItem.value.id)
-  const currentIndex = container.value.findIndex((i) => i.id === dragItem.value!.id)
+  const dragged = dragItem.value
+  const existingIndex = container.value.findIndex((i) => i?.id === dragged.id)
 
-  // Reorder inside container
-  if (currentIndex !== -1) {
-    container.value.splice(currentIndex, 1)
-    container.value.splice(index, 0, dragItem.value)
+  // 🔁 Reorder inside container
+  if (existingIndex !== -1) {
+    container.value[existingIndex] = null
+    container.value[index] = dragged
   } else {
-    if (exists || isFull.value) return
-    container.value.splice(index, 0, dragItem.value)
+    // ❌ Prevent duplicates
+    if (isUsed(dragged.id)) return
+
+    container.value[index] = dragged
   }
 
   cleanup()
@@ -89,9 +93,7 @@ function createGhost(item: ImageItem, x: number, y: number) {
 function onTouchStart(item: ImageItem, ev: TouchEvent) {
   dragItem.value = item
 
-  const touch = ev.touches[0]
-  if (!touch) return
-  const { clientX, clientY } = touch
+  const { clientX, clientY } = ev.touches[0]
   createGhost(item, clientX, clientY)
 
   document.addEventListener('touchmove', onTouchMove, { passive: false })
@@ -102,9 +104,7 @@ function onTouchMove(ev: TouchEvent) {
   ev.preventDefault()
   if (!ghost) return
 
-  const touch = ev.touches[0]
-  if (!touch) return
-  const { clientX, clientY } = touch
+  const { clientX, clientY } = ev.touches[0]
   ghost.style.left = `${clientX - 35}px`
   ghost.style.top = `${clientY - 35}px`
 
@@ -117,9 +117,7 @@ function onTouchMove(ev: TouchEvent) {
 function onTouchEnd(ev: TouchEvent) {
   if (!dragItem.value) return
 
-  const touch = ev.changedTouches[0]
-  if (!touch) return
-  const { clientX, clientY } = touch
+  const { clientX, clientY } = ev.changedTouches[0]
   const el = document.elementFromPoint(clientX, clientY)
   const idx = el?.closest('[data-slot]')?.getAttribute('data-slot')
 
@@ -142,13 +140,16 @@ onBeforeUnmount(cleanupTouch)
 /* ───────── Submit ───────── */
 
 function handleSubmit() {
-  alert(JSON.stringify(container.value.map((i) => i.id)))
+  const result = container.value.map((i) => i?.id).filter(Boolean)
+
+  alert(`Submitted: [${result.join(', ')}]`)
 }
 </script>
 
 <template>
   <div class="im">
     <h1 class="im-title">Image Manager</h1>
+    <p class="im-desc">Drag images into any slot. Each image can only be used once.</p>
 
     <!-- Gallery -->
     <div class="im-gallery">
@@ -163,6 +164,7 @@ function handleSubmit() {
         @touchstart.prevent="onTouchStart(item, $event)"
       >
         <img :src="item.src" />
+        <span class="im-thumb-id">#{{ item.id }}</span>
       </div>
     </div>
 
@@ -175,6 +177,7 @@ function handleSubmit() {
         :data-slot="n - 1"
         :class="{ over: overIndex === n - 1 }"
         @dragover.prevent="overIndex = n - 1"
+        @dragleave="overIndex = null"
         @drop.prevent="onDropToContainer(n - 1)"
       >
         <template v-if="container[n - 1]">
@@ -186,27 +189,48 @@ function handleSubmit() {
             @touchstart.prevent="onTouchStart(container[n - 1]!, $event)"
           >
             <img :src="container[n - 1]!.src" />
+            <span class="im-cell-pos">{{ n }}</span>
           </div>
         </template>
-        <span v-else>+</span>
+
+        <template v-else>
+          <span class="im-slot-plus">+</span>
+          <span class="im-slot-pos">{{ n }}</span>
+        </template>
       </div>
     </div>
 
-    <button :disabled="!isFull" @click="handleSubmit">Submit</button>
+    <!-- Submit -->
+    <button class="im-submit" :disabled="!isFull" @click="handleSubmit">Submit</button>
   </div>
 </template>
 
 <style scoped>
-.im-gallery {
-  display: flex;
-  gap: 8px;
-  flex-wrap: wrap;
+.im {
+  max-width: 600px;
+  font-family: system-ui;
+}
+
+.im-title {
+  font-size: 1.4rem;
+  font-weight: 700;
+}
+
+.im-desc {
+  color: #666;
   margin-bottom: 20px;
 }
 
+.im-gallery {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 24px;
+}
+
 .im-thumb {
-  width: 64px;
-  height: 64px;
+  width: 70px;
+  text-align: center;
   cursor: grab;
 }
 
@@ -216,23 +240,30 @@ function handleSubmit() {
 }
 
 .im-thumb img {
-  width: 100%;
-  height: 100%;
+  width: 64px;
+  height: 64px;
+  border-radius: 10px;
   object-fit: cover;
-  border-radius: 8px;
+}
+
+.im-thumb-id {
+  font-size: 0.7rem;
+  color: #888;
 }
 
 .im-drop {
   display: grid;
-  grid-template-columns: repeat(4, 80px);
+  grid-template-columns: repeat(4, 90px);
   gap: 10px;
   margin-bottom: 20px;
 }
 
 .im-slot {
-  width: 80px;
-  height: 100px;
+  width: 90px;
+  height: 106px;
   border: 2px dashed #ccc;
+  border-radius: 12px;
+  position: relative;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -242,14 +273,49 @@ function handleSubmit() {
   background: #e0f0ff;
 }
 
+.im-slot-plus {
+  font-size: 1.5rem;
+  color: #ccc;
+}
+
+.im-slot-pos {
+  position: absolute;
+  bottom: 4px;
+  right: 6px;
+  font-size: 0.6rem;
+  color: #aaa;
+}
+
 .im-cell {
   width: 100%;
   height: 100%;
+  position: relative;
 }
 
 .im-cell img {
   width: 100%;
   height: 70px;
   object-fit: cover;
+  border-radius: 8px;
+}
+
+.im-cell-pos {
+  position: absolute;
+  bottom: 4px;
+  right: 6px;
+  font-size: 0.6rem;
+  color: #aaa;
+}
+
+.im-submit {
+  padding: 10px 30px;
+  background: #264653;
+  color: #fff;
+  border-radius: 8px;
+  border: none;
+}
+
+.im-submit:disabled {
+  opacity: 0.3;
 }
 </style>
