@@ -25,7 +25,7 @@ onMounted(async () => {
   await daily.fetchCombo()
 })
 
-usePolling(() => fishing.sync(), 10000)
+usePolling(() => fishing.sync(), 1000)
 
 const canCollect = computed(() => (fishing.status?.tankCoins ?? 0) > 0)
 
