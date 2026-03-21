@@ -178,7 +178,7 @@ export interface DailyActivityStatus {
   currentStreak: number
   canClaim: boolean
   todayReward: number
-  rewards: DayReward[]
+  streakRewards: DayReward[]
   resetsAt: string
 }
 
