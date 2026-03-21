@@ -2,6 +2,7 @@
 // import { CoinImage } from '@/assets/images'
 // import { TickSVG } from '@/assets/svgs'
 // import { useDailyStore } from '@/stores/daily'
+import DragAndDrop from './DragAndDrop.vue'
 
 defineProps<{ modelValue: boolean }>()
 const emit = defineEmits<{ (e: 'update:modelValue', value: boolean): void }>()
@@ -90,6 +91,8 @@ const emit = defineEmits<{ (e: 'update:modelValue', value: boolean): void }>()
       <h2 class="font-bold text-lg text-center text-[rgba(85,42,15,.7)]">
         Place the pictures in the correct order to collect the reward = coins
       </h2>
+
+      <DragAndDrop />
     </div>
   </div>
 </template>
