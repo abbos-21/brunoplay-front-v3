@@ -33,11 +33,11 @@ async function handleFishing() {
   try {
     if (!fishing.isFishing) {
       await fishing.start()
-    } else if (canCollect.value) {
+    } else {
       collecting.value = true
       await fishing.collect()
     }
-  } catch {
+  } catch (e: any) {
   } finally {
     collecting.value = false
   }
@@ -50,10 +50,10 @@ async function handleFishing() {
   >
     <div class="w-full flex justify-between items-center">
       <CoinBalance />
-      <div class="flex items-center gap-3 sm:gap-6">
-        <EnergyLevel />
-        <HamburgerButton v-model="isMenuOpen" />
-      </div>
+      <!-- <div class="flex items-center gap-3 sm:gap-6"> -->
+      <!-- <EnergyLevel /> -->
+      <HamburgerButton v-model="isMenuOpen" />
+      <!-- </div> -->
     </div>
 
     <ProgressBar

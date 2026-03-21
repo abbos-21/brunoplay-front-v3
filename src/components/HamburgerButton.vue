@@ -6,7 +6,7 @@ const emit = defineEmits<{ (e: 'update:modelValue', value: boolean): void }>()
 <template>
   <button
     type="button"
-    class="flex flex-col justify-center items-center gap-1 w-10 aspect-square cursor-pointer bg-[#fbe166] rounded-lg shadow-card"
+    class="flex flex-col justify-center items-center gap-1 w-9.5 aspect-square cursor-pointer bg-[#fbe166] rounded-lg shadow-card"
     @click="emit('update:modelValue', !modelValue)"
   >
     <span

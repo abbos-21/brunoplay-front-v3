@@ -24,5 +24,10 @@ onMounted(() => {
       <RouterView />
       <NavigationMenu />
     </div>
+
+    <!-- <div class="w-full h-full max-w-md relative">
+      <RouterView />
+      <NavigationMenu />
+    </div> -->
   </div>
 </template>
