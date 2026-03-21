@@ -8,7 +8,6 @@ import SlidePanel from '@/components/SlidePanel.vue'
 import { CalendarImage, PuzzleImage } from '@/assets/images'
 import { useFishingStore } from '@/stores/fishing'
 import { useDailyStore } from '@/stores/daily'
-import { useFormatters } from '@/composables/useFormatters'
 import { usePolling } from '@/composables/usePolling'
 
 const isMenuOpen = ref(false)
@@ -16,7 +15,6 @@ const fishing = useFishingStore()
 
 const daily = useDailyStore()
 
-const { formatCoins } = useFormatters()
 const collecting = ref(false)
 
 onMounted(async () => {
@@ -78,8 +76,8 @@ async function handleFishing() {
     </div>
 
     <ProgressBar
-      :current-value="+formatCoins(displayedCoins)"
-      :max-value="+formatCoins(fishing.status?.tankCapacity ?? 0)"
+      :current-value="displayedCoins"
+      :max-value="fishing.status?.tankCapacity ?? 0"
       class="w-28 sm:w-36 absolute inset-1/2 -translate-x-1/2 -translate-y-1/2"
     />
 
