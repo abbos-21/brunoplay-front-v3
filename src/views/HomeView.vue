@@ -71,7 +71,7 @@ async function handleFishing() {
         <button type="button" @click="isCalendarOpen = true">
           <img :src="CalendarImage" alt="Calendar" class="w-14 sm:w-20" />
         </button>
-        <button type="button" @click="isCalendarOpen = true">
+        <button type="button" @click="isPuzzleOpen = true">
           <img :src="PuzzleImage" alt="Puzzle" class="w-14 sm:w-20" />
         </button>
       </div>
