@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted, onUnmounted, computed, ref, watch } from 'vue'
+import { onMounted, computed, ref } from 'vue'
 import CoinBalance from '@/components/CoinBalance.vue'
 import EnergyLevel from '@/components/EnergyLevel.vue'
 import HamburgerButton from '@/components/HamburgerButton.vue'
@@ -8,6 +8,7 @@ import SlidePanel from '@/components/SlidePanel.vue'
 import { CalendarImage, PuzzleImage } from '@/assets/images'
 import { useFishingStore } from '@/stores/fishing'
 import { useDailyStore } from '@/stores/daily'
+import { useFormatters } from '@/composables/useFormatters'
 import { usePolling } from '@/composables/usePolling'
 
 const isMenuOpen = ref(false)
@@ -15,6 +16,7 @@ const fishing = useFishingStore()
 
 const daily = useDailyStore()
 
+const { formatCoins } = useFormatters()
 const collecting = ref(false)
 
 onMounted(async () => {
@@ -24,27 +26,6 @@ onMounted(async () => {
 })
 
 usePolling(() => fishing.sync(), 10000)
-
-// Fake real-time progress: tick up by effectiveMiningRate every second.
-// When the server syncs (polling), snap to the real value.
-const displayedCoins = ref(0)
-
-watch(
-  () => fishing.status,
-  (status) => {
-    if (status) displayedCoins.value = status.tankCoins
-  },
-  { immediate: true },
-)
-
-const ticker = setInterval(() => {
-  const status = fishing.status
-  if (!status?.isFishing) return
-  const capacity = status.tankCapacity
-  displayedCoins.value = Math.min(displayedCoins.value + status.effectiveMiningRate, capacity)
-}, 1000)
-
-onUnmounted(() => clearInterval(ticker))
 
 const canCollect = computed(() => (fishing.status?.tankCoins ?? 0) > 0)
 
@@ -76,8 +57,8 @@ async function handleFishing() {
     </div>
 
     <ProgressBar
-      :current-value="displayedCoins"
-      :max-value="fishing.status?.tankCapacity ?? 0"
+      :current-value="+formatCoins(fishing.status?.tankCoins ?? 0)"
+      :max-value="+formatCoins(fishing.status?.tankCapacity ?? 0)"
       class="w-28 sm:w-36 absolute inset-1/2 -translate-x-1/2 -translate-y-1/2"
     />
 
