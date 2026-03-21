@@ -33,8 +33,9 @@ async function handleFishing() {
   try {
     if (!fishing.isFishing) {
       await fishing.start()
-    } else {
+    } else if (canCollect.value) {
       collecting.value = true
+      await fishing.collect()
     }
   } catch {
   } finally {
