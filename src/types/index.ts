@@ -184,7 +184,7 @@ export interface DailyActivityStatus {
 
 export interface DayReward {
   day: number
-  reward: number
+  coins: number
   claimed: boolean
   isToday: boolean
 }

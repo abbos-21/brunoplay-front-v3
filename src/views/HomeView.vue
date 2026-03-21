@@ -88,6 +88,6 @@ async function handleFishing() {
     </div>
 
     <SlidePanel v-model="isMenuOpen" />
-    <PuzzlePanelNew v-model="isPuzzleOpen" />
+    <PuzzlePanel v-model="isPuzzleOpen" />
   </div>
 </template>

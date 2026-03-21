@@ -96,8 +96,34 @@ async function handleClaim() {
         Visit daily to grow your streak and unlock the maximum reward after 10 days in a row.
       </h2>
 
-      <div class="flex gap-2 flex-wrap justify-center items-center mt-2">
+      <div
+        class="flex gap-2 flex-wrap justify-center items-center mt-2"
+        v-if="daily.activityStatus"
+      >
         <div
+          v-for="day in daily.activityStatus.streakRewards"
+          :key="day.day"
+          class="shadow bg-[#fde7b8] rounded-xl py-2 px-3 font-bold text-[#552A0F]"
+          :class="{
+            'border border-[#1BB33F] relative': day.claimed,
+            'border border-[#cf8741]': !day.claimed,
+          }"
+        >
+          <h3>Day {{ day.day }}</h3>
+          <div class="flex gap-1 items-center">
+            <img :src="CoinImage" alt="coin-image" class="w-5" />
+            <span>{{ day.coins }}</span>
+          </div>
+
+          <span
+            v-if="day.claimed"
+            class="absolute w-6 aspect-square rounded-full bg-[#1BB33F] -top-1.5 -right-1.5 text-white flex justify-center items-center"
+          >
+            <TickSVG class="w-3.5" />
+          </span>
+        </div>
+
+        <!-- <div
           class="shadow bg-[#fde7b8] border border-[#1BB33F] rounded-xl py-2 px-3 font-bold text-[#552A0F] relative"
         >
           <h3>Day 1</h3>
@@ -120,86 +146,16 @@ async function handleClaim() {
             <img :src="CoinImage" alt="coin-image" class="w-5" />
             <span>10</span>
           </div>
-        </div>
-        <div
-          class="shadow bg-[#fde7b8] border border-[#cf8741] rounded-xl py-2 px-3 font-bold text-[#552A0F]"
-        >
-          <h3>Day 3</h3>
-          <div class="flex gap-1 items-center">
-            <img :src="CoinImage" alt="coin-image" class="w-5" />
-            <span>10</span>
-          </div>
-        </div>
-        <div
-          class="shadow bg-[#fde7b8] border border-[#cf8741] rounded-xl py-2 px-3 font-bold text-[#552A0F]"
-        >
-          <h3>Day 4</h3>
-          <div class="flex gap-1 items-center">
-            <img :src="CoinImage" alt="coin-image" class="w-5" />
-            <span>10</span>
-          </div>
-        </div>
-        <div
-          class="shadow bg-[#fde7b8] border border-[#cf8741] rounded-xl py-2 px-3 font-bold text-[#552A0F]"
-        >
-          <h3>Day 5</h3>
-          <div class="flex gap-1 items-center">
-            <img :src="CoinImage" alt="coin-image" class="w-5" />
-            <span>10</span>
-          </div>
-        </div>
-        <div
-          class="shadow bg-[#fde7b8] border border-[#cf8741] rounded-xl py-2 px-3 font-bold text-[#552A0F]"
-        >
-          <h3>Day 6</h3>
-          <div class="flex gap-1 items-center">
-            <img :src="CoinImage" alt="coin-image" class="w-5" />
-            <span>10</span>
-          </div>
-        </div>
-        <div
-          class="shadow bg-[#fde7b8] border border-[#cf8741] rounded-xl py-2 px-3 font-bold text-[#552A0F]"
-        >
-          <h3>Day 7</h3>
-          <div class="flex gap-1 items-center">
-            <img :src="CoinImage" alt="coin-image" class="w-5" />
-            <span>10</span>
-          </div>
-        </div>
-        <div
-          class="shadow bg-[#fde7b8] border border-[#cf8741] rounded-xl py-2 px-3 font-bold text-[#552A0F]"
-        >
-          <h3>Day 8</h3>
-          <div class="flex gap-1 items-center">
-            <img :src="CoinImage" alt="coin-image" class="w-5" />
-            <span>10</span>
-          </div>
-        </div>
-        <div
-          class="shadow bg-[#fde7b8] border border-[#cf8741] rounded-xl py-2 px-3 font-bold text-[#552A0F]"
-        >
-          <h3>Day 9</h3>
-          <div class="flex gap-1 items-center">
-            <img :src="CoinImage" alt="coin-image" class="w-5" />
-            <span>10</span>
-          </div>
-        </div>
-        <div
-          class="shadow bg-[#fde7b8] border border-[#cf8741] rounded-xl py-2 px-3 font-bold text-[#552A0F]"
-        >
-          <h3>Day 10</h3>
-          <div class="flex gap-1 items-center">
-            <img :src="CoinImage" alt="coin-image" class="w-5" />
-            <span>10</span>
-          </div>
-        </div>
+        </div> -->
       </div>
 
       <button
         type="button"
+        :disabled="!daily.activityStatus?.canClaim || daily.isLoading"
+        @click="handleClaim"
         class="claim bg-[#5edf3d] text-white font-bold text-3xl rounded-full border border-[#552a0f] mt-4 px-5 py-[2px]"
       >
-        Claim
+        {{ daily.isLoading ? 'Claiming…' : 'Claim' }}
       </button>
     </div>
   </div>

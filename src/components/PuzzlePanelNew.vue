@@ -130,7 +130,7 @@ async function handleClaim() {
             <h3 class="text-xs sm:text-sm">Day {{ day.day }}</h3>
             <div class="flex gap-1 items-center">
               <img :src="CoinImage" alt="coin" class="w-4 sm:w-5" />
-              <span class="text-sm sm:text-base">{{ day.reward }}</span>
+              <span class="text-sm sm:text-base">{{ day.coins }}</span>
             </div>
 
             <!-- Claimed tick -->
