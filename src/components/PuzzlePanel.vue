@@ -103,7 +103,7 @@ async function handleClaim() {
         <div
           v-for="day in daily.activityStatus.streakRewards"
           :key="day.day"
-          class="shadow bg-[#fde7b8] rounded-xl py-2 px-3 font-bold text-[#552A0F]"
+          class="shadow bg-[#fde7b8] rounded-xl py-2 px-3 font-bold text-[#552A0F] flex flex-col items-center"
           :class="{
             'border border-[#1BB33F] relative': day.claimed,
             'border border-[#cf8741]': !day.claimed,
@@ -153,9 +153,9 @@ async function handleClaim() {
         type="button"
         :disabled="!daily.activityStatus?.canClaim || daily.isLoading"
         @click="handleClaim"
-        class="claim bg-[#5edf3d] text-white font-bold text-3xl rounded-full border border-[#552a0f] mt-4 px-5 py-[2px]"
+        class="claim bg-[#5edf3d] text-white font-bold text-3xl rounded-full border border-[#552a0f] mt-4 px-5 py-[2px] disabled:bg-slate-400"
       >
-        {{ daily.isLoading ? 'Claiming…' : 'Claim' }}
+        {{ daily.activityStatus?.canClaim ? 'Claim' : 'Claimed' }}
       </button>
     </div>
   </div>
