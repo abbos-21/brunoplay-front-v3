@@ -6,6 +6,7 @@ import HamburgerButton from '@/components/HamburgerButton.vue'
 import ProgressBar from '@/components/ProgressBar.vue'
 import SlidePanel from '@/components/SlidePanel.vue'
 import PuzzlePanel from '@/components/PuzzlePanel.vue'
+import PuzzlePanelNew from '@/components/PuzzlePanelNew.vue'
 import { CalendarImage, PuzzleImage } from '@/assets/images'
 import { useFishingStore } from '@/stores/fishing'
 import { useDailyStore } from '@/stores/daily'
@@ -67,7 +68,9 @@ async function handleFishing() {
     <div class="mb-24 flex items-end justify-between w-full">
       <div class="flex flex-col items-center -ms-4">
         <button><img :src="CalendarImage" alt="Calendar" class="w-14 sm:w-20" /></button>
-        <button @click="isPuzzleOpen = true"><img :src="PuzzleImage" alt="Puzzle" class="w-14 sm:w-20" /></button>
+        <button @click="isPuzzleOpen = true">
+          <img :src="PuzzleImage" alt="Puzzle" class="w-14 sm:w-20" />
+        </button>
       </div>
 
       <button
@@ -85,6 +88,6 @@ async function handleFishing() {
     </div>
 
     <SlidePanel v-model="isMenuOpen" />
-    <PuzzlePanel v-model="isPuzzleOpen" />
+    <PuzzlePanelNew v-model="isPuzzleOpen" />
   </div>
 </template>
