@@ -2,10 +2,18 @@
 // import { CoinImage } from '@/assets/images'
 // import { TickSVG } from '@/assets/svgs'
 // import { useDailyStore } from '@/stores/daily'
+import { onMounted } from 'vue'
 import DragDrop from './DragDrop.vue'
+import { useDailyStore } from '@/stores/daily'
+
+const { fetchCombo } = useDailyStore()
 
 defineProps<{ modelValue: boolean }>()
 const emit = defineEmits<{ (e: 'update:modelValue', value: boolean): void }>()
+
+onMounted(async () => {
+  await fetchCombo()
+})
 </script>
 
 <template>

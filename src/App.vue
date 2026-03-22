@@ -28,7 +28,7 @@ onMounted(() => {
   <div class="w-screen h-screen flex justify-start items-center">
     <audio ref="audioRef" :src="BackgroundMusic" loop preload="auto" />
 
-    <div v-if="auth.isLoading">Loading...</div>
+    <!-- <div v-if="auth.isLoading">Loading...</div>
 
     <div v-else-if="auth.state === 'error'">
       <p>{{ auth.error }}</p>
@@ -39,12 +39,12 @@ onMounted(() => {
       <RouterView />
       <NavigationMenu />
       <ToastContainer />
-    </div>
+    </div> -->
 
-    <!-- <div class="w-full h-full max-w-md relative">
+    <div class="w-full h-full max-w-md relative">
       <RouterView />
       <NavigationMenu />
       <ToastContainer />
-    </div> -->
+    </div>
   </div>
 </template>
