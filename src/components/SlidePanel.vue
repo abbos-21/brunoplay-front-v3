@@ -85,7 +85,7 @@ const { user } = useAuthStore()
             <div class="flex gap-4 items-center">
               <button
                 type="button"
-                class="w-10 h-10 p-2 rounded-full flex justify-center items-center"
+                class="w-8 h-8 sm:w-10 sm:h-10 p-2 rounded-full flex justify-center items-center"
                 style="
                   background: radial-gradient(50% 50% at 50% 50%, #fff277 0%, #fbba4e 100%);
                   box-shadow:
@@ -191,7 +191,7 @@ const { user } = useAuthStore()
 
               <button
                 type="button"
-                class="w-10 h-10 p-2 rounded-full flex justify-center items-center"
+                class="w-8 h-8 sm:w-10 sm:h-10 p-2 rounded-full flex justify-center items-center"
                 style="
                   background: linear-gradient(180deg, #fff277 0%, #fbba4e 100%);
                   box-shadow:
@@ -201,7 +201,7 @@ const { user } = useAuthStore()
                 "
               >
                 <svg
-                  class="w-full ms-1"
+                  class="w-full"
                   viewBox="0 0 39 39"
                   fill="none"
                   xmlns="http://www.w3.org/2000/svg"
@@ -258,7 +258,7 @@ const { user } = useAuthStore()
 
               <button
                 type="button"
-                class="w-10 h-10 p-2 rounded-full flex justify-center items-center"
+                class="w-8 h-8 sm:w-10 sm:h-10 p-2 rounded-full flex justify-center items-center"
                 style="
                   background: radial-gradient(50% 50% at 50% 50%, #fff277 0%, #fbba4e 100%);
                   box-shadow:
