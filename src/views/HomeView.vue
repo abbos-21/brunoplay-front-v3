@@ -13,6 +13,13 @@ import { useDailyStore } from '@/stores/daily'
 import { useFormatters } from '@/composables/useFormatters'
 import { usePolling } from '@/composables/usePolling'
 
+import { useToast } from '@/composables/useToast'
+
+const { show } = useToast()
+
+// show('Saved successfully!', 'success')
+// show('Something went wrong!', 'warning')
+
 const isMenuOpen = ref(false)
 const isCalendarOpen = ref(false)
 const isPuzzleOpen = ref(false)
@@ -52,6 +59,7 @@ async function handleFishing() {
   <div
     class="w-full h-full bg-home p-4 relative flex flex-col justify-between items-center overflow-hidden"
   >
+    <!-- <button @click="show('Saved successfully!', 'success', 1000)">Toast</button> -->
     <div class="w-full flex justify-between items-center">
       <CoinBalance />
       <!-- <div class="flex items-center gap-3 sm:gap-6"> -->

@@ -3,6 +3,7 @@ import { onMounted } from 'vue'
 import { RouterView } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import NavigationMenu from '@/components/NavigationMenu.vue'
+import ToastContainer from './components/ToastContainer.vue'
 
 const auth = useAuthStore()
 
@@ -23,11 +24,13 @@ onMounted(() => {
     <div v-else-if="auth.isAuthenticated" class="w-full h-full max-w-md relative">
       <RouterView />
       <NavigationMenu />
+      <ToastContainer />
     </div>
 
     <!-- <div class="w-full h-full max-w-md relative">
       <RouterView />
       <NavigationMenu />
+      <ToastContainer />
     </div> -->
   </div>
 </template>
