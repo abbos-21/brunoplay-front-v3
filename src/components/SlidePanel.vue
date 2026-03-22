@@ -1,5 +1,12 @@
 <script setup lang="ts">
-import { ArrowLeftSVG } from '@/assets/svgs'
+import {
+  ArrowLeftSVG,
+  MusicNextSVG,
+  MusicPlaySVG,
+  MusicPrevSVG,
+  LanguageArrowSVG,
+  MusicPauseSVG,
+} from '@/assets/svgs'
 import { useAuthStore } from '@/stores/auth'
 import {
   ProfileImage,
@@ -9,6 +16,10 @@ import {
   NewsImage,
   FaqImage,
 } from '@/assets/images'
+
+import { useMusic } from '@/composables/useMusic'
+
+const { isPlaying, toggle } = useMusic()
 
 defineProps<{ modelValue: boolean }>()
 const emit = defineEmits<{ (e: 'update:modelValue', value: boolean): void }>()
@@ -56,14 +67,7 @@ const { user } = useAuthStore()
               <span class="font-bold text-lg">English</span>
             </div>
 
-            <svg viewBox="0 0 40 47" class="w-5" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path
-                d="M3.50049 3.50049L35.0894 22.6453C35.7317 23.0345 35.7317 23.9664 35.0894 24.3557L3.50049 43.5005"
-                stroke="#552A0F"
-                stroke-width="7"
-                stroke-linecap="round"
-              />
-            </svg>
+            <LanguageArrowSVG class="w-5" />
           </button>
 
           <div
@@ -94,103 +98,12 @@ const { user } = useAuthStore()
                     inset 0px 1px 0px rgba(255, 255, 255, 0.25);
                 "
               >
-                <svg
-                  class="w-full"
-                  viewBox="0 0 45 48"
-                  fill="none"
-                  xmlns="http://www.w3.org/2000/svg"
-                >
-                  <g filter="url(#filter0_d_0_1)">
-                    <rect x="3" y="1" width="5" height="42" rx="2.5" fill="#F4E6A4" />
-                    <rect x="2.5" y="0.5" width="6" height="43" rx="3" stroke="#C88A32" />
-                  </g>
-                  <g filter="url(#filter1_d_0_1)">
-                    <path
-                      d="M11.3005 19.3223C9.10413 20.4319 9.10413 23.5681 11.3005 24.6777L37.6473 37.9876C39.6427 38.9957 42 37.5455 42 35.3099V8.69009C42 6.45452 39.6427 5.00434 37.6473 6.01238L11.3005 19.3223Z"
-                      fill="#F4E6A4"
-                    />
-                    <path
-                      d="M11.0752 18.876C8.51277 20.1705 8.51277 23.8295 11.0752 25.124L37.4219 38.4336C39.7498 39.6096 42.5 37.9177 42.5 35.3096V8.69043C42.5 6.08226 39.7498 4.39036 37.4219 5.56641L11.0752 18.876Z"
-                      stroke="#C88A32"
-                    />
-                  </g>
-                  <defs>
-                    <filter
-                      id="filter0_d_0_1"
-                      x="0"
-                      y="0"
-                      width="11"
-                      height="48"
-                      filterUnits="userSpaceOnUse"
-                      color-interpolation-filters="sRGB"
-                    >
-                      <feFlood flood-opacity="0" result="BackgroundImageFix" />
-                      <feColorMatrix
-                        in="SourceAlpha"
-                        type="matrix"
-                        values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0"
-                        result="hardAlpha"
-                      />
-                      <feOffset dy="2" />
-                      <feGaussianBlur stdDeviation="1" />
-                      <feComposite in2="hardAlpha" operator="out" />
-                      <feColorMatrix
-                        type="matrix"
-                        values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.25 0"
-                      />
-                      <feBlend
-                        mode="normal"
-                        in2="BackgroundImageFix"
-                        result="effect1_dropShadow_0_1"
-                      />
-                      <feBlend
-                        mode="normal"
-                        in="SourceGraphic"
-                        in2="effect1_dropShadow_0_1"
-                        result="shape"
-                      />
-                    </filter>
-                    <filter
-                      id="filter1_d_0_1"
-                      x="6.65332"
-                      y="4.68481"
-                      width="38.3467"
-                      height="38.6304"
-                      filterUnits="userSpaceOnUse"
-                      color-interpolation-filters="sRGB"
-                    >
-                      <feFlood flood-opacity="0" result="BackgroundImageFix" />
-                      <feColorMatrix
-                        in="SourceAlpha"
-                        type="matrix"
-                        values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0"
-                        result="hardAlpha"
-                      />
-                      <feOffset dy="2" />
-                      <feGaussianBlur stdDeviation="1" />
-                      <feComposite in2="hardAlpha" operator="out" />
-                      <feColorMatrix
-                        type="matrix"
-                        values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.25 0"
-                      />
-                      <feBlend
-                        mode="normal"
-                        in2="BackgroundImageFix"
-                        result="effect1_dropShadow_0_1"
-                      />
-                      <feBlend
-                        mode="normal"
-                        in="SourceGraphic"
-                        in2="effect1_dropShadow_0_1"
-                        result="shape"
-                      />
-                    </filter>
-                  </defs>
-                </svg>
+                <MusicPrevSVG class="w-full" />
               </button>
 
               <button
                 type="button"
+                @click="toggle"
                 class="w-8 h-8 sm:w-10 sm:h-10 p-2 rounded-full flex justify-center items-center"
                 style="
                   background: linear-gradient(180deg, #fff277 0%, #fbba4e 100%);
@@ -200,60 +113,8 @@ const { user } = useAuthStore()
                     inset 0px 1px 0px rgba(255, 255, 255, 0.25);
                 "
               >
-                <svg
-                  class="w-full"
-                  viewBox="0 0 39 39"
-                  fill="none"
-                  xmlns="http://www.w3.org/2000/svg"
-                >
-                  <g filter="url(#filter0_d_4211_461)">
-                    <path
-                      d="M33.6995 14.6375C35.8959 15.747 35.8959 18.8833 33.6995 19.9929L7.35273 33.3028C5.35732 34.3108 3 32.8607 3 30.6251V4.00528C3 1.76971 5.35733 0.31953 7.35273 1.32757L33.6995 14.6375Z"
-                      fill="#F4E6A4"
-                    />
-                    <path
-                      d="M33.9248 14.1912C36.4872 15.4857 36.4872 19.1447 33.9248 20.4392L7.57813 33.7488C5.25015 34.9248 2.5 33.2329 2.5 30.6248V4.00562C2.5 1.39745 5.25015 -0.294455 7.57812 0.881592L33.9248 14.1912Z"
-                      stroke="#C88A32"
-                    />
-                  </g>
-                  <defs>
-                    <filter
-                      id="filter0_d_4211_461"
-                      x="0"
-                      y="0"
-                      width="38.3467"
-                      height="38.6304"
-                      filterUnits="userSpaceOnUse"
-                      color-interpolation-filters="sRGB"
-                    >
-                      <feFlood flood-opacity="0" result="BackgroundImageFix" />
-                      <feColorMatrix
-                        in="SourceAlpha"
-                        type="matrix"
-                        values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0"
-                        result="hardAlpha"
-                      />
-                      <feOffset dy="2" />
-                      <feGaussianBlur stdDeviation="1" />
-                      <feComposite in2="hardAlpha" operator="out" />
-                      <feColorMatrix
-                        type="matrix"
-                        values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.25 0"
-                      />
-                      <feBlend
-                        mode="normal"
-                        in2="BackgroundImageFix"
-                        result="effect1_dropShadow_4211_461"
-                      />
-                      <feBlend
-                        mode="normal"
-                        in="SourceGraphic"
-                        in2="effect1_dropShadow_4211_461"
-                        result="shape"
-                      />
-                    </filter>
-                  </defs>
-                </svg>
+                <MusicPauseSVG v-if="isPlaying" class="w-5" />
+                <MusicPlaySVG v-else class="w-full" />
               </button>
 
               <button
@@ -267,99 +128,7 @@ const { user } = useAuthStore()
                     inset 0px 1px 0px rgba(255, 255, 255, 0.25);
                 "
               >
-                <svg
-                  class="w-full rotate-180"
-                  viewBox="0 0 45 48"
-                  fill="none"
-                  xmlns="http://www.w3.org/2000/svg"
-                >
-                  <g filter="url(#filter0_d_0_1)">
-                    <rect x="3" y="1" width="5" height="42" rx="2.5" fill="#F4E6A4" />
-                    <rect x="2.5" y="0.5" width="6" height="43" rx="3" stroke="#C88A32" />
-                  </g>
-                  <g filter="url(#filter1_d_0_1)">
-                    <path
-                      d="M11.3005 19.3223C9.10413 20.4319 9.10413 23.5681 11.3005 24.6777L37.6473 37.9876C39.6427 38.9957 42 37.5455 42 35.3099V8.69009C42 6.45452 39.6427 5.00434 37.6473 6.01238L11.3005 19.3223Z"
-                      fill="#F4E6A4"
-                    />
-                    <path
-                      d="M11.0752 18.876C8.51277 20.1705 8.51277 23.8295 11.0752 25.124L37.4219 38.4336C39.7498 39.6096 42.5 37.9177 42.5 35.3096V8.69043C42.5 6.08226 39.7498 4.39036 37.4219 5.56641L11.0752 18.876Z"
-                      stroke="#C88A32"
-                    />
-                  </g>
-                  <defs>
-                    <filter
-                      id="filter0_d_0_1"
-                      x="0"
-                      y="0"
-                      width="11"
-                      height="48"
-                      filterUnits="userSpaceOnUse"
-                      color-interpolation-filters="sRGB"
-                    >
-                      <feFlood flood-opacity="0" result="BackgroundImageFix" />
-                      <feColorMatrix
-                        in="SourceAlpha"
-                        type="matrix"
-                        values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0"
-                        result="hardAlpha"
-                      />
-                      <feOffset dy="2" />
-                      <feGaussianBlur stdDeviation="1" />
-                      <feComposite in2="hardAlpha" operator="out" />
-                      <feColorMatrix
-                        type="matrix"
-                        values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.25 0"
-                      />
-                      <feBlend
-                        mode="normal"
-                        in2="BackgroundImageFix"
-                        result="effect1_dropShadow_0_1"
-                      />
-                      <feBlend
-                        mode="normal"
-                        in="SourceGraphic"
-                        in2="effect1_dropShadow_0_1"
-                        result="shape"
-                      />
-                    </filter>
-                    <filter
-                      id="filter1_d_0_1"
-                      x="6.65332"
-                      y="4.68481"
-                      width="38.3467"
-                      height="38.6304"
-                      filterUnits="userSpaceOnUse"
-                      color-interpolation-filters="sRGB"
-                    >
-                      <feFlood flood-opacity="0" result="BackgroundImageFix" />
-                      <feColorMatrix
-                        in="SourceAlpha"
-                        type="matrix"
-                        values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0"
-                        result="hardAlpha"
-                      />
-                      <feOffset dy="2" />
-                      <feGaussianBlur stdDeviation="1" />
-                      <feComposite in2="hardAlpha" operator="out" />
-                      <feColorMatrix
-                        type="matrix"
-                        values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.25 0"
-                      />
-                      <feBlend
-                        mode="normal"
-                        in2="BackgroundImageFix"
-                        result="effect1_dropShadow_0_1"
-                      />
-                      <feBlend
-                        mode="normal"
-                        in="SourceGraphic"
-                        in2="effect1_dropShadow_0_1"
-                        result="shape"
-                      />
-                    </filter>
-                  </defs>
-                </svg>
+                <MusicNextSVG class="w-full" />
               </button>
             </div>
           </div>

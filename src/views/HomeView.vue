@@ -79,8 +79,10 @@ async function handleFishing() {
         <button type="button" @click="isCalendarOpen = true">
           <img :src="CalendarImage" alt="Calendar" class="w-14 sm:w-20" />
         </button>
-        <button type="button" @click="isPuzzleOpen = true">
+        <button type="button" @click="isPuzzleOpen = true" class="relative">
           <img :src="PuzzleImage" alt="Puzzle" class="w-14 sm:w-20" />
+          <!-- style="background: #fbe066; filter: blur(20px)" -->
+          <span class="absolute w-1/2 h-1/2 top-0 left-0 bg-[#fbe066] blur-2xl"></span>
         </button>
       </div>
 
