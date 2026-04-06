@@ -1,12 +1,5 @@
 <script setup lang="ts">
-import {
-  ArrowLeftSVG,
-  MusicNextSVG,
-  MusicPlaySVG,
-  MusicPrevSVG,
-  LanguageArrowSVG,
-  MusicPauseSVG,
-} from '@/assets/svgs'
+import { ArrowLeftSVG, LanguageArrowSVG } from '@/assets/svgs'
 import { useAuthStore } from '@/stores/auth'
 import {
   ProfileImage,
@@ -15,6 +8,10 @@ import {
   SupportImage,
   NewsImage,
   FaqImage,
+  MusicNextImage,
+  MusicPauseImage,
+  MusicPlayImage,
+  MusicPrevImage,
 } from '@/assets/images'
 
 import { useMusic } from '@/composables/useMusic'
@@ -86,49 +83,28 @@ const { user } = useAuthStore()
               </div>
             </div>
 
-            <div class="flex gap-4 items-center">
+            <div class="flex gap-2 items-center">
               <button
                 type="button"
-                class="w-8 h-8 sm:w-10 sm:h-10 p-2 rounded-full flex justify-center items-center"
-                style="
-                  background: radial-gradient(50% 50% at 50% 50%, #fff277 0%, #fbba4e 100%);
-                  box-shadow:
-                    0px 2px 2px rgba(0, 0, 0, 0.25),
-                    inset 0px -3px 4px rgba(0, 0, 0, 0.25),
-                    inset 0px 1px 0px rgba(255, 255, 255, 0.25);
-                "
+                class="w-8 h-8 sm:w-10 sm:h-10 flex justify-center items-center cursor-pointer"
               >
-                <MusicPrevSVG class="w-full" />
+                <img :src="MusicPrevImage" alt="" class="w-full" />
               </button>
 
               <button
                 type="button"
                 @click="toggle"
-                class="w-8 h-8 sm:w-10 sm:h-10 p-2 rounded-full flex justify-center items-center"
-                style="
-                  background: linear-gradient(180deg, #fff277 0%, #fbba4e 100%);
-                  box-shadow:
-                    0px 2px 2px rgba(0, 0, 0, 0.25),
-                    inset 0px -3px 4px rgba(0, 0, 0, 0.25),
-                    inset 0px 1px 0px rgba(255, 255, 255, 0.25);
-                "
+                class="w-8 h-8 sm:w-10 sm:h-10 flex justify-center items-center cursor-pointer"
               >
-                <MusicPauseSVG v-if="isPlaying" class="w-5" />
-                <MusicPlaySVG v-else class="w-full" />
+                <img :src="MusicPauseImage" v-if="isPlaying" alt="" class="w-full" />
+                <img :src="MusicPlayImage" v-else alt="" class="w-full" />
               </button>
 
               <button
                 type="button"
-                class="w-8 h-8 sm:w-10 sm:h-10 p-2 rounded-full flex justify-center items-center"
-                style="
-                  background: radial-gradient(50% 50% at 50% 50%, #fff277 0%, #fbba4e 100%);
-                  box-shadow:
-                    0px 2px 2px rgba(0, 0, 0, 0.25),
-                    inset 0px -3px 4px rgba(0, 0, 0, 0.25),
-                    inset 0px 1px 0px rgba(255, 255, 255, 0.25);
-                "
+                class="w-8 h-8 sm:w-10 sm:h-10 flex justify-center items-center cursor-pointer"
               >
-                <MusicNextSVG class="w-full" />
+                <img :src="MusicNextImage" alt="" class="w-full" />
               </button>
             </div>
           </div>
