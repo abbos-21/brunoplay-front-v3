@@ -3,15 +3,15 @@ export function useFormatters() {
   function formatCoins(value: number): string {
     if (value >= 1_000_000) return `${(value / 1_000_000).toFixed(1)}M`;
     if (value >= 1_000) return `${(value / 1_000).toFixed(1)}K`;
-    return Math.floor(value).toLocaleString();
+    return Math.floor(value).toLocaleString('en-US');
   }
 
   function formatNumber(value: number): string {
-    return value.toLocaleString();
+    return value.toLocaleString('en-US');
   }
 
   function formatStars(value: number): string {
-    return value.toLocaleString();
+    return value.toLocaleString('en-US');
   }
 
   function formatTon(value: number, decimals = 4): string {

@@ -6,6 +6,8 @@ import HamburgerButton from '@/components/HamburgerButton.vue'
 import SlidePanel from '@/components/SlidePanel.vue'
 import { ChevronLeftSVG } from '@/assets/svgs'
 import { CoinImage, TaskChannel, TaskChat, TaskPayouts, TaskSupport, TaskFriends } from '@/assets/images'
+import { useToast } from '@/composables/useToast'
+import { apiMessage } from '@/composables/apiError'
 import { useTasksStore } from '@/stores/tasks'
 import { getTelegram } from '@/composables/useTelegram'
 import type { Task } from '@/types'
@@ -13,6 +15,7 @@ import type { Task } from '@/types'
 const isMenuOpen = ref(false)
 const tab = ref<'main' | 'others'>('main')
 const tasks = useTasksStore()
+const toast = useToast()
 const openId = ref<number | null>(null)
 
 const fallbackMain: Task[] = [
@@ -62,9 +65,12 @@ function complete(task: Task) {
 async function check(task: Task) {
   if (task.id < 0) return
   try {
-    await tasks.checkTask(task.id)
-  } catch {
-    // errors are surfaced by the API client
+    const r = await tasks.checkTask(task.id)
+    if (r.completed && r.reward > 0) toast.show(`Done! You got ${r.reward} coins`, 'success')
+    else if (r.completed) toast.show('Already completed', 'info')
+    else toast.show(r.error || 'Not done yet', 'warning')
+  } catch (e) {
+    toast.show(apiMessage(e, 'Could not check the task'), 'error')
   }
 }
 

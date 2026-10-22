@@ -126,7 +126,7 @@ function close() {
             class="flex-1 text-center font-extrabold text-white leading-none truncate"
             :style="{ fontSize: u(64), letterSpacing: '0.01em' }"
           >
-            {{ num(balance) }}
+            {{ num(Math.floor(balance)) }}
           </span>
         </div>
 

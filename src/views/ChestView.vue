@@ -142,7 +142,7 @@ async function finish() {
       class="relative z-10 w-full h-full overflow-y-auto overflow-x-hidden [container-type:inline-size] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
     >
       <div
-        class="min-h-full flex flex-col items-center"
+        class="min-h-full flex flex-col items-center overflow-x-clip"
         :style="{ padding: `${u(40)} ${u(20)} ${u(40)}` }"
       >
         <h1

@@ -2,6 +2,10 @@
 import { computed, ref } from 'vue'
 import { StarIcon } from '@/assets/svgs'
 import { TonImage } from '@/assets/images'
+import { useToast } from '@/composables/useToast'
+
+const toast = useToast()
+const soon = () => toast.show('Buying stars is coming soon!', 'info')
 
 defineProps<{ modelValue: boolean }>()
 const emit = defineEmits<{ (e: 'update:modelValue', value: boolean): void }>()
@@ -131,6 +135,7 @@ const tabBase =
           v-for="o in options"
           :key="o.stars"
           type="button"
+          @click="soon"
           class="shrink-0 flex items-center bg-[#fde7b8] border border-[#cf8741] rounded-[18px] h-[clamp(2.9rem,12vw,3.4rem)] px-3 font-bold text-[#552a0f] shadow-[inset_0px_4px_4px_rgba(255,255,255,0.25),inset_0px_-4px_4px_rgba(0,0,0,0.25)]"
           :class="tab === 'stars' ? 'justify-center' : 'justify-between'"
         >

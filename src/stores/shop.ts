@@ -23,7 +23,7 @@ export const useShopStore = defineStore('shop', () => {
       const result = await shopApi.upgradeCard(cardName);
       const auth = useAuthStore();
       auth.updateUser({ level: result.newUserLevel });
-      await fetchCards();
+      await Promise.all([fetchCards(), auth.fetchUser()]);
       return result;
     } finally {
       isLoading.value = false;
@@ -34,7 +34,8 @@ export const useShopStore = defineStore('shop', () => {
     isLoading.value = true;
     try {
       const result = await shopApi.purchaseBooster(type);
-      await fetchBoosters();
+      const auth = useAuthStore();
+      await Promise.all([fetchBoosters(), auth.fetchUser()]);
       return result;
     } finally {
       isLoading.value = false;

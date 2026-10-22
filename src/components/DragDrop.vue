@@ -94,7 +94,9 @@ function createGhost(item: ImageItem, x: number, y: number) {
 function onTouchStart(item: ImageItem, ev: TouchEvent) {
   dragItem.value = item
 
-  const { clientX, clientY } = ev.touches[0]
+  const touch = ev.touches[0]
+  if (!touch) return
+  const { clientX, clientY } = touch
   createGhost(item, clientX, clientY)
 
   document.addEventListener('touchmove', onTouchMove, { passive: false })
@@ -105,7 +107,9 @@ function onTouchMove(ev: TouchEvent) {
   ev.preventDefault()
   if (!ghost) return
 
-  const { clientX, clientY } = ev.touches[0]
+  const touch = ev.touches[0]
+  if (!touch) return
+  const { clientX, clientY } = touch
   ghost.style.left = `${clientX - 35}px`
   ghost.style.top = `${clientY - 35}px`
 
@@ -118,7 +122,9 @@ function onTouchMove(ev: TouchEvent) {
 function onTouchEnd(ev: TouchEvent) {
   if (!dragItem.value) return
 
-  const { clientX, clientY } = ev.changedTouches[0]
+  const touch = ev.changedTouches[0]
+  if (!touch) return cleanupTouch()
+  const { clientX, clientY } = touch
   const el = document.elementFromPoint(clientX, clientY)
   const idx = el?.closest('[data-slot]')?.getAttribute('data-slot')
 

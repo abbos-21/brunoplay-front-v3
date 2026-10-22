@@ -7,11 +7,14 @@ import HamburgerButton from '@/components/HamburgerButton.vue'
 import SlidePanel from '@/components/SlidePanel.vue'
 import { StarIcon } from '@/assets/svgs'
 import { BoosterAutoCollect, BoosterMining } from '@/assets/images'
+import { useToast } from '@/composables/useToast'
+import { apiMessage } from '@/composables/apiError'
 import { useShopStore } from '@/stores/shop'
 import type { BoosterType } from '@/types'
 
 const isMenuOpen = ref(false)
 const shop = useShopStore()
+const toast = useToast()
 
 onMounted(() => {
   shop.fetchBoosters().catch(() => {})
@@ -49,8 +52,9 @@ async function buy(type: BoosterType) {
   buying.value = type
   try {
     await shop.purchaseBooster(type)
-  } catch {
-    // errors are surfaced by the API client
+    toast.show('Booster activated!', 'success')
+  } catch (e) {
+    toast.show(apiMessage(e, 'Could not buy the booster'), 'error')
   } finally {
     buying.value = null
   }

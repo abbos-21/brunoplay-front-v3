@@ -302,7 +302,7 @@ onMounted(async () => {
         [2, 0],
         [0, -2],
         [0, 3],
-      ])
+      ] as const)
         mk(dx, dy, BROWN)
       mk(0, 0, [255, 226, 90])
 

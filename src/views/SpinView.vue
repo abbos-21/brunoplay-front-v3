@@ -46,7 +46,7 @@ const count = computed(() => COUNTS[countIndex.value]!)
 const totalCost = computed(() => tier.value.costStars * count.value)
 
 const prizeText = (p: SpinPrize) =>
-  p.label || (p.type === 'gift' ? `Gift #${p.value}` : `${p.value.toLocaleString()} ${p.type}`)
+  p.label || (p.type === 'gift' ? `Gift #${p.value}` : `${p.value.toLocaleString('en-US')} ${p.type}`)
 
 // The wheel always has 8 slots, filled from the selected tier's prizes (repeating when there are fewer).
 // When a won prize is not one of those, the landing slot temporarily shows the prize that was won,
@@ -63,7 +63,7 @@ const slots = computed<WheelSlot[]>(() =>
     return {
       img: shown.img,
       alt: prizeText(shown.prize),
-      chip: shown.kind === 'gift' ? undefined : `+${shown.prize.value.toLocaleString()}`,
+      chip: shown.kind === 'gift' ? undefined : `+${shown.prize.value.toLocaleString('en-US')}`,
     }
   }),
 )
@@ -79,7 +79,7 @@ const tiles = computed<{ key: number; img: string; title: string }[]>(() => {
   return games.spinLiveWins.map((w, i) => ({
     key: w.id,
     img: WIN_TILES[(w.id + i) % WIN_TILES.length]!,
-    title: `${w.username}: ${w.prizeValue.toLocaleString()} ${w.prizeType}`,
+    title: `${w.username}: ${w.prizeValue.toLocaleString('en-US')} ${w.prizeType}`,
   }))
 })
 
@@ -249,7 +249,7 @@ const segmentBg = (i: number, active: boolean) => {
     <div
       class="relative z-10 w-full h-full overflow-y-auto overflow-x-hidden [container-type:size] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
     >
-      <div class="min-h-full flex items-center justify-center">
+      <div class="min-h-full flex items-center justify-center overflow-x-clip">
         <div
           class="relative [container-type:inline-size] select-none shrink-0"
           :style="{
@@ -448,7 +448,7 @@ const segmentBg = (i: number, active: boolean) => {
             }"
             aria-label="Stars balance"
             @click="
-              toast.show(`Your stars: ${(auth.user?.starsBalance ?? 0).toLocaleString()}`, 'info')
+              toast.show(`Your stars: ${(auth.user?.starsBalance ?? 0).toLocaleString('en-US')}`, 'info')
             "
           >
             <img :src="StarIcon" alt="" :style="{ width: u(64) }" />
@@ -519,7 +519,7 @@ const segmentBg = (i: number, active: boolean) => {
               }}
               <template v-if="!spinning">
                 <img :src="StarIcon" alt="" :style="{ width: u(48) }" />
-                {{ totalCost.toLocaleString() }}
+                {{ totalCost.toLocaleString('en-US') }}
               </template>
             </span>
           </button>
