@@ -6,6 +6,8 @@ import TasksView from '@/views/TasksView.vue'
 import FriendsView from '@/views/FriendsView.vue'
 import BoostersView from '@/views/BoostersView.vue'
 import SpinView from '@/views/SpinView.vue'
+import RideView from '@/views/RideView.vue'
+import ChestView from '@/views/ChestView.vue'
 import WithdrawView from '@/views/WithdrawView.vue'
 import WithdrawalHistoryView from '@/views/WithdrawalHistoryView.vue'
 
@@ -51,6 +53,18 @@ const router = createRouter({
       meta: { hideNav: true },
     },
     {
+      path: '/games/roulette',
+      name: 'games-roulette',
+      component: ChestView,
+      meta: { hideNav: true },
+    },
+    {
+      path: '/games/ride',
+      name: 'games-ride',
+      component: RideView,
+      meta: { hideNav: true },
+    },
+    {
       path: '/tasks',
       name: 'tasks',
       component: TasksView,
@@ -60,6 +74,7 @@ const router = createRouter({
       name: 'friends',
       component: FriendsView,
     },
+    { path: '/:pathMatch(.*)*', redirect: '/' },
     {
       path: '/about',
       name: 'about',

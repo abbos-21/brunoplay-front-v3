@@ -7,7 +7,7 @@ import { resolvePrizes } from '@/views/spin-prizes'
 import { getTelegram } from '@/composables/useTelegram'
 import type { SpinResult } from '@/types'
 
-const props = defineProps<{ result: SpinResult }>()
+const props = withDefaults(defineProps<{ result: SpinResult; unit?: string }>(), { unit: 'spin' })
 const emit = defineEmits<{ (e: 'close'): void }>()
 
 /** design px (776px wide frame) → container-width units */
@@ -154,7 +154,7 @@ const confetti = Array.from({ length: 44 }, () => ({
           class="win-fade font-extrabold text-white/90 [text-shadow:0px_3px_2px_rgba(0,0,0,0.35)]"
           :style="{ fontSize: u(30), animationDelay: '0.5s', marginTop: u(4) }"
         >
-          {{ result.results.length }} spins
+          {{ result.results.length }} {{ unit }}s
         </p>
 
         <!-- prizes -->

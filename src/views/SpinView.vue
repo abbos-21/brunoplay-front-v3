@@ -8,6 +8,7 @@ import { Win1, Win2, Win3, Win4, Win5 } from '@/assets/images/spin'
 import { useGamesStore } from '@/stores/games'
 import { useAuthStore } from '@/stores/auth'
 import { useToast } from '@/composables/useToast'
+import { apiMessage } from '@/composables/apiError'
 import { isApiDisabled } from '@/api/client'
 import * as gamesApi from '@/api/games'
 import SpinPrizesModal from '@/components/SpinPrizesModal.vue'
@@ -174,13 +175,8 @@ async function spin() {
 
     result.value = res
     games.fetchSpinLiveWins().catch(() => {})
-  } catch (e: any) {
-    toast.show(
-      e?.response?.data?.error?.message ||
-        e?.response?.data?.message ||
-        'Spin failed, please try again',
-      'error',
-    )
+  } catch (e) {
+    toast.show(apiMessage(e, 'Spin failed, please try again'), 'error')
   } finally {
     spinning.value = false
     progress.value = { current: 0, total: 0 }

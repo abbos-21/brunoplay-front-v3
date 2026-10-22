@@ -6,14 +6,13 @@ import HamburgerButton from '@/components/HamburgerButton.vue'
 import SlidePanel from '@/components/SlidePanel.vue'
 import { ExclamationSVG } from '@/assets/svgs'
 import { RouterLink } from 'vue-router'
-import { MiningRate, CoinCapacity, EnergyRate } from '@/assets/images'
+import { MiningRate, CoinCapacity } from '@/assets/images'
 
 const isMenuOpen = ref(false)
 
 const shopItems = [
   { img: MiningRate, alt: 'mining-rate', title: 'Mining rate', current: '0.01', next: '0.02' },
   { img: CoinCapacity, alt: 'coin-capacity', title: 'Coin capacity', current: '100', next: '200' },
-  { img: EnergyRate, alt: 'energy-rate', title: 'Energy rate', current: '800', next: '1000' },
 ]
 </script>
 

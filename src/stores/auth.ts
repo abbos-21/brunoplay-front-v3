@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia';
 import { ref, computed } from 'vue';
 import type { User } from '@/types';
+import { apiMessage } from '@/composables/apiError';
 import * as authApi from '@/api/auth';
 import * as userApi from '@/api/user';
 import { isApiDisabled } from '@/api/client';
@@ -70,13 +71,9 @@ export const useAuthStore = defineStore('auth', () => {
       user.value = res.user;
       localStorage.setItem('token', res.token);
       state.value = 'authenticated';
-    } catch (e: any) {
+    } catch (e) {
       state.value = 'error';
-      const msg = e.response?.data?.error?.message
-        || e.response?.data?.message
-        || e.message
-        || 'Authentication failed';
-      error.value = msg;
+      error.value = apiMessage(e, 'Authentication failed');
     }
   }
 

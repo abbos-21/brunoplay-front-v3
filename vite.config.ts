@@ -11,6 +11,10 @@ import svgLoader from 'vite-svg-loader'
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [vue(), vueJsx(), UnoCSS(), svgLoader()],
+  server: {
+    // talk to the local backend (brunoplay-back-v3) without CORS
+    proxy: { '/api': 'http://localhost:3000' },
+  },
   resolve: {
     alias: {
       '@': fileURLToPath(new URL('./src', import.meta.url)),

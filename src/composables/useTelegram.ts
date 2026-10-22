@@ -24,7 +24,7 @@ export interface TelegramWebApp {
  * Returns null when not running inside Telegram.
  */
 export function getTelegram(): TelegramWebApp | null {
-  return ((window as any).Telegram?.WebApp as TelegramWebApp) ?? null;
+  return ((window as unknown as { Telegram?: { WebApp?: TelegramWebApp } }).Telegram?.WebApp) ?? null;
 }
 
 /**
@@ -46,6 +46,8 @@ export function initTelegram(): TelegramWebApp | null {
  * Empty string if not inside Telegram.
  */
 export function getTelegramInitData(): string {
+  // Dev only: lets you log in against a local backend that has DEV_AUTH=true, e.g. VITE_DEV_INIT_DATA=dev:1001:Abbos
+  if (import.meta.env.DEV && import.meta.env.VITE_DEV_INIT_DATA) return import.meta.env.VITE_DEV_INIT_DATA;
   return getTelegram()?.initData ?? '';
 }
 

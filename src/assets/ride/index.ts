@@ -1,0 +1,6 @@
+export { default as CarSprite } from './car.png'
+export { default as RideBackground } from './background.png'
+export { default as ObstacleSprite } from './obstacle.png'
+export { default as CollectSound } from './collect.mp3'
+export { default as CrashSound } from './crash.mp3'
+export { default as EngineSound } from './engine.mp3'

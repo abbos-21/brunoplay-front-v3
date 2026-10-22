@@ -5,6 +5,7 @@ import { CoinImage, TonImage } from '@/assets/images'
 import { ClockIcon, RoundButton } from '@/assets/svgs/wallet'
 import { useAuthStore } from '@/stores/auth'
 import { useWalletStore } from '@/stores/wallet'
+import { apiMessage } from '@/composables/apiError'
 import { useToast } from '@/composables/useToast'
 import type { WithdrawalInfo } from '@/types'
 
@@ -90,13 +91,8 @@ async function submit() {
     amountText.value = ''
     address.value = ''
     router.push('/withdraw/history')
-  } catch (e: any) {
-    toast.show(
-      e?.response?.data?.error?.message ||
-        e?.response?.data?.message ||
-        'Withdrawal failed, please try again',
-      'error',
-    )
+  } catch (e) {
+    toast.show(apiMessage(e, 'Withdrawal failed, please try again'), 'error')
   } finally {
     submitting.value = false
   }

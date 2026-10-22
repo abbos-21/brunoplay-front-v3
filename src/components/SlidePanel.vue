@@ -1,9 +1,15 @@
 <script setup lang="ts">
+import { computed, onMounted, ref } from 'vue'
+import { storeToRefs } from 'pinia'
+import { getAppInfo, updateSettings } from '@/api/user'
+import { getTelegram } from '@/composables/useTelegram'
+import type { AppInfo } from '@/types'
 import { ArrowLeftSVG, LanguageArrowSVG } from '@/assets/svgs'
 import { useAuthStore } from '@/stores/auth'
 import {
   ProfileImage,
   UkFlagImage,
+  RuFlagImage,
   MusicBoxImage,
   SupportImage,
   NewsImage,
@@ -21,7 +27,35 @@ const { isPlaying, toggle } = useMusic()
 defineProps<{ modelValue: boolean }>()
 const emit = defineEmits<{ (e: 'update:modelValue', value: boolean): void }>()
 
-const { user } = useAuthStore()
+const auth = useAuthStore()
+const { user } = storeToRefs(auth)
+
+// Support / News / FAQ links come from the server (/user/app-info)
+const info = ref<AppInfo | null>(null)
+onMounted(() => {
+  getAppInfo()
+    .then((i) => (info.value = i))
+    .catch(() => {})
+})
+
+function openLink(url?: string) {
+  if (!url) return
+  const tg = getTelegram()
+  if (tg && /^https:\/\/t\.me\//.test(url)) tg.openTelegramLink(url)
+  else window.open(url, '_blank', 'noopener')
+}
+
+// language: saved on the server; the screens are English only for now
+const language = computed(() => user.value?.language ?? 'EN')
+async function toggleLanguage() {
+  const next = language.value === 'EN' ? 'RU' : 'EN'
+  try {
+    await updateSettings({ language: next })
+    auth.updateUser({ language: next })
+  } catch {
+    // keep the current language
+  }
+}
 </script>
 
 <template>
@@ -51,6 +85,7 @@ const { user } = useAuthStore()
           <h1 class="text-lg font-bold">ID: {{ user?.telegramId }}</h1>
 
           <button
+            @click="toggleLanguage"
             type="button"
             class="bg-[#fde7b8] border border-[#cf8741] w-full rounded-2xl p-4 flex justify-between items-center mt-4 cursor-pointer"
             style="
@@ -60,8 +95,8 @@ const { user } = useAuthStore()
             "
           >
             <div class="flex items-center gap-4">
-              <img :src="UkFlagImage" alt="uk-flag" class="h-10" />
-              <span class="font-bold text-lg">English</span>
+              <img :src="language === 'RU' ? RuFlagImage : UkFlagImage" alt="flag" class="h-10" />
+              <span class="font-bold text-lg">{{ language === 'RU' ? 'Русский' : 'English' }}</span>
             </div>
 
             <LanguageArrowSVG class="w-5" />
@@ -86,7 +121,8 @@ const { user } = useAuthStore()
             <div class="flex gap-2 items-center">
               <button
                 type="button"
-                class="w-8 h-8 sm:w-10 sm:h-10 flex justify-center items-center cursor-pointer"
+                disabled
+                class="w-8 h-8 sm:w-10 sm:h-10 flex justify-center items-center opacity-40"
               >
                 <img :src="MusicPrevImage" alt="" class="w-full" />
               </button>
@@ -102,7 +138,8 @@ const { user } = useAuthStore()
 
               <button
                 type="button"
-                class="w-8 h-8 sm:w-10 sm:h-10 flex justify-center items-center cursor-pointer"
+                disabled
+                class="w-8 h-8 sm:w-10 sm:h-10 flex justify-center items-center opacity-40"
               >
                 <img :src="MusicNextImage" alt="" class="w-full" />
               </button>
@@ -111,9 +148,10 @@ const { user } = useAuthStore()
         </div>
 
         <div class="w-full grid grid-cols-3 gap-4">
-          <RouterLink
-            to="/"
-            class="flex flex-col items-center p-2"
+          <button
+            type="button"
+            :disabled="!info?.supportUrl"
+            class="flex flex-col items-center p-2 disabled:opacity-50"
             style="
               background: #fde7b8;
               border: 1px solid #cf8741;
@@ -122,14 +160,16 @@ const { user } = useAuthStore()
                 inset 0px -4px 4px rgba(0, 0, 0, 0.25);
               border-radius: 16px;
             "
+            @click="openLink(info?.supportUrl)"
           >
             <img :src="SupportImage" alt="support" class="h-10" />
             <span class="text-lg font-bold">Support</span>
-          </RouterLink>
+          </button>
 
-          <RouterLink
-            to="/"
-            class="flex flex-col items-center p-2"
+          <button
+            type="button"
+            :disabled="!info?.communityUrl"
+            class="flex flex-col items-center p-2 disabled:opacity-50"
             style="
               background: #fde7b8;
               border: 1px solid #cf8741;
@@ -138,14 +178,16 @@ const { user } = useAuthStore()
                 inset 0px -4px 4px rgba(0, 0, 0, 0.25);
               border-radius: 16px;
             "
+            @click="openLink(info?.communityUrl)"
           >
             <img :src="NewsImage" alt="news" class="h-10" />
             <span class="text-lg font-bold">News</span>
-          </RouterLink>
+          </button>
 
-          <RouterLink
-            to="/"
-            class="flex flex-col items-center p-2"
+          <button
+            type="button"
+            :disabled="!info?.communityUrl"
+            class="flex flex-col items-center p-2 disabled:opacity-50"
             style="
               background: #fde7b8;
               border: 1px solid #cf8741;
@@ -154,10 +196,11 @@ const { user } = useAuthStore()
                 inset 0px -4px 4px rgba(0, 0, 0, 0.25);
               border-radius: 16px;
             "
+            @click="openLink(info?.communityUrl)"
           >
             <img :src="FaqImage" alt="faq" class="h-10" />
             <span class="text-lg font-bold">FAQ</span>
-          </RouterLink>
+          </button>
         </div>
       </div>
     </div>

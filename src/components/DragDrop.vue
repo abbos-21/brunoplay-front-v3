@@ -1,7 +1,9 @@
 <script setup lang="ts">
 import { ref, computed, onBeforeUnmount } from 'vue'
 import { Hat, Fish, Net, Boots, Boat, Bucket, Backpack, Rod } from '@/assets/images'
-import { TickSVG, XSVG } from '@/assets/svgs'
+import { useDailyStore } from '@/stores/daily'
+import { useToast } from '@/composables/useToast'
+import { apiMessage } from '@/composables/apiError'
 
 interface ImageItem {
   id: number
@@ -138,10 +140,22 @@ onBeforeUnmount(cleanupTouch)
 
 /* ───────── Submit ───────── */
 
-function handleSubmit() {
-  const result = container.value.map((i) => i?.id).filter(Boolean)
+const daily = useDailyStore()
+const toast = useToast()
+const alreadyPlayed = computed(() => !!daily.comboStatus?.alreadyAttempted)
 
-  alert(`Submitted: [${result.join(', ')}]`)
+async function handleSubmit() {
+  if (!isFull.value || alreadyPlayed.value || daily.isLoading) return
+  const ids = container.value.map((i) => i!.id)
+  try {
+    const r = await daily.submitCombo(ids)
+    toast.show(
+      r.reward > 0 ? `${r.correctCount} correct! You won ${r.reward} coins` : 'No correct pictures this time, try again tomorrow',
+      r.reward > 0 ? 'success' : 'info',
+    )
+  } catch (e) {
+    toast.show(apiMessage(e, 'Could not send your answer'), 'error')
+  }
 }
 </script>
 
@@ -286,10 +300,11 @@ function handleSubmit() {
 
     <button
       @click="handleSubmit"
+      :disabled="!isFull || alreadyPlayed || daily.isLoading"
       type="button"
       class="claim bg-[#5edf3d] text-white font-bold text-3xl rounded-full border border-[#552a0f] mt-4 px-5 py-[2px] disabled:bg-slate-400"
     >
-      Claim
+      {{ alreadyPlayed ? 'Come back tomorrow' : 'Claim' }}
     </button>
   </div>
 </template>

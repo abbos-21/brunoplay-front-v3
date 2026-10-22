@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { CoinImage } from '@/assets/images'
 import { computed } from 'vue'
+import { isApiDisabled } from '@/api/client'
 import { RouterLink } from 'vue-router'
 import { storeToRefs } from 'pinia'
 import { MinusSVG } from '@/assets/svgs'
@@ -8,7 +9,7 @@ import { MinusSVG } from '@/assets/svgs'
 import { useAuthStore } from '@/stores/auth'
 
 // Placeholder shown until the user data arrives (or while the API is switched off in dev mode).
-const FALLBACK_COINS = 2104024
+const FALLBACK_COINS = isApiDisabled ? 2104024 : 0
 
 const { user } = storeToRefs(useAuthStore())
 const coins = computed(() => user.value?.coins ?? FALLBACK_COINS)

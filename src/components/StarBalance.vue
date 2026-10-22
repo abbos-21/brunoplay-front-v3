@@ -3,10 +3,11 @@ import { computed } from 'vue'
 import { storeToRefs } from 'pinia'
 import { StarIcon } from '@/assets/svgs'
 import { useAuthStore } from '@/stores/auth'
+import { isApiDisabled } from '@/api/client'
 import { useTopUp } from '@/composables/useTopUp'
 
 // Placeholder shown until the user data arrives (or while the API is switched off in dev mode).
-const FALLBACK_STARS = 641000
+const FALLBACK_STARS = isApiDisabled ? 641000 : 0
 
 const { user } = storeToRefs(useAuthStore())
 const { open: openTopUp } = useTopUp()
