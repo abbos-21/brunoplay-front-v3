@@ -124,6 +124,8 @@ export interface LiveWin {
   prizeValue: number
   game: string
   createdAt: string
+  /** stars the player spent on the winning spin(s), when the API provides it */
+  spentStars?: number
 }
 
 // === Roulette ===

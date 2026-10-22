@@ -1,29 +1,35 @@
 <script setup lang="ts">
 import { CoinImage } from '@/assets/images'
+import { computed } from 'vue'
+import { RouterLink } from 'vue-router'
+import { storeToRefs } from 'pinia'
 import { MinusSVG } from '@/assets/svgs'
 
 import { useAuthStore } from '@/stores/auth'
-import { useFormatters } from '@/composables/useFormatters'
 
-const { user } = useAuthStore()
-const { formatCoins } = useFormatters()
+// Placeholder shown until the user data arrives (or while the API is switched off in dev mode).
+const FALLBACK_COINS = 2104024
+
+const { user } = storeToRefs(useAuthStore())
+const coins = computed(() => user.value?.coins ?? FALLBACK_COINS)
 </script>
 
 <template>
   <div
     class="inline-flex gap-px items-center p-1 py-1.5 pe-1.5 relative bg-[#fbe166] rounded-[50px] shadow-card"
-    v-if="user?.coins !== undefined"
   >
-    <img :src="CoinImage" alt="Coin" class="w-8" />
+    <img :src="CoinImage" alt="Coin" class="w-[clamp(1.5rem,7.5vw,2rem)]" />
     <div
-      class="text-white px-3 py-1 font-bold bg-[#c17e23] rounded-[50px] shadow-[inset_0px_0px_1px_1px_rgba(0,0,0,0.25)]"
+      class="text-white px-[clamp(0.5rem,3vw,0.75rem)] py-1 font-bold text-[length:clamp(0.75rem,3.9vw,1rem)] tabular-nums bg-[#c17e23] rounded-[50px] shadow-[inset_0px_0px_1px_1px_rgba(0,0,0,0.25)]"
     >
-      {{ formatCoins(user?.coins) }}
+      {{ Math.floor(coins).toLocaleString('en-US') }}
     </div>
-    <span
+    <RouterLink
+      to="/withdraw"
+      aria-label="Withdraw"
       class="w-5 h-5 rounded-full flex justify-center items-center absolute -top-1 -right-1 text-white bg-[linear-gradient(192.38deg,#0fff00_6.75%,#1c8b1a_86.84%)] border-[0.5px] border-[#006417] shadow-[0px_4px_4px_rgba(0,0,0,0.25),inset_0px_0px_9px_2px_rgba(205,205,205,0.25)]"
     >
       <MinusSVG class="w-3" />
-    </span>
+    </RouterLink>
   </div>
 </template>

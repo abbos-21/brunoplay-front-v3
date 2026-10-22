@@ -4,6 +4,10 @@ import ShopView from '@/views/ShopView.vue'
 import GamesView from '@/views/GamesView.vue'
 import TasksView from '@/views/TasksView.vue'
 import FriendsView from '@/views/FriendsView.vue'
+import BoostersView from '@/views/BoostersView.vue'
+import SpinView from '@/views/SpinView.vue'
+import WithdrawView from '@/views/WithdrawView.vue'
+import WithdrawalHistoryView from '@/views/WithdrawalHistoryView.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -19,9 +23,32 @@ const router = createRouter({
       component: ShopView,
     },
     {
+      path: '/shop/boosters',
+      name: 'shop-boosters',
+      component: BoostersView,
+    },
+    {
       path: '/games',
       name: 'games',
       component: GamesView,
+    },
+    {
+      path: '/games/spin',
+      name: 'games-spin',
+      component: SpinView,
+      meta: { hideNav: true },
+    },
+    {
+      path: '/withdraw',
+      name: 'withdraw',
+      component: WithdrawView,
+      meta: { hideNav: true },
+    },
+    {
+      path: '/withdraw/history',
+      name: 'withdraw-history',
+      component: WithdrawalHistoryView,
+      meta: { hideNav: true },
     },
     {
       path: '/tasks',

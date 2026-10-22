@@ -3,6 +3,7 @@ import { ref, computed } from 'vue';
 import type { User } from '@/types';
 import * as authApi from '@/api/auth';
 import * as userApi from '@/api/user';
+import { isApiDisabled } from '@/api/client';
 import { getTelegramInitData, getTelegramStartParam, initTelegram } from '@/composables/useTelegram';
 
 export type AuthState = 'idle' | 'loading' | 'authenticated' | 'error';
@@ -25,6 +26,11 @@ export const useAuthStore = defineStore('auth', () => {
    * 4. If not inside Telegram, show an appropriate error
    */
   async function init(): Promise<void> {
+    if (isApiDisabled) {
+      console.info('[dev] API is disabled — skipping authentication (set VITE_USE_API=true to enable)');
+      return;
+    }
+
     state.value = 'loading';
     error.value = null;
 

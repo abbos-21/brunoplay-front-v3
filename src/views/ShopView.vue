@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import CoinBalance from '@/components/CoinBalance.vue'
+import StarBalance from '@/components/StarBalance.vue'
 import HamburgerButton from '@/components/HamburgerButton.vue'
 import SlidePanel from '@/components/SlidePanel.vue'
 import { ExclamationSVG } from '@/assets/svgs'
@@ -18,20 +19,21 @@ const shopItems = [
 
 <template>
   <div class="w-full h-full bg-shop p-4 relative overflow-hidden pb-24 flex flex-col">
-    <div class="w-full flex justify-between items-center">
+    <div class="w-full flex justify-between items-center gap-2">
       <CoinBalance />
+      <StarBalance />
       <HamburgerButton v-model="isMenuOpen" />
     </div>
 
     <div class="grid grid-cols-2 gap-4 px-2 mt-4 text-base sm:text-xl">
       <RouterLink
-        to="/"
+        to="/shop"
         class="border border-[#c17e23] shadow-[0px_4px_4px_rgba(0,0,0,0.25),inset_0px_4px_4px_rgba(255,255,255,0.25),inset_0px_-4px_4px_rgba(0,0,0,0.25)] rounded-2xl flex justify-center items-center font-bold py-[5px] bg-[#c17e23] text-white"
       >
         Cards
       </RouterLink>
       <RouterLink
-        to="/"
+        to="/shop/boosters"
         class="border border-[#c17e23] shadow-[0px_4px_4px_rgba(0,0,0,0.25),inset_0px_4px_4px_rgba(255,255,255,0.25),inset_0px_-4px_4px_rgba(0,0,0,0.25)] rounded-2xl flex justify-center items-center font-bold py-[5px] bg-[#fde7b8] text-[#552a0f]"
       >
         Boosters

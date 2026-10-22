@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { onMounted, computed, ref } from 'vue'
 import CoinBalance from '@/components/CoinBalance.vue'
-// import EnergyLevel from '@/components/EnergyLevel.vue'
+import EnergyLevel from '@/components/EnergyLevel.vue'
 import HamburgerButton from '@/components/HamburgerButton.vue'
 import ProgressBar from '@/components/ProgressBar.vue'
 import SlidePanel from '@/components/SlidePanel.vue'
@@ -62,10 +62,10 @@ async function handleFishing() {
     <!-- <button @click="show('Saved successfully!', 'success', 1000)">Toast</button> -->
     <div class="w-full flex justify-between items-center">
       <CoinBalance />
-      <!-- <div class="flex items-center gap-3 sm:gap-6"> -->
-      <!-- <EnergyLevel /> -->
-      <HamburgerButton v-model="isMenuOpen" />
-      <!-- </div> -->
+      <div class="flex items-center gap-[clamp(0.25rem,2vw,0.5rem)]">
+        <EnergyLevel />
+        <HamburgerButton v-model="isMenuOpen" />
+      </div>
     </div>
 
     <ProgressBar
