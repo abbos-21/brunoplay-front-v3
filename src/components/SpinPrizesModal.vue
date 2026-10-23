@@ -9,71 +9,44 @@ const props = defineProps<{ prizes: SpinPrize[] }>()
 const emit = defineEmits<{ (e: 'close'): void }>()
 
 const items = computed(() => sortForList(resolvePrizes(props.prizes)))
-
-/** design px (776px wide frame) → container-width units */
-const u = (px: number) => `${((px / 776) * 100).toFixed(4)}cqw`
 </script>
 
 <template>
   <div
-    class="absolute inset-0 z-40 flex items-center justify-center bg-[#543608]/90 backdrop-blur-[5px] [container-type:inline-size]"
+    class="absolute inset-0 z-40 flex items-center justify-center bg-black/60 p-4 backdrop-blur-[3px]"
     role="dialog"
     aria-modal="true"
     aria-label="Prizes list"
     @click.self="emit('close')"
   >
     <div
-      class="flex flex-col bg-[#e11d10] shadow-[inset_0px_0px_133px_97px_rgba(0,0,0,0.25)]"
-      :style="{
-        width: u(730),
-        maxHeight: '94%',
-        borderRadius: u(30),
-        padding: `${u(24)} ${u(20)} ${u(30)}`,
-      }"
+      class="flex max-h-full w-full max-w-[24rem] flex-col rounded-3xl border-2 border-[#cf8741] bg-[#fff4d6] p-4 text-[#552a0f] shadow-[0px_6px_12px_rgba(0,0,0,0.35)]"
     >
-      <h2
-        class="text-center font-extrabold leading-tight bg-clip-text text-transparent [filter:drop-shadow(0px_4px_2px_rgba(0,0,0,0.25))]"
-        :style="{
-          fontSize: u(64),
-          letterSpacing: '0.01em',
-          backgroundImage: 'linear-gradient(183deg, rgb(247,255,247) 40%, rgb(253,222,114) 56%)',
-        }"
-      >
-        Prizes List
-      </h2>
+      <div class="shrink-0 text-center">
+        <h2 class="font-extrabold leading-tight text-[length:clamp(1.35rem,6.4vw,1.75rem)]">Prizes</h2>
+        <p class="text-[#8a5a2b] font-bold text-[length:clamp(0.8rem,3.8vw,0.95rem)]">What you can win</p>
+      </div>
 
       <div
-        class="grid grid-cols-3 overflow-y-auto min-h-0 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
-        :style="{ gap: `${u(24)} ${u(8)}`, marginTop: u(20), paddingBottom: u(8) }"
+        class="mt-3 grid min-h-0 grid-cols-3 gap-2 overflow-y-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
       >
-        <div v-for="(it, i) in items" :key="i" class="flex flex-col items-center">
-          <img
-            :src="it.img"
-            :alt="it.name"
-            class="block object-contain drop-shadow-[0_4px_4px_rgba(0,0,0,0.25)]"
-            :style="{
-              width: u(it.kind === 'gift' ? 230 : 150),
-              height: u(it.kind === 'gift' ? 230 : 150),
-              margin: it.kind === 'gift' ? 0 : `${u(80)} 0 0`,
-            }"
-          />
-          <span
-            class="flex items-center justify-center bg-[#195fd8] text-white font-extrabold leading-none shadow-[0px_3px_2px_rgba(0,0,0,0.25),inset_0px_3px_4px_rgba(255,255,255,0.25),inset_0px_-3px_4px_rgba(0,0,0,0.25)]"
-            :style="{
-              width: u(200),
-              height: u(62),
-              borderRadius: u(30),
-              gap: u(8),
-              fontSize: u(27),
-              letterSpacing: '0.01em',
-              marginTop: `-${u(20)}`,
-            }"
-          >
+        <div
+          v-for="(it, i) in items"
+          :key="i"
+          class="flex flex-col items-center rounded-2xl border border-[#e3b66f] bg-[#fde7b8] px-1 pb-2 pt-2"
+        >
+          <div class="flex aspect-square w-full items-center justify-center">
             <img
-              :src="it.kind === 'coins' ? CoinImage : StarIcon"
-              alt=""
-              :style="{ width: u(it.kind === 'coins' ? 35 : 40) }"
+              :src="it.img"
+              :alt="it.name"
+              class="block max-h-full max-w-full object-contain drop-shadow-[0_3px_3px_rgba(0,0,0,0.3)]"
+              :class="it.kind === 'gift' ? 'w-[88%]' : 'w-[62%]'"
             />
+          </div>
+          <span
+            class="mt-1 flex items-center gap-1 rounded-full bg-[#195fd8] px-2.5 py-0.5 font-extrabold leading-tight text-white tabular-nums shadow-[inset_0px_2px_3px_rgba(255,255,255,0.25),inset_0px_-2px_3px_rgba(0,0,0,0.25)] text-[length:clamp(0.72rem,3.4vw,0.9rem)]"
+          >
+            <img :src="it.kind === 'coins' ? CoinImage : StarIcon" alt="" class="w-[1.2em]" />
             {{ it.amount }}
           </span>
         </div>
@@ -81,15 +54,7 @@ const u = (px: number) => `${((px / 776) * 100).toFixed(4)}cqw`
 
       <button
         type="button"
-        class="self-center shrink-0 bg-[#fbe166] text-[#552a0f] font-extrabold shadow-[0px_3px_2px_rgba(0,0,0,0.25),inset_0px_3px_4px_rgba(255,255,255,0.25),inset_0px_-3px_4px_rgba(0,0,0,0.25)] active:translate-y-px"
-        :style="{
-          width: u(340),
-          height: u(90),
-          borderRadius: u(30),
-          fontSize: u(48),
-          marginTop: u(16),
-          letterSpacing: '0.01em',
-        }"
+        class="mt-3 w-full shrink-0 rounded-full border border-[#b9722a] bg-[#fff4d6] py-1.5 font-bold text-[#552a0f] shadow-[0px_3px_3px_rgba(0,0,0,0.2)] active:translate-y-px text-[length:clamp(1rem,4.8vw,1.25rem)]"
         @click="emit('close')"
       >
         Close

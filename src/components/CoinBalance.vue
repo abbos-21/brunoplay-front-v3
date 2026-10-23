@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import AnimatedNumber from '@/components/AnimatedNumber.vue'
 import { CoinImage } from '@/assets/images'
 import { computed } from 'vue'
 import { isApiDisabled } from '@/api/client'
@@ -17,14 +18,10 @@ const coins = computed(() => user.value?.coins ?? FALLBACK_COINS)
 
 <template>
   <div
-    class="inline-flex gap-px items-center p-1 py-1.5 pe-1.5 relative bg-[#fbe166] rounded-[50px] shadow-card"
+    class="inline-flex gap-px items-center p-1 py-1.5 pe-1.5 relative z-[45] bg-[#fbe166] rounded-[50px] shadow-card"
   >
     <img :src="CoinImage" alt="Coin" class="w-[clamp(1.5rem,7.5vw,2rem)]" />
-    <div
-      class="text-white px-[clamp(0.5rem,3vw,0.75rem)] py-1 font-bold text-[length:clamp(0.75rem,3.9vw,1rem)] tabular-nums bg-[#c17e23] rounded-[50px] shadow-[inset_0px_0px_1px_1px_rgba(0,0,0,0.25)]"
-    >
-      {{ Math.floor(coins).toLocaleString('en-US') }}
-    </div>
+    <AnimatedNumber kind="coins" :value="coins" :ready="!!user" />
     <RouterLink
       to="/withdraw"
       aria-label="Withdraw"

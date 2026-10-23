@@ -5,10 +5,12 @@ import { TonImage } from '@/assets/images'
 import { useToast } from '@/composables/useToast'
 
 const toast = useToast()
-const soon = () => toast.show('Buying stars is coming soon!', 'info')
 
 defineProps<{ modelValue: boolean }>()
 const emit = defineEmits<{ (e: 'update:modelValue', value: boolean): void }>()
+
+// Real payments are not wired up yet.
+const soon = () => toast.show('Buying stars is coming soon!', 'info')
 
 type Tab = 'stars' | 'ton'
 const tab = ref<Tab>('stars')

@@ -1,8 +1,9 @@
 <script setup lang="ts">
-import { onBeforeUnmount, onMounted, ref } from 'vue'
+import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import kaboom, { type KaboomCtx } from 'kaboom'
 import { CoinImage } from '@/assets/images'
+import { StarIcon } from '@/assets/svgs'
 import {
   CarSprite,
   RideBackground,
@@ -16,11 +17,23 @@ import { useToast } from '@/composables/useToast'
 import { useMusic } from '@/composables/useMusic'
 import { apiMessage } from '@/composables/apiError'
 import { isApiDisabled } from '@/api/client'
+import { useAuthStore } from '@/stores/auth'
+import { useTopUp } from '@/composables/useTopUp'
 
 const router = useRouter()
 const games = useGamesStore()
 const toast = useToast()
 const music = useMusic()
+const auth = useAuthStore()
+const topUp = useTopUp()
+
+/* =======================
+   ENTRY: every run costs stars (there are no free runs)
+   The price matches the server's default; the server checks it again when the run starts.
+======================= */
+const RUN_COST = 1
+// the balance is unknown until the player has loaded (then the run can start, the server checks it)
+const canPlay = computed(() => !auth.user || auth.user.starsBalance >= RUN_COST)
 
 /* =======================
    GAME CONFIG (same values as the original runner)
@@ -94,6 +107,7 @@ async function finish(finalScore: number, finalCoins: number) {
 
 async function play() {
   if (!k || starting.value) return
+  if (!canPlay.value) return
   starting.value = true
   try {
     if (!isApiDisabled) {
@@ -423,21 +437,20 @@ onBeforeUnmount(() => {
     >
       <canvas ref="canvas" tabindex="0" class="block outline-none" />
 
-      <!-- HUD -->
+      <!-- HUD: two plain numbers, no boxes -->
       <div
         v-if="phase === 'playing'"
-        class="absolute top-3 left-3 right-3 flex items-start justify-between pointer-events-none"
+        class="absolute top-3 left-4 right-4 flex items-start justify-between pointer-events-none outlined [--outline:#3b2412] tabular-nums"
       >
-        <div
-          class="rounded-full bg-[#fbe166] px-4 py-1 font-bold text-[#552a0f] text-[length:clamp(1rem,4.6vw,1.3rem)] shadow-card tabular-nums"
-        >
-          Score: {{ score }}
+        <div class="leading-none">
+          <p class="font-bold uppercase tracking-wider text-white/80 text-[0.65rem]">Score</p>
+          <p class="mt-0.5 font-extrabold text-[length:clamp(1.5rem,7vw,2rem)]">{{ score }}</p>
         </div>
-        <div
-          class="flex items-center gap-1 rounded-full bg-[#fbe166] pl-1 pr-4 py-1 font-bold text-[#552a0f] text-[length:clamp(1rem,4.6vw,1.3rem)] shadow-card tabular-nums"
-        >
-          <img :src="CoinImage" alt="" class="w-[clamp(1.5rem,7vw,1.9rem)]" />
-          {{ coins }}
+        <div class="text-right leading-none">
+          <p class="font-bold uppercase tracking-wider text-white/80 text-[0.65rem]">Coins</p>
+          <p class="mt-0.5 flex items-center justify-end gap-1 font-extrabold text-[length:clamp(1.5rem,7vw,2rem)]">
+            <img :src="CoinImage" alt="" class="w-[0.9em]" />{{ coins }}
+          </p>
         </div>
       </div>
 
@@ -462,57 +475,60 @@ onBeforeUnmount(() => {
         </button>
       </div>
 
-      <!-- menu / result -->
+      <!-- menu / result: just a title, one button and a way back -->
       <div
         v-if="phase === 'menu' || phase === 'over'"
-        class="absolute inset-0 flex items-center justify-center bg-black/35 p-5"
+        class="absolute inset-0 flex items-center justify-center bg-black/40 p-6"
       >
         <div
-          class="w-full max-w-xs rounded-[30px] border-[4px] border-[#cf8741] bg-[#fde7b8] p-5 text-center text-[#552a0f] shadow-[0px_4px_4px_rgba(0,0,0,0.25),inset_0px_0px_4px_9px_rgba(0,0,0,0.15)]"
+          class="w-full max-w-[17rem] rounded-3xl border-2 border-[#cf8741] bg-[#fff4d6] px-4 py-4 text-center text-[#552a0f] shadow-[0px_6px_10px_rgba(0,0,0,0.3)]"
         >
-          <h1 class="text-[length:clamp(1.8rem,8vw,2.3rem)] font-extrabold leading-tight">
+          <h1 class="font-extrabold leading-tight text-[length:clamp(1.3rem,6vw,1.6rem)]">
             {{ phase === 'over' ? 'Crash!' : 'Bruno’s Ride' }}
           </h1>
 
-          <template v-if="phase === 'over'">
-            <p v-if="newBest" class="mt-1 font-bold text-[#890d00]">New best score!</p>
-            <div
-              class="mt-3 flex items-center justify-center gap-6 font-bold text-[length:clamp(1.1rem,5vw,1.4rem)]"
-            >
-              <div>
-                <p class="text-sm opacity-70">Score</p>
-                <p class="tabular-nums">{{ score }}</p>
-              </div>
-              <div>
-                <p class="text-sm opacity-70">Coins</p>
-                <p class="flex items-center justify-center gap-1 tabular-nums">
-                  <img :src="CoinImage" alt="" class="w-6" />{{ coins }}
-                </p>
-              </div>
+          <div v-if="phase === 'over'" class="mt-3 grid grid-cols-3 gap-1">
+            <div>
+              <p class="font-bold uppercase tracking-wide text-[#8a5a2b] text-[0.62rem]">Score</p>
+              <p class="font-extrabold tabular-nums text-[length:clamp(1rem,4.8vw,1.25rem)]">{{ score }}</p>
             </div>
-            <p v-if="saving" class="mt-2 text-sm font-bold opacity-70">Saving…</p>
-          </template>
-          <template v-else>
-            <p class="mt-2 font-bold opacity-80">
-              Tap or press space to jump over the obstacles and collect coins.
-            </p>
-            <p v-if="best" class="mt-2 font-bold text-[#890d00]">Best score: {{ best }}</p>
-          </template>
+            <div>
+              <p class="font-bold uppercase tracking-wide text-[#8a5a2b] text-[0.62rem]">Coins</p>
+              <p class="flex items-center justify-center gap-0.5 font-extrabold tabular-nums text-[length:clamp(1rem,4.8vw,1.25rem)]">
+                <img :src="CoinImage" alt="" class="w-[1.1em]" />{{ coins }}
+              </p>
+            </div>
+            <div>
+              <p class="font-bold uppercase tracking-wide text-[#8a5a2b] text-[0.62rem]">Top score</p>
+              <p
+                class="font-extrabold tabular-nums text-[length:clamp(1rem,4.8vw,1.25rem)]"
+                :class="newBest ? 'text-[#c8200f]' : ''"
+              >
+                {{ best }}
+              </p>
+            </div>
+          </div>
 
           <button
             type="button"
-            class="btn-gradient-orange mt-4 w-full border-[3px] border-[#c66a27] py-1 text-2xl font-extrabold outlined [--outline:#D76826] !rounded-full disabled:opacity-60"
+            class="mt-4 w-full rounded-full border border-[#d9680f] bg-[#f96a07] py-2 flex items-center justify-center gap-1.5 font-bold text-white text-[length:clamp(1.05rem,5.2vw,1.35rem)] shadow-[inset_0px_3px_3px_rgba(255,255,255,0.25),inset_0px_-3px_3px_rgba(0,0,0,0.2)] active:translate-y-px disabled:opacity-60"
             :disabled="starting || saving"
-            @click="play"
+            @click="canPlay ? play() : topUp.open()"
           >
-            {{ starting ? 'Starting…' : phase === 'over' ? 'Play again' : 'Play' }}
+            <template v-if="starting">Starting…</template>
+            <template v-else-if="!canPlay">Get stars</template>
+            <template v-else>
+              {{ phase === 'over' ? 'Again' : 'Play' }}
+              <img :src="StarIcon" alt="" class="w-[1.15em]" />{{ RUN_COST }}
+            </template>
           </button>
+
           <button
             type="button"
-            class="mt-2 w-full rounded-full border-[3px] border-[#cf8741] bg-[#fbe166] py-0.5 text-xl font-extrabold"
+            class="mt-2 text-[#8a5a2b] font-bold text-[length:clamp(0.85rem,4vw,1rem)] underline-offset-2 active:opacity-70"
             @click="leave"
           >
-            Back to games
+            Back
           </button>
         </div>
       </div>

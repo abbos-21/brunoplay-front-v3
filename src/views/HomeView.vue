@@ -4,6 +4,7 @@ import CoinBalance from '@/components/CoinBalance.vue'
 import LevelBadge from '@/components/LevelBadge.vue'
 import HamburgerButton from '@/components/HamburgerButton.vue'
 import ProgressBar from '@/components/ProgressBar.vue'
+import PendingDot from '@/components/PendingDot.vue'
 import SlidePanel from '@/components/SlidePanel.vue'
 import PuzzlePanel from '@/components/PuzzlePanel.vue'
 import CalendarPanel from '@/components/CalendarPanel.vue'
@@ -35,6 +36,10 @@ onMounted(async () => {
 })
 
 usePolling(() => fishing.sync(), 2500)
+
+// the two things to do every day: claim the streak reward, play the combo (unknown until the server answers)
+const streakPending = computed(() => daily.activityStatus?.canClaim === true)
+const comboPending = computed(() => daily.comboStatus?.alreadyAttempted === false)
 
 const canCollect = computed(() => (fishing.status?.tankCoins ?? 0) > 0)
 
@@ -74,11 +79,28 @@ async function handleFishing() {
 
     <div class="mb-24 flex items-end justify-between w-full">
       <div class="flex flex-col items-center -ms-4">
-        <button type="button" @click="isCalendarOpen = true">
-          <img :src="CalendarImage" alt="Calendar" class="w-14 sm:w-20" />
+        <button
+          type="button"
+          class="relative"
+          :aria-label="streakPending ? 'Daily reward, ready to claim' : 'Daily reward'"
+          @click="isCalendarOpen = true"
+        >
+          <img :src="CalendarImage" alt="Calendar" class="w-14 sm:w-20" :class="{ 'daily-nudge': streakPending }" />
+          <Transition name="dot"><PendingDot v-if="streakPending" /></Transition>
         </button>
-        <button type="button" @click="isPuzzleOpen = true" class="relative">
-          <img :src="PuzzleImage" alt="Puzzle" class="w-14 sm:w-20" />
+        <button
+          type="button"
+          class="relative"
+          :aria-label="comboPending ? 'Daily combo, not played yet' : 'Daily combo'"
+          @click="isPuzzleOpen = true"
+        >
+          <img
+            :src="PuzzleImage"
+            alt="Puzzle"
+            class="w-14 sm:w-20"
+            :class="{ 'daily-nudge daily-nudge-late': comboPending }"
+          />
+          <Transition name="dot"><PendingDot v-if="comboPending" /></Transition>
           <!-- style="background: #fbe066; filter: blur(20px)" -->
           <span class="absolute w-1/2 h-1/2 top-0 left-0 bg-[#fbe066] blur-2xl"></span>
         </button>
@@ -104,3 +126,55 @@ async function handleFishing() {
     <PuzzlePanel v-model="isPuzzleOpen" />
   </div>
 </template>
+
+<style scoped>
+/* an unfinished daily task: the icon hops and glows now and then */
+.daily-nudge {
+  animation: nudge 3.4s ease-in-out infinite;
+  transform-origin: 50% 80%;
+}
+.daily-nudge-late {
+  animation-delay: 1.1s;
+}
+@keyframes nudge {
+  0%,
+  62%,
+  100% {
+    transform: translateY(0) rotate(0) scale(1);
+    filter: drop-shadow(0 0 0 rgba(255, 220, 90, 0));
+  }
+  68% {
+    transform: translateY(-9%) rotate(-9deg) scale(1.1);
+    filter: drop-shadow(0 0 8px rgba(255, 220, 90, 0.95));
+  }
+  75% {
+    transform: translateY(0) rotate(8deg) scale(1.06);
+    filter: drop-shadow(0 0 10px rgba(255, 220, 90, 0.95));
+  }
+  82% {
+    transform: translateY(-4%) rotate(-5deg) scale(1.06);
+    filter: drop-shadow(0 0 8px rgba(255, 220, 90, 0.8));
+  }
+  90% {
+    transform: translateY(0) rotate(2deg) scale(1.02);
+    filter: drop-shadow(0 0 4px rgba(255, 220, 90, 0.4));
+  }
+}
+
+/* the red "!" pops away when the task is done */
+.dot-leave-active {
+  transition:
+    transform 0.3s cubic-bezier(0.5, 0, 0.8, 0.4),
+    opacity 0.3s;
+}
+.dot-leave-to {
+  transform: scale(0);
+  opacity: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .daily-nudge {
+    animation: none;
+  }
+}
+</style>

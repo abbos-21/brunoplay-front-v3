@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import AnimatedNumber from '@/components/AnimatedNumber.vue'
 import { computed } from 'vue'
 import { storeToRefs } from 'pinia'
 import { StarIcon } from '@/assets/svgs'
@@ -16,14 +17,10 @@ const stars = computed(() => user.value?.starsBalance ?? FALLBACK_STARS)
 
 <template>
   <div
-    class="inline-flex gap-px items-center p-1 py-1.5 pe-1.5 relative bg-[#fbe166] rounded-[50px] shadow-card"
+    class="inline-flex gap-px items-center p-1 py-1.5 pe-1.5 relative z-[45] bg-[#fbe166] rounded-[50px] shadow-card"
   >
-    <img :src="StarIcon" alt="Stars" class="w-[clamp(1.5rem,7.5vw,2rem)]" />
-    <div
-      class="text-white px-[clamp(0.5rem,3vw,0.75rem)] py-1 font-bold text-[length:clamp(0.75rem,3.9vw,1rem)] tabular-nums bg-[#c17e23] rounded-[50px] shadow-[inset_0px_0px_1px_1px_rgba(0,0,0,0.25)]"
-    >
-      {{ Math.floor(stars).toLocaleString('en-US') }}
-    </div>
+    <img :src="StarIcon" alt="Stars" class="w-[clamp(1.35rem,6.8vw,1.8rem)]" />
+    <AnimatedNumber kind="stars" :value="stars" :ready="!!user" />
     <button
       type="button"
       aria-label="Add stars"

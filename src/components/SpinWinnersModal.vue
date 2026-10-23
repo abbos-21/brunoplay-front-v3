@@ -13,9 +13,6 @@ const props = defineProps<{
 }>()
 const emit = defineEmits<{ (e: 'close'): void; (e: 'more'): void }>()
 
-/** design px (776px wide frame) → container-width units */
-const u = (px: number) => `${((px / 776) * 100).toFixed(4)}cqw`
-
 const resolved = computed(() => resolvePrizes(props.knownPrizes))
 const colors = ['#2f9bff', '#ff3d77', '#ffa530', '#22b615', '#8a5cff']
 const pad = (n: number) => String(n).padStart(2, '0')
@@ -33,18 +30,18 @@ const rows = computed(() =>
     const d = new Date(w.createdAt)
     const date = Number.isNaN(d.getTime())
       ? ''
-      : `${pad(d.getDate())}.${pad(d.getMonth() + 1)} - ${pad(d.getHours())}:${pad(d.getMinutes())}`
+      : `${pad(d.getDate())}.${pad(d.getMonth() + 1)} · ${pad(d.getHours())}:${pad(d.getMinutes())}`
     const spent = w.spentStars
     const profit =
       spent && spent > 0 && w.prizeType !== 'coins'
         ? `x${Math.max(1, Math.round(w.prizeValue / spent)).toLocaleString('en-US')}`
-        : '—'
+        : ''
     return {
       id: w.id,
       name: w.username ? `@${w.username}` : 'Anonymous',
       initial: (w.username || '?').charAt(0).toUpperCase(),
       color: colors[w.id % colors.length]!,
-      spend: spent ? spent.toLocaleString('en-US') : '—',
+      spend: spent ? spent.toLocaleString('en-US') : '',
       profit,
       img: pictureFor(w),
       date,
@@ -60,118 +57,67 @@ function onScroll(e: Event) {
 
 <template>
   <div
-    class="absolute inset-0 z-40 flex items-center justify-center bg-[#543608]/90 backdrop-blur-[5px] [container-type:inline-size]"
+    class="absolute inset-0 z-40 flex items-center justify-center bg-black/60 p-4 backdrop-blur-[3px]"
     role="dialog"
     aria-modal="true"
     aria-label="Winners list"
     @click.self="emit('close')"
   >
     <div
-      class="flex flex-col bg-[#e11d10] shadow-[inset_0px_0px_133px_97px_rgba(0,0,0,0.25)]"
-      :style="{
-        width: u(730),
-        maxHeight: '94%',
-        borderRadius: u(30),
-        padding: `${u(24)} ${u(20)} ${u(30)}`,
-      }"
+      class="flex max-h-full w-full max-w-[24rem] flex-col rounded-3xl border-2 border-[#cf8741] bg-[#fff4d6] p-4 text-[#552a0f] shadow-[0px_6px_12px_rgba(0,0,0,0.35)]"
     >
-      <h2
-        class="text-center font-extrabold leading-tight bg-clip-text text-transparent [filter:drop-shadow(0px_4px_2px_rgba(0,0,0,0.25))]"
-        :style="{
-          fontSize: u(64),
-          letterSpacing: '0.01em',
-          backgroundImage: 'linear-gradient(183deg, rgb(247,255,247) 40%, rgb(253,222,114) 56%)',
-        }"
-      >
-        Winners List
-      </h2>
+      <div class="shrink-0 text-center">
+        <h2 class="font-extrabold leading-tight text-[length:clamp(1.35rem,6.4vw,1.75rem)]">Winners</h2>
+        <p class="text-[#8a5a2b] font-bold text-[length:clamp(0.8rem,3.8vw,0.95rem)]">Latest big wins</p>
+      </div>
 
       <ul
-        class="flex flex-col overflow-y-auto min-h-0 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
-        :style="{ gap: u(10), marginTop: u(14) }"
+        class="mt-3 flex min-h-0 flex-col gap-2 overflow-y-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
         @scroll.passive="onScroll"
       >
         <li
           v-for="r in rows"
           :key="r.id"
-          class="relative shrink-0 flex items-center bg-black/50 text-white"
-          :style="{
-            minHeight: u(150),
-            borderRadius: u(30),
-            padding: `${u(14)} ${u(20)} ${u(30)}`,
-            gap: u(16),
-          }"
+          class="flex shrink-0 items-center gap-2.5 rounded-2xl border border-[#e3b66f] bg-[#fde7b8] p-2"
         >
           <span
-            class="shrink-0 flex items-center justify-center rounded-full font-extrabold text-white shadow-[0px_3px_2px_rgba(0,0,0,0.25),inset_0px_3px_4px_rgba(255,255,255,0.25),inset_0px_-3px_4px_rgba(0,0,0,0.25)]"
-            :style="{ width: u(89), height: u(89), fontSize: u(44), backgroundColor: r.color }"
+            class="flex size-[clamp(2.4rem,11vw,2.9rem)] shrink-0 items-center justify-center rounded-full font-extrabold text-white text-[length:clamp(1.05rem,5vw,1.3rem)]"
+            :style="{ backgroundColor: r.color }"
           >
             {{ r.initial }}
           </span>
 
-          <div
-            class="flex-1 min-w-0 font-extrabold leading-tight"
-            :style="{ fontSize: u(27), letterSpacing: '0.01em' }"
-          >
-            <p class="truncate">{{ r.name }}</p>
-            <p class="flex items-center opacity-50" :style="{ gap: u(6) }">
-              Spend: {{ r.spend }}
-              <img v-if="r.spend !== '—'" :src="StarIcon" alt="" :style="{ width: u(36) }" />
+          <div class="min-w-0 flex-1 leading-tight">
+            <p class="truncate font-extrabold text-[length:clamp(0.9rem,4.3vw,1.1rem)]">{{ r.name }}</p>
+            <p class="flex items-center gap-1 text-[#8a5a2b] font-bold text-[length:clamp(0.72rem,3.4vw,0.88rem)]">
+              <template v-if="r.spend">
+                Spent <img :src="StarIcon" alt="" class="w-[1.2em]" />{{ r.spend }}
+              </template>
+              <template v-else>{{ r.date }}</template>
             </p>
+            <p v-if="r.spend && r.date" class="text-[#8a5a2b]/80 text-[length:clamp(0.65rem,3.1vw,0.8rem)]">{{ r.date }}</p>
           </div>
 
-          <p
-            class="shrink-0 text-center font-extrabold leading-tight"
-            :style="{ fontSize: u(27), letterSpacing: '0.01em', width: u(110) }"
-          >
-            Profit:<br />{{ r.profit }}
-          </p>
-
-          <div class="shrink-0 flex flex-col items-center" :style="{ width: u(100) }">
-            <span class="font-extrabold opacity-50 leading-none" :style="{ fontSize: u(27) }">Won</span>
-            <img
-              :src="r.img"
-              alt=""
-              class="block object-contain drop-shadow-[0_4px_4px_rgba(0,0,0,0.25)]"
-              :style="{ width: u(90), height: u(90) }"
-            />
+          <div class="flex shrink-0 flex-col items-center gap-0.5">
+            <img :src="r.img" alt="" class="block size-[clamp(2.6rem,12vw,3.2rem)] object-contain drop-shadow-[0_3px_3px_rgba(0,0,0,0.3)]" />
+            <span
+              v-if="r.profit"
+              class="rounded-full bg-[#1fb826] px-2 py-px font-extrabold leading-tight text-white tabular-nums text-[length:clamp(0.65rem,3.1vw,0.8rem)]"
+            >
+              {{ r.profit }}
+            </span>
           </div>
-
-          <span
-            class="absolute font-semibold leading-none whitespace-nowrap"
-            :style="{ left: u(190), bottom: u(12), fontSize: u(20), letterSpacing: '0.01em' }"
-          >
-            #{{ r.id }}&nbsp;&nbsp;&nbsp;&nbsp;{{ r.date }}
-          </span>
         </li>
 
-        <li
-          v-if="!rows.length && !loading"
-          class="text-center font-bold text-white/70"
-          :style="{ fontSize: u(30), padding: u(40) }"
-        >
+        <li v-if="!rows.length && !loading" class="py-8 text-center font-bold text-[#8a5a2b] text-[length:clamp(0.9rem,4.3vw,1.1rem)]">
           No winners yet
         </li>
-        <li
-          v-if="loading"
-          class="text-center font-bold text-white/70"
-          :style="{ fontSize: u(26), padding: u(16) }"
-        >
-          Loading…
-        </li>
+        <li v-if="loading" class="py-3 text-center font-bold text-[#8a5a2b] text-[length:clamp(0.8rem,3.8vw,0.95rem)]">Loading…</li>
       </ul>
 
       <button
         type="button"
-        class="self-center shrink-0 bg-[#fbe166] text-[#552a0f] font-extrabold shadow-[0px_3px_2px_rgba(0,0,0,0.25),inset_0px_3px_4px_rgba(255,255,255,0.25),inset_0px_-3px_4px_rgba(0,0,0,0.25)] active:translate-y-px"
-        :style="{
-          width: u(340),
-          height: u(90),
-          borderRadius: u(30),
-          fontSize: u(48),
-          marginTop: u(16),
-          letterSpacing: '0.01em',
-        }"
+        class="mt-3 w-full shrink-0 rounded-full border border-[#b9722a] bg-[#fff4d6] py-1.5 font-bold text-[#552a0f] shadow-[0px_3px_3px_rgba(0,0,0,0.2)] active:translate-y-px text-[length:clamp(1rem,4.8vw,1.25rem)]"
         @click="emit('close')"
       >
         Close

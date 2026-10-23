@@ -4,6 +4,7 @@ import type { FishingStatus } from '@/types';
 import * as fishingApi from '@/api/fishing';
 import { useAuthStore } from './auth';
 
+
 export const useFishingStore = defineStore('fishing', () => {
   const status = ref<FishingStatus | null>(null);
   const isLoading = ref(false);

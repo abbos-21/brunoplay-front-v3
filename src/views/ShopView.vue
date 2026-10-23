@@ -4,9 +4,8 @@ import CoinBalance from '@/components/CoinBalance.vue'
 import StarBalance from '@/components/StarBalance.vue'
 import HamburgerButton from '@/components/HamburgerButton.vue'
 import SlidePanel from '@/components/SlidePanel.vue'
-import { ExclamationSVG } from '@/assets/svgs'
 import { RouterLink } from 'vue-router'
-import { MiningRate, CoinCapacity } from '@/assets/images'
+import { MiningRate, CoinCapacity, CoinImage } from '@/assets/images'
 import { useShopStore } from '@/stores/shop'
 import { useAuthStore } from '@/stores/auth'
 import { useToast } from '@/composables/useToast'
@@ -18,9 +17,9 @@ const shop = useShopStore()
 const auth = useAuthStore()
 const toast = useToast()
 
-const IMAGES: Record<CardName, { img: string; title: string }> = {
-  MINING_RATE: { img: MiningRate, title: 'Mining rate' },
-  COIN_CAPACITY: { img: CoinCapacity, title: 'Coin capacity' },
+const IMAGES: Record<CardName, { img: string; title: string; hint: string }> = {
+  MINING_RATE: { img: MiningRate, title: 'Mining rate', hint: 'Coins you fish per second' },
+  COIN_CAPACITY: { img: CoinCapacity, title: 'Coin capacity', hint: 'Coins your tank can hold' },
 }
 const ORDER: CardName[] = ['MINING_RATE', 'COIN_CAPACITY']
 
@@ -52,6 +51,9 @@ function reason(c: CardInfo): string {
   return ''
 }
 
+/** the line under the numbers: what is missing for the next level (empty when nothing is) */
+const lockNote = (c: CardInfo) => (c.nextLevel === null ? '' : reason(c))
+
 async function upgrade(c: CardInfo) {
   if (busy.value) return
   const why = reason(c)
@@ -72,8 +74,10 @@ async function upgrade(c: CardInfo) {
   <div class="w-full h-full bg-shop p-4 relative overflow-hidden pb-24 flex flex-col">
     <div class="w-full flex justify-between items-center gap-2">
       <CoinBalance />
-      <StarBalance />
-      <HamburgerButton v-model="isMenuOpen" />
+      <div class="flex items-center gap-[clamp(0.25rem,2vw,0.5rem)]">
+        <StarBalance />
+        <HamburgerButton v-model="isMenuOpen" />
+      </div>
     </div>
 
     <div class="grid grid-cols-2 gap-4 px-2 mt-4 text-base sm:text-xl">
@@ -91,53 +95,101 @@ async function upgrade(c: CardInfo) {
       </RouterLink>
     </div>
 
-    <div class="flex flex-col gap-2 mt-2 overflow-y-scroll flex-1 min-h-0 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
-      <div v-for="item in cards" :key="item.cardName" class="shop-card flex p-3 relative">
-        <div class="w-[40%] relative">
-          <img :src="IMAGES[item.cardName].img" :alt="IMAGES[item.cardName].title" class="w-full" />
-          <span
-            class="btn-gradient-orange border border-[#c66a27] text-[#410200] absolute bottom-0 left-1/2 -translate-x-1/2 font-bold text-sm sm:text-base px-2 sm:px-4 text-center whitespace-nowrap"
+    <div class="flex flex-col gap-4 mt-4 px-1 pb-2 overflow-y-scroll flex-1 min-h-0 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
+      <article
+        v-for="item in cards"
+        :key="item.cardName"
+        class="shrink-0 rounded-3xl border-2 border-[#cf8741] bg-[#fff4d6] p-3 shadow-[0px_4px_4px_rgba(0,0,0,0.25)]"
+      >
+        <!-- icon, name, level -->
+        <div class="flex items-center gap-3">
+          <div
+            class="shrink-0 w-[clamp(4rem,19vw,5.25rem)] aspect-square rounded-2xl bg-[radial-gradient(circle_at_50%_40%,#fff6bf,#fbe166_70%)] border border-[#cf8741] shadow-[inset_0px_-4px_6px_rgba(193,126,35,0.45)] flex items-center justify-center p-2"
           >
-            Lvl: {{ item.currentLevel }}
+            <img :src="IMAGES[item.cardName].img" :alt="IMAGES[item.cardName].title" class="w-full h-full object-contain" />
+          </div>
+
+          <div class="flex-1 min-w-0">
+            <h2 class="font-bold text-[#552a0f] leading-tight text-[length:clamp(1.15rem,6vw,1.6rem)]">
+              {{ IMAGES[item.cardName].title }}
+            </h2>
+            <p class="text-[#8a5a2b] leading-tight text-[length:clamp(0.75rem,3.6vw,0.95rem)]">
+              {{ IMAGES[item.cardName].hint }}
+            </p>
+          </div>
+
+          <span
+            class="shrink-0 self-start rounded-full bg-[#552a0f] px-3 py-0.5 font-bold text-[#fbe166] text-[length:clamp(0.75rem,3.6vw,0.95rem)] shadow-[inset_0px_-2px_2px_rgba(0,0,0,0.35)]"
+          >
+            Lvl {{ item.currentLevel }}
           </span>
         </div>
 
-        <div class="flex-1 flex flex-col items-center justify-between py-2 min-w-0 pr-8">
-          <h1 class="font-bold text-[#552A0F] text-lg sm:text-2xl text-center">{{ IMAGES[item.cardName].title }}</h1>
+        <!-- now → next -->
+        <div class="mt-3 flex items-stretch gap-2">
+          <div class="flex-1 rounded-2xl bg-[#fde7b8] border border-[#e3b66f] py-1.5 text-center">
+            <div class="text-[#8a5a2b] text-[length:clamp(0.65rem,3vw,0.8rem)] uppercase tracking-wide font-bold">Now</div>
+            <div class="font-extrabold text-[#552a0f] tabular-nums text-[length:clamp(1.05rem,5.4vw,1.45rem)]">
+              {{ fmt(item.currentValue) }}
+            </div>
+          </div>
 
-          <p class="font-bold text-[#890D00] text-base sm:text-xl border-b border-dashed border-black flex items-center gap-1 whitespace-nowrap">
-            {{ fmt(item.currentValue) }}
-            <svg class="w-3 sm:w-4 shrink-0" viewBox="0 0 27 17" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path
-                d="M17 5.8L14.8 2.88C14.8 2.10667 15.0267 1.44 15.48 0.880004C15.9333 0.293337 16.64 3.8147e-06 17.6 3.8147e-06C18.0267 3.8147e-06 18.48 0.120004 18.96 0.360005C19.44 0.573338 19.96 0.920005 20.52 1.4L26.04 6.00001C26.2267 6.24001 26.3733 6.54667 26.48 6.92001C26.5867 7.29334 26.64 7.70667 26.64 8.16C26.64 8.8 26.5333 9.29334 26.32 9.64C26.1333 9.98667 25.88 10.2933 25.56 10.56L17.92 16.64C16.9333 16.4 16.2533 16.04 15.88 15.56C15.5067 15.08 15.32 14.5733 15.32 14.04C15.32 13.48 15.44 12.9733 15.68 12.52C15.92 12.0667 16.2 11.6 16.52 11.12L17 10.52H0.64C0.506667 10.2533 0.36 9.92 0.2 9.52001C0.0666667 9.12 1.49012e-08 8.69334 1.49012e-08 8.24001C1.49012e-08 7.38667 0.186667 6.77334 0.56 6.4C0.96 6 1.48 5.8 2.12 5.8H17Z"
-                fill="#890D00"
-              />
-            </svg>
-            {{ item.nextLevel === null ? 'MAX' : fmt(item.nextValue) }}
-          </p>
+          <svg class="w-5 shrink-0 self-center text-[#c17e23]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M5 12h14M13 6l6 6-6 6" />
+          </svg>
 
-          <button
-            type="button"
-            class="btn-gradient-orange border-2 border-[#c66a27] text-base sm:text-xl px-3 sm:px-4 py-px outlined [--outline:#D76826] font-bold relative disabled:opacity-60"
-            :class="{ 'opacity-70': !item.canUpgrade }"
-            :disabled="busy !== null"
-            @click="upgrade(item)"
+          <div
+            class="flex-1 rounded-2xl border py-1.5 text-center"
+            :class="item.nextLevel === null ? 'bg-[#fde7b8] border-[#e3b66f]' : 'bg-[#e4f7d6] border-[#74c14e]'"
           >
-            {{ item.upgradeCost ? `Upgrade · ${item.upgradeCost.toLocaleString('en-US')}` : 'Upgrade' }}
-            <svg class="w-3 absolute top-px left-1 -rotate-45" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg">
-              <ellipse cx="8" cy="8" rx="6" ry="3" fill="white" />
-            </svg>
-          </button>
+            <div
+              class="text-[length:clamp(0.65rem,3vw,0.8rem)] uppercase tracking-wide font-bold"
+              :class="item.nextLevel === null ? 'text-[#8a5a2b]' : 'text-[#2f7a12]'"
+            >
+              {{ item.nextLevel === null ? 'Top level' : `Lvl ${item.nextLevel}` }}
+            </div>
+            <div
+              class="font-extrabold tabular-nums text-[length:clamp(1.05rem,5.4vw,1.45rem)]"
+              :class="item.nextLevel === null ? 'text-[#552a0f]' : 'text-[#1f6a05]'"
+            >
+              {{ item.nextLevel === null ? 'MAX' : fmt(item.nextValue) }}
+            </div>
+          </div>
         </div>
 
+        <!-- why it is locked -->
+        <p v-if="lockNote(item)" class="mt-2 flex items-center gap-1.5 text-[#890d00] font-bold text-[length:clamp(0.75rem,3.5vw,0.9rem)] leading-tight">
+          <svg class="w-4 shrink-0" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+            <path d="M12 2a5 5 0 0 0-5 5v3H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8a2 2 0 0 0-2-2h-1V7a5 5 0 0 0-5-5Zm-3 8V7a3 3 0 1 1 6 0v3H9Z" />
+          </svg>
+          {{ lockNote(item) }}
+        </p>
+
+        <!-- upgrade -->
         <button
+          v-if="item.nextLevel !== null"
           type="button"
-          @click="toast.show(reason(item) || `Next level: ${fmt(item.nextValue)}`, 'info')"
-          class="btn-orange absolute top-2 right-2 w-8 h-8 sm:w-10 sm:h-10 flex justify-center items-center rounded-full shrink-0"
+          class="mt-3 w-full rounded-full border py-2 flex items-center justify-center gap-2 font-bold text-white text-[length:clamp(1.1rem,5.6vw,1.45rem)] shadow-[inset_0px_4px_4px_rgba(255,255,255,0.25),inset_0px_-4px_4px_rgba(0,0,0,0.25)] [text-shadow:0px_4px_4px_rgba(0,0,0,0.25)] active:translate-y-px"
+          :class="item.canUpgrade && !lockNote(item) ? 'border-[#d9680f] bg-[#f96a07]' : 'border-[#b59468] bg-[#c9a97d]'"
+          :disabled="busy !== null"
+          @click="upgrade(item)"
         >
-          <ExclamationSVG class="w-3" />
+          <template v-if="busy === item.cardName">Upgrading…</template>
+          <template v-else>
+            Upgrade
+            <span class="flex items-center gap-1">
+              <img :src="CoinImage" alt="" class="w-[1.2em]" />
+              {{ item.upgradeCost === null ? '' : item.upgradeCost.toLocaleString('en-US') }}
+            </span>
+          </template>
         </button>
-      </div>
+        <div
+          v-else
+          class="mt-3 w-full rounded-2xl border-2 border-[#74c14e] bg-[#e4f7d6] py-2 text-center font-extrabold text-[#1f6a05] text-[length:clamp(1.05rem,5.4vw,1.4rem)]"
+        >
+          Fully upgraded ✓
+        </div>
+      </article>
     </div>
 
     <SlidePanel v-model="isMenuOpen" />

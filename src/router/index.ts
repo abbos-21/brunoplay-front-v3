@@ -10,6 +10,7 @@ import RideView from '@/views/RideView.vue'
 import ChestView from '@/views/ChestView.vue'
 import WithdrawView from '@/views/WithdrawView.vue'
 import WithdrawalHistoryView from '@/views/WithdrawalHistoryView.vue'
+import LevelsView from '@/views/LevelsView.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -68,6 +69,11 @@ const router = createRouter({
       path: '/tasks',
       name: 'tasks',
       component: TasksView,
+    },
+    {
+      path: '/levels',
+      name: 'levels',
+      component: LevelsView,
     },
     {
       path: '/friends',

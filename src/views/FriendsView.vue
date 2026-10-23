@@ -59,111 +59,114 @@ function shareLink() {
   <div class="w-full h-full bg-shop p-4 relative overflow-hidden pb-24 flex flex-col">
     <div class="w-full flex justify-between items-center gap-2">
       <CoinBalance />
-      <StarBalance />
-      <HamburgerButton v-model="isMenuOpen" />
+      <div class="flex items-center gap-[clamp(0.25rem,2vw,0.5rem)]">
+        <StarBalance />
+        <HamburgerButton v-model="isMenuOpen" />
+      </div>
     </div>
 
-    <!-- Stats -->
-    <div class="grid grid-cols-[1.9fr_1fr] gap-3 mt-4">
-      <div class="friends-card flex flex-col items-center justify-center px-2 py-3 text-[#552a0f] font-semibold">
-        <p class="text-[length:clamp(0.7rem,3.59vw,1.01rem)] leading-tight text-center">Coins earned from referrals:</p>
-        <p class="flex items-center gap-2 text-[length:clamp(1rem,5.13vw,1.44rem)] mt-1">
-          <img :src="CoinImage" alt="" class="w-[clamp(1.6rem,8.21vw,2.3rem)]" />
-          {{ formatNumber(friends.stats?.referralEarnings ?? 0) }} coins
+    <!-- numbers -->
+    <div class="grid grid-cols-2 gap-3 mt-4">
+      <div class="rounded-3xl border-2 border-[#cf8741] bg-[#fff4d6] px-3 py-2.5 shadow-[0px_4px_4px_rgba(0,0,0,0.25)]">
+        <p class="text-[#8a5a2b] font-bold uppercase tracking-wide text-[length:clamp(0.62rem,3vw,0.78rem)]">Earned from friends</p>
+        <p class="mt-1 flex items-center gap-1.5 font-extrabold text-[#552a0f] tabular-nums text-[length:clamp(1.1rem,5.8vw,1.6rem)]">
+          <img :src="CoinImage" alt="" class="w-[1.3em]" />
+          {{ formatNumber(friends.stats?.referralEarnings ?? 0) }}
         </p>
       </div>
-      <div class="friends-card flex flex-col items-center justify-center px-2 py-3 text-[#552a0f] font-semibold">
-        <p class="flex items-center gap-1 text-[length:clamp(1rem,5.13vw,1.44rem)]">
-          <img :src="ReferralsImage" alt="" class="h-[clamp(1.6rem,8.21vw,2.3rem)]" />
+      <div class="rounded-3xl border-2 border-[#cf8741] bg-[#fff4d6] px-3 py-2.5 shadow-[0px_4px_4px_rgba(0,0,0,0.25)]">
+        <p class="text-[#8a5a2b] font-bold uppercase tracking-wide text-[length:clamp(0.62rem,3vw,0.78rem)]">Friends invited</p>
+        <p class="mt-1 flex items-center gap-1.5 font-extrabold text-[#552a0f] tabular-nums text-[length:clamp(1.1rem,5.8vw,1.6rem)]">
+          <img :src="ReferralsImage" alt="" class="h-[1.3em]" />
           {{ friends.stats?.totalReferrals ?? 0 }}
         </p>
-        <p class="text-[length:clamp(0.7rem,3.59vw,1.01rem)] leading-tight text-center">Total referrals</p>
       </div>
     </div>
 
-    <!-- List header -->
-    <div class="flex items-center justify-between mt-3 mb-2">
-      <h1 class="font-bold text-white text-[length:clamp(1.2rem,6.15vw,1.72rem)] tracking-wide [text-shadow:0px_2px_4px_rgba(0,0,0,0.25)]">
-        Referrals List:
-      </h1>
+    <!-- list header -->
+    <div class="flex items-center justify-between mt-4 mb-2 px-1">
+      <h1 class="font-bold text-white text-[length:clamp(1.15rem,5.9vw,1.6rem)] [text-shadow:0px_2px_4px_rgba(0,0,0,0.35)]">Your friends</h1>
       <button
         type="button"
-        class="px-4 py-1 rounded-[14px] border border-[#7f4b33] bg-[#4c90d0] text-white font-semibold text-[length:clamp(0.8rem,4.1vw,1.15rem)] shadow-[0px_4px_4px_rgba(0,0,0,0.25),inset_0px_-4px_4px_rgba(0,0,0,0.25),inset_0px_4px_4px_2px_rgba(255,255,255,0.25)]"
+        class="rounded-full border border-[#b9722a] bg-[#fff4d6] px-4 py-0.5 font-bold text-[#552a0f] text-[length:clamp(0.8rem,4vw,1.05rem)] shadow-[0px_3px_3px_rgba(0,0,0,0.2)] active:translate-y-px"
         @click="showDetails = !showDetails"
       >
-        More Details
+        {{ showDetails ? 'Hide rewards' : 'Rewards' }}
       </button>
     </div>
 
-    <div class="flex flex-col gap-2 overflow-y-scroll flex-1 min-h-0 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
-      <div v-if="showDetails" class="friends-card shrink-0 p-3 text-[#552a0f] font-semibold">
-        <p class="text-[length:clamp(0.8rem,4.1vw,1.15rem)] mb-1">Reward per referral level</p>
-        <p v-for="tier in friends.rewardTiers" :key="tier.level" class="flex justify-between text-[length:clamp(0.7rem,3.59vw,1.01rem)]">
-          <span>Level {{ tier.level }}</span>
-          <span>{{ formatNumber(tier.reward) }} coins</span>
-        </p>
-        <p v-if="!friends.rewardTiers.length" class="text-[length:clamp(0.7rem,3.59vw,1.01rem)]">No reward info yet.</p>
+    <div class="flex flex-col gap-2.5 px-1 pb-2 overflow-y-scroll flex-1 min-h-0 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
+      <!-- what a friend of each level pays -->
+      <div v-if="showDetails" class="shrink-0 rounded-3xl border-2 border-[#cf8741] bg-[#fff4d6] p-3 shadow-[0px_4px_4px_rgba(0,0,0,0.25)]">
+        <p class="font-bold text-[#552a0f] text-[length:clamp(0.95rem,4.8vw,1.25rem)]">You get coins when a friend levels up</p>
+        <div class="mt-2 flex flex-col gap-1">
+          <div
+            v-for="tier in friends.rewardTiers"
+            :key="tier.level"
+            class="flex items-center justify-between rounded-xl bg-[#fde7b8] px-3 py-1 text-[#552a0f] text-[length:clamp(0.8rem,4vw,1.05rem)]"
+          >
+            <span class="font-bold">Friend reaches level {{ tier.level }}</span>
+            <span class="flex items-center gap-1 font-extrabold tabular-nums">
+              <img :src="CoinImage" alt="" class="w-[1.2em]" />
+              {{ formatNumber(tier.reward) }}
+            </span>
+          </div>
+        </div>
+        <p v-if="!friends.rewardTiers.length" class="mt-1 text-[#8a5a2b] text-[length:clamp(0.8rem,4vw,1.05rem)]">No reward info yet.</p>
       </div>
 
-      <div v-for="ref in referrals" :key="ref.id" class="friends-card shrink-0 flex items-center gap-3 px-3 py-2">
+      <div
+        v-for="ref in referrals"
+        :key="ref.id"
+        class="shrink-0 flex items-center gap-3 rounded-3xl border-2 border-[#cf8741] bg-[#fff4d6] p-2.5 shadow-[0px_4px_4px_rgba(0,0,0,0.25)]"
+      >
         <span
-          class="size-[clamp(2.4rem,12.3vw,3.45rem)] shrink-0 rounded-full flex items-center justify-center text-white text-[length:clamp(1.2rem,6.15vw,1.72rem)] font-semibold shadow-[0px_4px_4px_rgba(0,0,0,0.25)]"
+          class="size-[clamp(2.6rem,12.5vw,3.3rem)] shrink-0 rounded-full flex items-center justify-center text-white font-bold text-[length:clamp(1.1rem,5.6vw,1.5rem)]"
           :style="{ backgroundColor: ref.color }"
         >
           {{ ref.initial }}
         </span>
 
-        <div class="flex-1 min-w-0 text-[#552a0f] font-semibold leading-tight">
-          <p class="text-[length:clamp(0.9rem,4.62vw,1.29rem)] truncate">{{ ref.name }}</p>
-          <p v-if="ref.username" class="text-[length:clamp(0.6rem,3.08vw,0.862rem)] text-[#552a0f]/60 truncate">{{ ref.username }}</p>
+        <div class="flex-1 min-w-0 leading-tight">
+          <p class="font-bold text-[#552a0f] truncate text-[length:clamp(0.95rem,4.8vw,1.25rem)]">{{ ref.name }}</p>
+          <p v-if="ref.username" class="text-[#8a5a2b] truncate text-[length:clamp(0.7rem,3.4vw,0.9rem)]">@{{ ref.username.replace(/^@/, '') }}</p>
         </div>
 
-        <div class="shrink-0 flex items-center gap-2 text-[#552a0f] font-semibold text-[length:clamp(0.9rem,4.62vw,1.29rem)]">
-          <img :src="CoinImage" alt="" class="w-[clamp(1.6rem,8.21vw,2.3rem)]" />
-          {{ formatNumber(ref.reward) }} coins
-        </div>
+        <span class="shrink-0 flex items-center gap-1 rounded-full bg-[#fde7b8] border border-[#e3b66f] pl-1 pr-3 py-0.5 font-extrabold text-[#552a0f] tabular-nums text-[length:clamp(0.9rem,4.5vw,1.2rem)]">
+          <img :src="CoinImage" alt="" class="w-[1.4em]" />
+          +{{ formatNumber(ref.reward) }}
+        </span>
       </div>
 
-      <p v-if="!referrals.length" class="text-center text-white font-semibold text-lg mt-6 [text-shadow:0px_2px_4px_rgba(0,0,0,0.5)]">
-        No referrals yet — share your link!
-      </p>
+      <div v-if="!referrals.length" class="shrink-0 rounded-3xl border-2 border-dashed border-[#cf8741] bg-[#fff4d6]/80 px-4 py-6 text-center">
+        <p class="font-bold text-[#552a0f] text-[length:clamp(1rem,5vw,1.3rem)]">No friends yet</p>
+        <p class="mt-1 text-[#8a5a2b] text-[length:clamp(0.8rem,4vw,1.05rem)]">Share your link and earn coins when they join.</p>
+      </div>
     </div>
 
-    <!-- Actions -->
-    <div class="grid grid-cols-2 gap-4 px-2 pt-3">
+    <!-- invite -->
+    <div class="grid grid-cols-2 gap-3 px-1 pt-3">
       <button
         type="button"
-        class="flex items-center justify-center gap-2 h-[clamp(2.2rem,11.3vw,3.16rem)] rounded-full border border-[#9bb6ff] bg-gradient-to-r from-[#6a89fd] to-[#546dfe] text-white font-semibold text-[length:clamp(0.9rem,4.62vw,1.29rem)] [text-shadow:0px_4px_4px_rgba(0,0,0,0.25)] shadow-[0px_4px_4px_rgba(0,0,0,0.25),inset_0px_4px_2px_rgba(255,255,255,0.25),inset_0px_-4px_2px_rgba(0,0,0,0.25)]"
+        class="h-[clamp(2.4rem,11.5vw,3rem)] rounded-full border border-[#b9722a] bg-[#fff4d6] flex items-center justify-center gap-2 font-bold text-[#552a0f] text-[length:clamp(0.95rem,4.8vw,1.25rem)] shadow-[0px_3px_3px_rgba(0,0,0,0.25)] active:translate-y-px"
         @click="copyLink"
       >
-        <span class="relative w-5 h-5 shrink-0" aria-hidden="true">
-          <span class="absolute left-0 top-0 w-3.5 h-3.5 rounded-[4px] bg-white shadow-[0px_4px_4px_rgba(0,0,0,0.25)]" />
-          <span class="absolute right-0 bottom-0 w-3.5 h-3.5 rounded-[4px] bg-white border-[1.5px] border-[#6380fd] shadow-[0px_4px_4px_rgba(0,0,0,0.25)]" />
-        </span>
+        <svg class="size-8 shrink-0" viewBox="0 0 28 28" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round" aria-hidden="true">
+          <path d="M18 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h2" />
+          <rect x="10" y="10" width="14" height="14" rx="2.5" fill="#fff4d6" />
+        </svg>
         Copy link
       </button>
       <button
         type="button"
-        class="flex items-center justify-center gap-2 h-[clamp(2.2rem,11.3vw,3.16rem)] rounded-full border border-[#0b3715] bg-gradient-to-r from-[#0abf88] to-[#22b615] text-white font-semibold text-[length:clamp(0.9rem,4.62vw,1.29rem)] [text-shadow:0px_4px_4px_rgba(0,0,0,0.25)] shadow-[inset_0px_4px_2px_rgba(255,255,255,0.25),inset_0px_-4px_2px_rgba(0,0,0,0.25)]"
+        class="h-[clamp(2.4rem,11.5vw,3rem)] rounded-full border border-[#15861b] bg-[#1fb826] flex items-center justify-center gap-2 font-bold text-white text-[length:clamp(0.95rem,4.8vw,1.25rem)] shadow-[inset_0px_3px_3px_rgba(255,255,255,0.25),inset_0px_-3px_3px_rgba(0,0,0,0.2)] active:translate-y-px"
         @click="shareLink"
       >
-        <img :src="TelegramImage" alt="" class="w-6 h-5 object-contain object-bottom shrink-0" />
-        Share link
+        <img :src="TelegramImage" alt="" class="size-8 object-contain shrink-0" />
+        Invite friends
       </button>
     </div>
 
     <SlidePanel v-model="isMenuOpen" />
   </div>
 </template>
-
-<style scoped>
-.friends-card {
-  background: #fde7b8;
-  border: 1px solid #c17e23;
-  border-radius: 20px;
-  box-shadow:
-    0 4px 4px rgba(0, 0, 0, 0.25),
-    inset 0 4px 4px rgba(255, 255, 255, 0.25),
-    inset 0 -4px 4px rgba(0, 0, 0, 0.25);
-}
-</style>

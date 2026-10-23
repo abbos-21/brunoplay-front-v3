@@ -18,6 +18,7 @@
     "@unocss/reset": "^66.6.0",
     "axios": "^1.13.6",
     "kaboom": "^3000.1.17",
+    "lottie-web": "^5.13.0",
     "pinia": "^3.0.4",
     "vue": "^3.5.27",
     "vue-draggable-plus": "^0.6.1",

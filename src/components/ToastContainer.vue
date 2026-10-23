@@ -42,14 +42,17 @@ const { toasts } = useToast()
 .toast-container {
   width: 100%;
   position: absolute;
-  top: 0;
+  /* below the balance row, so the coin and star counters stay visible while they animate */
+  top: 5.5rem;
   right: 0;
+  pointer-events: none;
   display: flex;
   flex-direction: column;
   gap: 8px;
 }
 
 .toast {
+  pointer-events: auto;
   padding: 12px 16px;
   border-radius: 16px;
   color: white;
@@ -63,9 +66,7 @@ const { toasts } = useToast()
   align-items: center;
 }
 
-.toast:first-child {
-  margin-top: 16px;
-}
+
 
 /* .toast.success {
   background: #fbe166;

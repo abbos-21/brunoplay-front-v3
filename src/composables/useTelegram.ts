@@ -3,7 +3,7 @@ export interface TelegramWebApp {
   initData: string;
   initDataUnsafe: {
     start_param?: string;
-    user?: { id: number; username?: string; first_name?: string };
+    user?: { id: number; username?: string; first_name?: string; photo_url?: string };
   };
   ready(): void;
   expand(): void;

@@ -1,0 +1,112 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e4]:
+    - generic [ref=e5]:
+      - generic [ref=e6]:
+        - generic [ref=e7]:
+          - img "Coin"
+          - generic [ref=e8]: 2,104,024
+          - link "Withdraw" [ref=e10] [cursor=pointer]:
+            - /url: /withdraw
+        - generic [ref=e13]:
+          - img "Level 1" [ref=e14]:
+            - generic: LV1
+          - button [ref=e34] [cursor=pointer]
+      - generic: "0.00"
+      - generic [ref=e40]:
+        - generic:
+          - button "Daily reward":
+            - img "Calendar"
+          - button "Daily combo":
+            - img "Puzzle"
+        - button "Fishing" [ref=e41] [cursor=pointer]
+      - generic [ref=e43]:
+        - button [ref=e44] [cursor=pointer]
+        - generic [ref=e49]:
+          - generic [ref=e50]:
+            - img "profile-image" [ref=e51]
+            - heading [level=1]
+            - heading "ID:" [level=1] [ref=e52]
+            - button "flag English" [ref=e53] [cursor=pointer]:
+              - generic [ref=e54]:
+                - img "flag"
+                - generic [ref=e55]: English
+            - generic [ref=e58]:
+              - generic [ref=e59]:
+                - img "music-box"
+                - generic [ref=e60]:
+                  - generic [ref=e61]: Music 1
+                  - generic [ref=e62]: Default
+              - generic [ref=e63]:
+                - button [disabled] [ref=e64]
+                - button [ref=e65] [cursor=pointer]
+                - button [disabled] [ref=e66]
+          - generic [ref=e67]:
+            - button "support Support" [disabled] [ref=e68]:
+              - img "support"
+              - generic [ref=e69]: Support
+            - button "news News" [disabled] [ref=e70]:
+              - img "news"
+              - generic [ref=e71]: News
+            - button "faq FAQ" [disabled] [ref=e72]:
+              - img "faq"
+              - generic [ref=e73]: FAQ
+      - generic [ref=e75]:
+        - button [ref=e76] [cursor=pointer]
+        - heading "Daily Activity" [level=1] [ref=e81]
+        - heading "Visit daily to grow your streak and unlock the maximum reward after 10 days in a row." [level=2] [ref=e82]
+        - button "Claimed" [disabled] [ref=e83]
+      - generic [ref=e85]:
+        - button [ref=e86] [cursor=pointer]
+        - heading "Daily Combo" [level=1] [ref=e91]
+        - heading "Place the pictures in the correct order to collect the reward = coins" [level=2] [ref=e92]
+        - button "Claim" [disabled] [ref=e108]
+    - navigation [ref=e110]:
+      - link [ref=e111] [cursor=pointer]:
+        - /url: /
+        - img "Fishing" [ref=e112]
+        - heading "Fishing" [level=1] [ref=e113]
+      - link [ref=e114] [cursor=pointer]:
+        - /url: /shop
+        - img "Shop" [ref=e115]
+        - heading "Shop" [level=1] [ref=e116]
+      - link [ref=e117] [cursor=pointer]:
+        - /url: /games
+        - img "Games" [ref=e118]
+        - heading "Games" [level=1] [ref=e119]
+      - link [ref=e120] [cursor=pointer]:
+        - /url: /tasks
+        - img "Tasks" [ref=e121]
+        - heading "Tasks" [level=1] [ref=e122]
+      - link [ref=e123] [cursor=pointer]:
+        - /url: /friends
+        - img "Friends" [ref=e124]
+        - heading "Friends" [level=1] [ref=e125]
+    - generic [ref=e127]:
+      - button [ref=e128] [cursor=pointer]
+      - heading "Top up Stars" [level=1] [ref=e133]
+      - generic [ref=e134]:
+        - button "Stars" [ref=e135] [cursor=pointer]
+        - button "TON +10%" [ref=e136] [cursor=pointer]:
+          - text: TON
+          - generic [ref=e137]: +10%
+      - generic [ref=e138]:
+        - button "200" [ref=e139] [cursor=pointer]
+        - button "500" [ref=e141] [cursor=pointer]
+        - button "1000" [ref=e143] [cursor=pointer]
+        - button "2500" [ref=e145] [cursor=pointer]
+        - button "5000" [ref=e147] [cursor=pointer]
+        - button "10000" [ref=e149] [cursor=pointer]
+        - button "25000" [ref=e151] [cursor=pointer]
+        - button "50000" [ref=e153] [cursor=pointer]
+  - generic [ref=e157]:
+    - generic [ref=e158]: "[vue/compiler-sfc] Identifier 'comboPending' has already been declared. (44:6) C:/Users/user/Desktop/bruno stuff/brunoplay-front-v3/src/views/HomeView.vue 42 | const streakPending = computed(() => daily.activityStatus?.canClaim === true) 43 | const comboPending = computed(() => daily.comboStatus?.alreadyAttempted === false) 44 | const comboPending = computed(() => | ^ 45 | isApiDisabled ? !testComboDone.value : daily.comboStatus?.alreadyAttempted === false, 46 | )"
+    - generic [ref=e159]: unknown file:44:6
+    - generic [ref=e160]: at constructor (C:\Users\user\Desktop\bruno stuff\brunoplay-front-v3\node_modules\@babel\parser\lib\index.js:369:19) at TypeScriptParserMixin.raise (C:\Users\user\Desktop\bruno stuff\brunoplay-front-v3\node_modules\@babel\parser\lib\index.js:6622:19) at TypeScriptScopeHandler.checkRedeclarationInScope (C:\Users\user\Desktop\bruno stuff\brunoplay-front-v3\node_modules\@babel\parser\lib\index.js:1623:19) at TypeScriptScopeHandler.declareName (C:\Users\user\Desktop\bruno stuff\brunoplay-front-v3\node_modules\@babel\parser\lib\index.js:1589:12) at TypeScriptScopeHandler.declareName (C:\Users\user\Desktop\bruno stuff\brunoplay-front-v3\node_modules\@babel\parser\lib\index.js:4898:11) at TypeScriptParserMixin.declareNameFromIdentifier (C:\Users\user\Desktop\bruno stuff\brunoplay-front-v3\node_modules\@babel\parser\lib\index.js:7590:16) at TypeScriptParserMixin.checkIdentifier (C:\Users\user\Desktop\bruno stuff\brunoplay-front-v3\node_modules\@babel\parser\lib\index.js:7586:12) at TypeScriptParserMixin.checkLVal (C:\Users\user\Desktop\bruno stuff\brunoplay-front-v3\node_modules\@babel\parser\lib\index.js:7523:12) at TypeScriptParserMixin.parseVarId (C:\Users\user\Desktop\bruno stuff\brunoplay-front-v3\node_modules\@babel\parser\lib\index.js:13446:10) at TypeScriptParserMixin.parseVarId (C:\Users\user\Desktop\bruno stuff\brunoplay-front-v3\node_modules\@babel\parser\lib\index.js:9775:11) at TypeScriptParserMixin.parseVar (C:\Users\user\Desktop\bruno stuff\brunoplay-front-v3\node_modules\@babel\parser\lib\index.js:13417:12) at TypeScriptParserMixin.parseVarStatement (C:\Users\user\Desktop\bruno stuff\brunoplay-front-v3\node_modules\@babel\parser\lib\index.js:13264:10) at TypeScriptParserMixin.parseVarStatement (C:\Users\user\Desktop\bruno stuff\brunoplay-front-v3\node_modules\@babel\parser\lib\index.js:9431:31) at TypeScriptParserMixin.parseStatementContent (C:\Users\user\Desktop\bruno stuff\brunoplay-front-v3\node_modules\@babel\parser\lib\index.js:12885:23) at TypeScriptParserMixin.parseStatementContent (C:\Users\user\Desktop\bruno stuff\brunoplay-front-v3\node_modules\@babel\parser\lib\index.js:9531:18) at TypeScriptParserMixin.parseStatementLike (C:\Users\user\Desktop\bruno stuff\brunoplay-front-v3\node_modules\@babel\parser\lib\index.js:12801:17) at TypeScriptParserMixin.parseModuleItem (C:\Users\user\Desktop\bruno stuff\brunoplay-front-v3\node_modules\@babel\parser\lib\index.js:12778:17) at TypeScriptParserMixin.parseBlockOrModuleBlockBody (C:\Users\user\Desktop\bruno stuff\brunoplay-front-v3\node_modules\@babel\parser\lib\index.js:13350:36) at TypeScriptParserMixin.parseBlockBody (C:\Users\user\Desktop\bruno stuff\brunoplay-front-v3\node_modules\@babel\parser\lib\index.js:13343:10) at TypeScriptParserMixin.parseProgram (C:\Users\user\Desktop\bruno stuff\brunoplay-front-v3\node_modules\@babel\parser\lib\index.js:12656:10) at TypeScriptParserMixin.parseTopLevel (C:\Users\user\Desktop\bruno stuff\brunoplay-front-v3\node_modules\@babel\parser\lib\index.js:12646:25) at TypeScriptParserMixin.parse (C:\Users\user\Desktop\bruno stuff\brunoplay-front-v3\node_modules\@babel\parser\lib\index.js:14522:25) at TypeScriptParserMixin.parse (C:\Users\user\Desktop\bruno stuff\brunoplay-front-v3\node_modules\@babel\parser\lib\index.js:10149:18) at Object.parse (C:\Users\user\Desktop\bruno stuff\brunoplay-front-v3\node_modules\@babel\parser\lib\index.js:14556:38) at parse (C:\Users\user\Desktop\bruno stuff\brunoplay-front-v3\node_modules\@vue\compiler-sfc\dist\compiler-sfc.cjs.js:20337:25) at new ScriptCompileContext (C:\Users\user\Desktop\bruno stuff\brunoplay-front-v3\node_modules\@vue\compiler-sfc\dist\compiler-sfc.cjs.js:20354:53) at Object.compileScript (C:\Users\user\Desktop\bruno stuff\brunoplay-front-v3\node_modules\@vue\compiler-sfc\dist\compiler-sfc.cjs.js:25550:15) at resolveScript (file:///C:/Users/user/Desktop/bruno%20stuff/brunoplay-front-v3/node_modules/@vitejs/plugin-vue/dist/index.mjs:283:36) at handleHotUpdate (file:///C:/Users/user/Desktop/bruno%20stuff/brunoplay-front-v3/node_modules/@vitejs/plugin-vue/dist/index.mjs:1169:2) at async handleHMRUpdate (file:///C:/Users/user/Desktop/bruno%20stuff/brunoplay-front-v3/node_modules/vite/dist/node/chunks/config.js:26270:28) at async onHMRUpdate (file:///C:/Users/user/Desktop/bruno%20stuff/brunoplay-front-v3/node_modules/vite/dist/node/chunks/config.js:25806:35) at async FSWatcher.<anonymous> (file:///C:/Users/user/Desktop/bruno%20stuff/brunoplay-front-v3/node_modules/vite/dist/node/chunks/config.js:25831:3)
+    - generic [ref=e161]:
+      - text: Click outside, press Esc key, or fix the code to dismiss.You can also disable this overlay by setting
+      - code [ref=e162]: server.hmr.overlay
+      - text: to
+      - code [ref=e163]: "false"
+      - text: in
+      - code [ref=e164]: vite.config.ts
+      - text: .

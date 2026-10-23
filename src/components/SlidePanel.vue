@@ -27,6 +27,9 @@ const { isPlaying, toggle } = useMusic()
 defineProps<{ modelValue: boolean }>()
 const emit = defineEmits<{ (e: 'update:modelValue', value: boolean): void }>()
 
+// the player's Telegram profile picture (if Telegram shares it), else the default image
+const photoUrl = ref(getTelegram()?.initDataUnsafe.user?.photo_url ?? '')
+
 const auth = useAuthStore()
 const { user } = storeToRefs(auth)
 
@@ -80,7 +83,14 @@ async function toggleLanguage() {
       <div class="flex flex-col justify-between text-[#552A0F] flex-1 px-2">
         <div class="flex flex-col items-center">
           <!-- <div class="border border-white w-20 h-20 rounded-full"></div> -->
-          <img :src="ProfileImage" alt="profile-image" class="w-20" />
+          <img
+            :src="photoUrl || ProfileImage"
+            alt="profile-image"
+            :class="photoUrl ? 'object-cover' : 'object-contain'"
+            class="w-20 aspect-square rounded-full bg-white"
+            referrerpolicy="no-referrer"
+            @error="photoUrl = ''"
+          />
           <h1 class="text-3xl font-bold mt-1">{{ user?.firstName }}</h1>
           <h1 class="text-lg font-bold">ID: {{ user?.telegramId }}</h1>
 

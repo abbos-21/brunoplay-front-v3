@@ -8,6 +8,9 @@ import { useGamesStore } from '@/stores/games'
 import { useToast } from '@/composables/useToast'
 import { apiMessage } from '@/composables/apiError'
 import { isApiDisabled } from '@/api/client'
+import { StarIcon } from '@/assets/svgs'
+import { useAuthStore } from '@/stores/auth'
+import { useTopUp } from '@/composables/useTopUp'
 import { FALLBACK_PRIZES, resolvePrizes, type ResolvedPrize } from '@/views/spin-prizes'
 import type { SpinPrize, SpinResult } from '@/types'
 
@@ -17,6 +20,24 @@ const toast = useToast()
 
 const PICKS = 3
 const CHESTS = 9
+
+// a round costs stars once; the three chests of the round are then free to open.
+// The price is a placeholder until the backend charges per round; the server will check it.
+const auth = useAuthStore()
+const topUp = useTopUp()
+const ROUND_COST = 10
+// the balance is unknown until the player has loaded (then the round can start, the server checks it)
+const canPay = computed(() => !auth.user || auth.user.starsBalance >= ROUND_COST)
+const started = ref(false) // the round is paid and the chests can be opened
+
+/** pay for a round (the chests unlock) */
+function startRound() {
+  if (!canPay.value) {
+    topUp.open()
+    return
+  }
+  started.value = true
+}
 
 /** design px (776px wide frame) → container-width units */
 const u = (px: number) => `${((px / 776) * 100).toFixed(4)}cqw`
@@ -64,11 +85,19 @@ function reset() {
   won.value = []
   finished.value = false
   result.value = null
+  started.value = false
+}
+
+/** "Play again": a fresh round, paid straight away (or the pay screen when there are not enough stars) */
+function playAgain() {
+  reset()
+  startRound()
 }
 
 async function pick(i: number) {
   const slot = slots.value[i]!
   if (busy.value || finished.value || slot.state !== 'closed') return
+  if (!started.value) return
   busy.value = true
   slot.state = 'opening'
   try {
@@ -87,7 +116,7 @@ async function pick(i: number) {
     slot.prize = describe(prize)
     won.value.push(prize)
     // give the lid / light / prize animation time to play
-    await new Promise((r) => setTimeout(r, 1500))
+    await new Promise((r) => setTimeout(r, 2300))
     slot.state = 'opened'
   } catch (e) {
     slot.state = 'closed'
@@ -156,14 +185,15 @@ async function finish() {
           :style="{ fontSize: u(30), marginTop: u(4) }"
         >
           <template v-if="!finished">
-            Open {{ remaining }} more {{ remaining === 1 ? 'chest' : 'chests' }}
+            <template v-if="started">Open {{ remaining }} more {{ remaining === 1 ? 'chest' : 'chests' }}</template>
+            <template v-else>Pay once, open {{ PICKS }} chests</template>
           </template>
           <template v-else>Here is what the other chests held</template>
         </p>
 
         <div
           class="grid grid-cols-3 w-full"
-          :style="{ gap: `${u(14)} ${u(10)}`, marginTop: u(34) }"
+          :style="{ gap: `${u(14)} ${u(10)}`, marginTop: u(66) }"
         >
           <ChestCard
             v-for="(s, i) in slots"
@@ -171,8 +201,9 @@ async function finish() {
             :state="s.state"
             :img="s.prize?.img"
             :label="s.prize?.amount"
+            :kind="s.prize?.kind"
             :seed="i"
-            :disabled="busy && s.state === 'closed'"
+            :disabled="(busy || !started) && s.state === 'closed'"
             @pick="pick(i)"
           />
         </div>
@@ -201,9 +232,12 @@ async function finish() {
             type="button"
             class="bg-[#fbe166] text-[#552a0f] font-extrabold shadow-[0px_3px_2px_rgba(0,0,0,0.25),inset_0px_3px_4px_rgba(255,255,255,0.25),inset_0px_-3px_4px_rgba(0,0,0,0.25)] active:translate-y-px"
             :style="{ width: u(420), height: u(90), borderRadius: u(30), fontSize: u(44) }"
-            @click="reset"
+            @click="playAgain"
           >
-            Play again
+            <span class="inline-flex items-center justify-center gap-[0.25em]">
+              Play again
+              <img :src="StarIcon" alt="" class="w-[1.05em]" />{{ ROUND_COST }}
+            </span>
           </button>
           <button
             type="button"
@@ -214,6 +248,34 @@ async function finish() {
             Back to games
           </button>
         </div>
+      </div>
+    </div>
+
+    <!-- pay once to open the 3 chests of a round -->
+    <div v-if="!started && !finished" class="absolute inset-0 z-20 flex items-center justify-center bg-black/35 p-6">
+      <div
+        class="w-full max-w-[16rem] rounded-3xl border-2 border-[#cf8741] bg-[#fff4d6] px-4 py-4 text-center text-[#552a0f] shadow-[0px_6px_10px_rgba(0,0,0,0.3)]"
+      >
+        <h2 class="font-extrabold leading-tight text-[length:clamp(1.3rem,6vw,1.6rem)]">Mega Chest</h2>
+        <p class="mt-0.5 text-[#8a5a2b] font-bold text-[length:clamp(0.85rem,4vw,1rem)]">Open {{ PICKS }} chests</p>
+        <button
+          type="button"
+          class="mt-4 w-full rounded-full border border-[#d9680f] bg-[#f96a07] py-2 flex items-center justify-center gap-1.5 font-bold text-white text-[length:clamp(1.05rem,5.2vw,1.35rem)] shadow-[inset_0px_3px_3px_rgba(255,255,255,0.25),inset_0px_-3px_3px_rgba(0,0,0,0.2)] active:translate-y-px"
+          @click="startRound"
+        >
+          <template v-if="!canPay">Get stars</template>
+          <template v-else>
+            Play
+            <img :src="StarIcon" alt="" class="w-[1.15em]" />{{ ROUND_COST }}
+          </template>
+        </button>
+        <button
+          type="button"
+          class="mt-2 text-[#8a5a2b] font-bold text-[length:clamp(0.85rem,4vw,1rem)] active:opacity-70"
+          @click="router.push('/games')"
+        >
+          Back
+        </button>
       </div>
     </div>
 

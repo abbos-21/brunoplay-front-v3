@@ -42,15 +42,17 @@ const counterStyle = computed(() => ({
 
 // spokes: radius 68 → 324, one every 45°. Drawn with CSS (not the 1px SVG strokes) so they
 // keep a minimum thickness and never disappear when the wheel is small.
+const SPOKE_H = `max(1.5px, ${wu(2)})`
 const spokes = [-90, -45, 0, 45, 90, 135, 180, 225].map((a) => ({
   position: 'absolute' as const,
   left: wu(C),
-  top: wu(C),
+  // the line's own middle sits exactly on the wheel's centre, so it turns around the centre (no sideways drift)
+  top: `calc(${wu(C)} - ${SPOKE_H} / 2)`,
   width: wu(256),
-  height: `max(1.5px, ${wu(2)})`,
+  height: SPOKE_H,
   background: 'rgba(255,255,255,0.9)',
   transformOrigin: '0 50%',
-  transform: `rotate(${a}deg) translate(${wu(68)}, -50%)`,
+  transform: `rotate(${a}deg) translateX(${wu(68)})`,
 }))
 
 // rim studs: one at the end of every spoke (the one at 0° starts under the pointer)

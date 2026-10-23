@@ -7,6 +7,7 @@ import NavigationMenu from '@/components/NavigationMenu.vue'
 import TopUpPanel from '@/components/TopUpPanel.vue'
 import { useTopUp } from '@/composables/useTopUp'
 import ToastContainer from './components/ToastContainer.vue'
+import LevelUpOverlay from '@/components/LevelUpOverlay.vue'
 import { BackgroundMusic } from './assets/audios'
 
 const auth = useAuthStore()
@@ -50,6 +51,7 @@ onMounted(() => {
       <NavigationMenu v-if="!route.meta.hideNav" />
       <TopUpPanel v-model="topUp.isOpen.value" />
       <ToastContainer />
+      <LevelUpOverlay />
     </div>
   </div>
 </template>

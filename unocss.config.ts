@@ -1,6 +1,11 @@
 import { defineConfig } from 'unocss'
 
 export default defineConfig({
+  preflights: [{
+    // the reset leaves every button with the default arrow; show the hand on anything clickable
+    getCSS: () =>
+      'button:not(:disabled),[role="button"],a[href],summary,select,label[for],input[type="checkbox"],input[type="radio"]{cursor:pointer}button:disabled{cursor:not-allowed}',
+  }],
   shortcuts: {
     'bg-home': 'bg-[url("/src/assets/backgrounds/home.png")] bg-cover bg-center bg-no-repeat',
     'bg-shop': 'bg-[url("/src/assets/backgrounds/shop.png")] bg-cover bg-center bg-no-repeat',

@@ -1,18 +1,12 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
-import { WalletImage } from '@/assets/images'
-import { RoundButton } from '@/assets/svgs/wallet'
+import WalletIcon from '@/components/WalletIcon.vue'
+import { ArrowLeftSVG } from '@/assets/svgs'
 import * as walletApi from '@/api/wallet'
 import type { Withdrawal, WithdrawalStatus } from '@/types'
 
 const router = useRouter()
-
-/** design px (776px wide frame) → container-width units */
-const u = (px: number) => `${((px / 776) * 100).toFixed(4)}cqw`
-
-// the design's inset shadow, scaled with the page width
-const cardShadow = `0px 4px 4px rgba(0,0,0,0.25), inset 0px 0px ${u(10)} ${u(4)} rgba(0,0,0,0.25)`
 
 const items = ref<Withdrawal[]>([])
 const page = ref(0)
@@ -44,12 +38,12 @@ const pad = (n: number) => String(n).padStart(2, '0')
 const short = (a: string) => (a.length > 12 ? `${a.slice(0, 4)}...${a.slice(-4)}` : a)
 const ton = (n: number) => String(Number(n.toFixed(4)))
 
-const STATUS: Record<WithdrawalStatus, string> = {
-  PENDING: 'Pending',
-  PROCESSING: 'Processing',
-  COMPLETED: '',
-  FAILED: 'Failed',
-  CANCELLED: 'Cancelled',
+const STATUS: Record<WithdrawalStatus, { label: string; chip: string }> = {
+  PENDING: { label: 'Pending', chip: 'bg-[#ffe9b0] text-[#8a5a00] border-[#e8c25a]' },
+  PROCESSING: { label: 'Processing', chip: 'bg-[#d8ecff] text-[#0a5a96] border-[#7fbbe8]' },
+  COMPLETED: { label: 'Completed', chip: 'bg-[#e4f7d6] text-[#1f6a05] border-[#74c14e]' },
+  FAILED: { label: 'Failed', chip: 'bg-[#ffdcd8] text-[#a01208] border-[#e8877e]' },
+  CANCELLED: { label: 'Cancelled', chip: 'bg-[#ece6dc] text-[#6b5a45] border-[#c9bba6]' },
 }
 
 const rows = computed(() =>
@@ -63,7 +57,7 @@ const rows = computed(() =>
       address: short(w.targetAddress),
       date,
       amount: ton(w.amountTon),
-      status: STATUS[w.status] ?? '',
+      status: STATUS[w.status] ?? { label: w.status, chip: 'bg-[#ece6dc] text-[#6b5a45] border-[#c9bba6]' },
     }
   }),
 )
@@ -76,123 +70,66 @@ function back() {
 
 <template>
   <div
-    class="w-full h-full flex flex-col [container-type:inline-size] bg-[#f9dc7a] bg-[radial-gradient(ellipse_75%_38%_at_50%_58%,#fbe166_0%,#f8db7c_70%,#f7db7e_100%)]"
+    class="w-full h-full flex flex-col bg-[#f9dc7a] bg-[radial-gradient(ellipse_75%_38%_at_50%_58%,#fbe166_0%,#f8db7c_70%,#f7db7e_100%)]"
   >
     <!-- header -->
-    <div
-      class="shrink-0 flex items-center"
-      :style="{ padding: `${u(40)} ${u(38)} ${u(16)} ${u(41)}`, gap: u(40) }"
-    >
+    <div class="shrink-0 flex items-center gap-3 p-4 pb-4">
       <button
         type="button"
-        class="relative shrink-0 flex items-center justify-center active:translate-y-px"
-        :style="{ width: u(120), height: u(120) }"
+        class="btn-orange shrink-0 size-[clamp(2.8rem,13vw,3.4rem)] p-[0.6rem] rounded-full flex justify-center items-center active:translate-y-px"
         aria-label="Back"
         @click="back"
       >
-        <img :src="RoundButton" alt="" class="absolute inset-0 w-full h-full" />
-        <svg
-          class="relative drop-shadow-[0_3px_4px_rgba(0,0,0,0.25)]"
-          :style="{ width: u(64) }"
-          viewBox="0 0 64 46"
-          fill="none"
-          stroke="#fff"
-          stroke-width="11"
-          stroke-linecap="round"
-          stroke-linejoin="round"
-          aria-hidden="true"
-        >
-          <path d="M60 23H8M26 6 8 23l18 17" />
-        </svg>
+        <ArrowLeftSVG class="w-full" />
       </button>
-      <h1
-        class="flex-1 text-center font-bold text-[#552a0f] leading-tight"
-        :style="{ fontSize: u(48), letterSpacing: '0.01em' }"
-      >
-        Transaction History
+      <h1 class="flex-1 text-center font-bold text-[#552a0f] leading-tight text-[length:clamp(1.3rem,6.6vw,1.8rem)] pr-[clamp(2.8rem,13vw,3.4rem)]">
+        Transaction history
       </h1>
     </div>
 
     <!-- notice + list -->
     <div
-      class="flex-1 min-h-0 overflow-y-auto overflow-x-hidden [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
-      :style="{ padding: `${u(4)} ${u(38)} ${u(40)}` }"
+      class="flex-1 min-h-0 overflow-y-auto overflow-x-hidden px-4 pb-6 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
       @scroll.passive="onScroll"
     >
-      <div
-        class="bg-[#fde7b8] border-[#cf8741]"
-        :style="{
-          borderWidth: u(15),
-          boxShadow: cardShadow,
-          borderStyle: 'solid',
-          borderRadius: u(45),
-          padding: `${u(8)} ${u(14)}`,
-        }"
-      >
-        <p
-          class="font-bold text-[#890d00]"
-          :style="{ fontSize: u(28), lineHeight: u(35), letterSpacing: '0.01em' }"
-        >
-          The withdrawal processing time is up to 48 hours.
-        </p>
-        <p
-          class="font-bold text-[#890d00]"
-          :style="{ fontSize: u(28), lineHeight: u(35), letterSpacing: '0.01em', marginTop: u(35) }"
-        >
-          Share your payout in our chat, and celebrate your success with other players.
-        </p>
+      <div class="rounded-3xl border-2 border-[#cf8741] bg-[#fff4d6] px-4 py-2.5 shadow-[0px_4px_4px_rgba(0,0,0,0.25)] text-[#552a0f] leading-snug text-[length:clamp(0.78rem,3.8vw,1rem)]">
+        <p class="font-bold">Withdrawals are processed within 48 hours.</p>
+        <p class="mt-1 text-[#8a5a2b]">Share your payout in our chat and celebrate with other players.</p>
       </div>
 
-      <ul class="flex flex-col" :style="{ marginTop: u(40), gap: u(20) }">
+      <ul class="mt-4 flex flex-col gap-3">
         <li
           v-for="r in rows"
           :key="r.id"
-          class="relative flex items-center bg-[#cf8741] border border-[#552a0f] shadow-[inset_0px_-3px_4px_#935324] text-white"
-          :style="{
-            minHeight: u(130),
-            borderRadius: u(30),
-            padding: `${u(12)} ${u(26)} ${u(12)} ${u(20)}`,
-            gap: u(24),
-          }"
+          class="flex items-center gap-3 rounded-3xl border-2 border-[#cf8741] bg-[#fff4d6] p-3 shadow-[0px_4px_4px_rgba(0,0,0,0.25)]"
         >
-          <img :src="WalletImage" alt="" class="shrink-0 block" :style="{ width: u(44) }" />
+          <span class="shrink-0 size-[clamp(2.6rem,12.5vw,3.2rem)] rounded-2xl bg-[#fde7b8] border border-[#e3b66f] flex items-center justify-center">
+            <WalletIcon class="w-[78%]" />
+          </span>
 
-          <div
-            class="flex-1 min-w-0 font-extrabold leading-snug"
-            :style="{ fontSize: u(24), letterSpacing: '0.01em' }"
-          >
-            <p>TON withdrawal to</p>
-            <p class="truncate">{{ r.address }}</p>
-            <p>{{ r.date }}</p>
+          <div class="flex-1 min-w-0 leading-tight">
+            <p class="font-bold text-[#552a0f] text-[length:clamp(0.95rem,4.7vw,1.2rem)]">TON withdrawal</p>
+            <p class="truncate text-[#8a5a2b] text-[length:clamp(0.72rem,3.5vw,0.9rem)]">To {{ r.address }}</p>
+            <p class="text-[#8a5a2b] text-[length:clamp(0.68rem,3.3vw,0.85rem)]">{{ r.date }}</p>
           </div>
 
-          <div
-            class="shrink-0 text-center font-extrabold leading-tight"
-            :style="{ fontSize: u(32), letterSpacing: '0.01em', minWidth: u(90) }"
-          >
-            <p>- {{ r.amount }}</p>
-            <p>TON</p>
-            <p v-if="r.status" class="font-bold text-white/80" :style="{ fontSize: u(20) }">
-              {{ r.status }}
-            </p>
+          <div class="shrink-0 flex flex-col items-end gap-1">
+            <p class="font-extrabold text-[#552a0f] tabular-nums text-[length:clamp(1rem,5vw,1.3rem)]">−{{ r.amount }} TON</p>
+            <span
+              class="rounded-full border px-2.5 py-px font-bold leading-tight text-[length:clamp(0.62rem,3vw,0.78rem)]"
+              :class="r.status.chip"
+            >
+              {{ r.status.label }}
+            </span>
           </div>
         </li>
       </ul>
 
-      <p
-        v-if="!rows.length && !loading"
-        class="text-center font-bold text-[#552a0f]/70"
-        :style="{ marginTop: u(60), fontSize: u(34) }"
-      >
-        No withdrawals yet
-      </p>
-      <p
-        v-if="loading"
-        class="text-center font-bold text-[#552a0f]/70"
-        :style="{ marginTop: u(24), fontSize: u(28) }"
-      >
-        Loading…
-      </p>
+      <div v-if="!rows.length && !loading" class="mt-6 rounded-3xl border-2 border-dashed border-[#cf8741] bg-[#fff4d6]/80 px-4 py-6 text-center">
+        <p class="font-bold text-[#552a0f] text-[length:clamp(1rem,5vw,1.3rem)]">No withdrawals yet</p>
+        <p class="mt-1 text-[#8a5a2b] text-[length:clamp(0.8rem,4vw,1.05rem)]">Your requests will show up here.</p>
+      </div>
+      <p v-if="loading" class="mt-4 text-center font-bold text-[#552a0f]/70 text-[length:clamp(0.85rem,4.2vw,1.1rem)]">Loading…</p>
     </div>
   </div>
 </template>
