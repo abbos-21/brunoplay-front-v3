@@ -67,7 +67,7 @@ async function handleFishing() {
 
 <template>
   <div
-    class="w-full h-full bg-home p-4 relative flex flex-col justify-between items-center overflow-hidden"
+    class="w-full h-full bg-home p-4 relative flex flex-col justify-between items-center overflow-clip"
   >
     <!-- <button @click="show('Saved successfully!', 'success', 1000)">Toast</button> -->
     <div class="w-full flex justify-between items-center">

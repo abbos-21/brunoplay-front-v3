@@ -101,7 +101,7 @@ const name = (e: LeaderboardEntry) => e.username || e.firstName || `#${e.userId}
 </script>
 
 <template>
-  <div class="w-full h-full bg-shop p-4 relative overflow-hidden pb-24 flex flex-col">
+  <div class="w-full h-full bg-shop p-4 relative overflow-clip pb-24 flex flex-col">
     <div class="w-full flex justify-between items-center gap-2">
       <button type="button" :aria-label="$t('Back')" class="size-10 rounded-full bg-[#f96a07] border border-[#d9680f] flex items-center justify-center" @click="router.push('/games')">
         <ArrowLeftSVG class="w-5 text-white" />

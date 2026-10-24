@@ -72,7 +72,7 @@ onMounted(() => {
       <ToastContainer />
     </div> -->
 
-    <div class="w-full h-full max-w-md relative overflow-hidden">
+    <div class="w-full h-full max-w-md relative overflow-clip">
       <RouterView />
       <NavigationMenu v-if="!route.meta.hideNav" />
       <TopUpPanel v-model="topUp.isOpen.value" />

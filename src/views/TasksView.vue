@@ -128,7 +128,7 @@ const tabBase =
 </script>
 
 <template>
-  <div class="w-full h-full bg-shop p-4 relative overflow-hidden pb-24 flex flex-col">
+  <div class="w-full h-full bg-shop p-4 relative overflow-clip pb-24 flex flex-col">
     <div class="w-full flex justify-between items-center gap-2">
       <CoinBalance />
       <div class="flex items-center gap-[clamp(0.25rem,2vw,0.5rem)]">
