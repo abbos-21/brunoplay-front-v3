@@ -316,6 +316,10 @@ const ru: Record<string, string> = {
   Ended: 'Завершён',
   You: 'Вы',
   'always on': 'всегда включено',
+  'Open the game in Telegram': 'Откройте игру в Telegram',
+  'BrunoPlay runs inside Telegram. Open the bot and press Open game.': 'BrunoPlay работает внутри Telegram. Откройте бота и нажмите «Открыть игру».',
+  'Open the bot': 'Открыть бота',
+  'Check your connection and try again.': 'Проверьте соединение и попробуйте ещё раз.',
 }
 
 export default ru

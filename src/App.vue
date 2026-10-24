@@ -10,6 +10,7 @@ import { useTopUp } from '@/composables/useTopUp'
 import ToastContainer from './components/ToastContainer.vue'
 import LevelUpOverlay from '@/components/LevelUpOverlay.vue'
 import GateScreen from '@/components/GateScreen.vue'
+import StartError from '@/components/StartError.vue'
 import { gate } from '@/composables/useAppGate'
 import { getAppInfo } from '@/api/user'
 import { isApiDisabled } from '@/api/client'
@@ -79,6 +80,7 @@ onMounted(() => {
       <ToastContainer />
       <LevelUpOverlay />
       <GateScreen />
+      <StartError />
     </div>
   </div>
 </template>
