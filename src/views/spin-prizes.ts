@@ -38,7 +38,7 @@ export interface ResolvedPrize {
 
 const num = (n: number) => n.toLocaleString('en-US')
 
-/** Attach artwork / labels to a list of API prizes. Gifts are matched by label, else by position. */
+/** Attach artwork / labels to a list of API prizes. Gifts are matched by their key or label, else by position. */
 export function resolvePrizes(prizes: SpinPrize[]): ResolvedPrize[] {
   let giftIndex = 0
   return prizes.map((prize): ResolvedPrize => {
@@ -48,7 +48,8 @@ export function resolvePrizes(prizes: SpinPrize[]): ResolvedPrize[] {
     if (prize.type === 'stars') {
       return { prize, kind: 'stars', img: StarIcon, amount: num(prize.value), name: 'Stars' }
     }
-    const label = (prize.label ?? '').toLowerCase()
+    // the catalogue key (heart, apple, ...) when the server sends it, else the label
+    const label = `${prize.gift ?? ''} ${prize.label ?? ''}`.toLowerCase()
     const byLabel = GIFTS.find((g) => label.includes(g.key))
     const art = byLabel ?? GIFTS[giftIndex % GIFTS.length]!
     giftIndex++

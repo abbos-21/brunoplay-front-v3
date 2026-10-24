@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { onMounted, computed, ref } from 'vue'
+import { onMounted, onUnmounted, computed, ref } from 'vue'
+import { RouterLink } from 'vue-router'
 import CoinBalance from '@/components/CoinBalance.vue'
 import LevelBadge from '@/components/LevelBadge.vue'
 import HamburgerButton from '@/components/HamburgerButton.vue'
@@ -11,14 +12,12 @@ import CalendarPanel from '@/components/CalendarPanel.vue'
 import { CalendarImage, PuzzleImage } from '@/assets/images'
 import { useFishingStore } from '@/stores/fishing'
 import { useDailyStore } from '@/stores/daily'
-import { usePolling } from '@/composables/usePolling'
+import { AdError } from '@/composables/useAds'
+import { useToast } from '@/composables/useToast'
+import { apiMessage } from '@/composables/apiError'
+import { t } from '@/i18n'
 
-// import { useToast } from '@/composables/useToast'
-
-// const { show } = useToast()
-
-// show('Saved successfully!', 'success')
-// show('Something went wrong!', 'warning')
+const toast = useToast()
 
 const isMenuOpen = ref(false)
 const isCalendarOpen = ref(false)
@@ -29,29 +28,37 @@ const daily = useDailyStore()
 
 const collecting = ref(false)
 
+let stopTicker: (() => void) | null = null
+
 onMounted(async () => {
+  // the tank is animated here; a fresh snapshot comes now, after each action, on focus and every 30 s (no polling)
+  stopTicker = fishing.startTicker()
   await fishing.fetchStatus()
   await daily.fetchActivity()
   await daily.fetchCombo()
 })
-
-usePolling(() => fishing.sync(), 2500)
+onUnmounted(() => stopTicker?.())
 
 // the two things to do every day: claim the streak reward, play the combo (unknown until the server answers)
 const streakPending = computed(() => daily.activityStatus?.canClaim === true)
 const comboPending = computed(() => daily.comboStatus?.alreadyAttempted === false)
 
-const canCollect = computed(() => (fishing.status?.tankCoins ?? 0) > 0)
+const canCollect = computed(() => fishing.canCollect)
 
 async function handleFishing() {
+  if (collecting.value || fishing.isLoading) return
   try {
     if (!fishing.isFishing) {
       await fishing.start()
+    } else if (!fishing.canCollect) {
+      // nothing is spent: no ad is shown until the tank is full enough to collect
+      toast.show(t('Collect once the tank is at least {n}% full', { n: fishing.status?.collectMinPercent ?? 10 }), 'info')
     } else {
       collecting.value = true
       await fishing.collect()
     }
-  } catch {
+  } catch (e) {
+    toast.show(e instanceof AdError ? e.message : apiMessage(e, 'Something went wrong'), e instanceof AdError ? 'warning' : 'error')
   } finally {
     collecting.value = false
   }
@@ -66,13 +73,15 @@ async function handleFishing() {
     <div class="w-full flex justify-between items-center">
       <CoinBalance />
       <div class="flex items-center gap-[clamp(0.25rem,2vw,0.5rem)]">
-        <LevelBadge />
+        <RouterLink to="/level" class="flex items-center" :aria-label="$t('Levels')">
+          <LevelBadge />
+        </RouterLink>
         <HamburgerButton v-model="isMenuOpen" />
       </div>
     </div>
 
     <ProgressBar
-      :current-value="fishing.status?.tankCoins ?? 0"
+      :current-value="fishing.liveTank"
       :max-value="fishing.status?.tankCapacity || 1"
       class="w-28 sm:w-36 absolute inset-1/2 -translate-x-1/2 -translate-y-1/2"
     />
@@ -82,21 +91,21 @@ async function handleFishing() {
         <button
           type="button"
           class="relative"
-          :aria-label="streakPending ? 'Daily reward, ready to claim' : 'Daily reward'"
+          :aria-label="streakPending ? $t('Daily reward, ready to claim') : $t('Daily reward')"
           @click="isCalendarOpen = true"
         >
-          <img :src="CalendarImage" alt="Calendar" class="w-14 sm:w-20" :class="{ 'daily-nudge': streakPending }" />
+          <img :src="CalendarImage" :alt="$t('Daily reward')" class="w-14 sm:w-20" :class="{ 'daily-nudge': streakPending }" />
           <Transition name="dot"><PendingDot v-if="streakPending" /></Transition>
         </button>
         <button
           type="button"
           class="relative"
-          :aria-label="comboPending ? 'Daily combo, not played yet' : 'Daily combo'"
+          :aria-label="comboPending ? $t('Daily combo, not played yet') : $t('Daily combo')"
           @click="isPuzzleOpen = true"
         >
           <img
             :src="PuzzleImage"
-            alt="Puzzle"
+            :alt="$t('Daily combo')"
             class="w-14 sm:w-20"
             :class="{ 'daily-nudge daily-nudge-late': comboPending }"
           />
@@ -112,9 +121,9 @@ async function handleFishing() {
         :disabled="collecting || fishing.isLoading"
         class="bg-[#fbe166] border border-[#552a0f] shadow-[inset_0px_-3px_4px_#935324] rounded-xl w-fit py-1 px-3 sm:px-5 font-bold text-white outlined [--outline:#532B23] text-xl sm:text-2xl cursor-pointer mb-10 ms-4"
       >
-        <span v-if="!fishing.isFishing">Fishing</span>
-        <span v-else-if="canCollect">Collect</span>
-        <span v-else>Fishing…</span>
+        <span v-if="!fishing.isFishing">{{ $t('Fishing') }}</span>
+        <span v-else-if="canCollect">{{ $t('Collect') }}</span>
+        <span v-else>{{ $t('Fishing…') }}</span>
         <!-- <span v-else>Fishing... wait for tank to fill</span> -->
       </button>
 

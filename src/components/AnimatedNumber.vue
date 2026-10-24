@@ -7,6 +7,7 @@ const lastShown: Record<string, number | undefined> = {}
 
 <script setup lang="ts">
 import { onBeforeUnmount, onMounted, ref, watch } from 'vue'
+import { playSfx } from '@/composables/useSfx'
 
 /**
  * The brown number pill of a balance. When the value changes it
@@ -64,6 +65,8 @@ function change(value: number) {
   const dir = diff > 0 ? 'up' : 'down'
   const id = ++counter
   pulse.value = { id, dir }
+  if (props.kind === 'coins') playSfx(dir === 'up' ? 'coinUp' : 'coinDown')
+  else if (props.kind === 'stars') playSfx(dir === 'up' ? 'starUp' : 'starDown')
   chips.value.push({ id, dir, text: `${diff > 0 ? '+' : '−'}${fmt(Math.abs(diff))}` })
   setTimeout(() => (chips.value = chips.value.filter((c) => c.id !== id)), 1400)
   tween(value)

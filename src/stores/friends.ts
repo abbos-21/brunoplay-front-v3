@@ -1,38 +1,35 @@
 import { defineStore } from 'pinia';
-import { ref } from 'vue';
+import { ref, computed } from 'vue';
 import type { FriendsStats, ReferralInfo, RewardTier } from '@/types';
 import * as friendsApi from '@/api/friends';
 
+const PAGE_SIZE = 20;
+
 export const useFriendsStore = defineStore('friends', () => {
   const inviteLink = ref('');
+  const botLink = ref('');
   const stats = ref<FriendsStats | null>(null);
   const friends = ref<ReferralInfo[]>([]);
   const rewardTiers = ref<RewardTier[]>([]);
   const friendsPage = ref(1);
-  const friendsTotalPages = ref(1);
+  const total = ref(0);
+  const friendsTotalPages = computed(() => Math.max(1, Math.ceil(total.value / PAGE_SIZE)));
 
-  async function fetchInviteLink() {
-    inviteLink.value = await friendsApi.getInviteLink();
-  }
-
-  async function fetchStats() {
-    stats.value = await friendsApi.getFriendsStats();
-  }
-
+  /** One call fills the whole page (numbers, the list of the page, reward tiers and the invite links). */
   async function fetchFriends(page = 1) {
-    const data = await friendsApi.getFriendsList(page);
-    friends.value = data.data;
+    const data = await friendsApi.getFriends(page);
+    stats.value = data.stats;
+    friends.value = data.friends ?? [];
+    rewardTiers.value = data.rewards ?? [];
+    inviteLink.value = data.links?.inviteLink ?? '';
+    botLink.value = data.links?.botLink ?? '';
     friendsPage.value = data.page;
-    friendsTotalPages.value = data.totalPages;
-  }
-
-  async function fetchRewardTiers() {
-    rewardTiers.value = await friendsApi.getRewardDetails();
+    total.value = data.total;
   }
 
   async function init() {
-    await Promise.all([fetchInviteLink(), fetchStats(), fetchFriends(), fetchRewardTiers()]);
+    await fetchFriends(1);
   }
 
-  return { inviteLink, stats, friends, rewardTiers, friendsPage, friendsTotalPages, fetchInviteLink, fetchStats, fetchFriends, fetchRewardTiers, init };
+  return { inviteLink, botLink, stats, friends, rewardTiers, friendsPage, friendsTotalPages, fetchFriends, init };
 });

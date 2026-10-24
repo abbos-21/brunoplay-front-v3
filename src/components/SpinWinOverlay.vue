@@ -5,6 +5,7 @@ import { StarA, StarB, StarC, StarD, V21, V35, V43, V48, V62 } from '@/assets/sv
 import { CoinImage } from '@/assets/images'
 import { resolvePrizes } from '@/views/spin-prizes'
 import { getTelegram } from '@/composables/useTelegram'
+import { playSfx } from '@/composables/useSfx'
 import type { SpinResult } from '@/types'
 
 const props = withDefaults(defineProps<{ result: SpinResult; unit?: string }>(), { unit: 'spin' })
@@ -52,6 +53,7 @@ function countUp() {
 }
 
 onMounted(() => {
+  playSfx(props.result.results.length >= 3 || hero.value ? 'bigWin' : 'win')
   startTimer = setTimeout(countUp, 900 + Math.min(groups.value.length, 6) * 140)
   try {
     getTelegram()?.HapticFeedback.notificationOccurred('success')
@@ -104,7 +106,7 @@ const confetti = Array.from({ length: 44 }, () => ({
     class="win absolute inset-0 z-50 overflow-hidden [container-type:inline-size]"
     role="dialog"
     aria-modal="true"
-    aria-label="You won"
+    :aria-label="$t('You won')"
   >
     <!-- backdrop -->
     <div class="win-backdrop absolute inset-0" />
@@ -146,7 +148,7 @@ const confetti = Array.from({ length: 44 }, () => ({
           class="win-title relative font-extrabold leading-none text-center select-none"
           :style="{ fontSize: u(hero ? 104 : 92), letterSpacing: '0.01em' }"
         >
-          <span class="win-title-text">You won!</span>
+          <span class="win-title-text">{{ $t('You won!') }}</span>
         </h2>
 
         <p
@@ -253,7 +255,7 @@ const confetti = Array.from({ length: 44 }, () => ({
           class="win-fade font-extrabold text-white/90 [text-shadow:0px_3px_2px_rgba(0,0,0,0.4)]"
           :style="{ fontSize: u(32), animationDelay: '1.1s', marginBottom: u(14) }"
         >
-          {{ giftCount }} {{ giftCount === 1 ? 'gift' : 'gifts' }} added to your collection
+          {{ $tn('{n} gift added to your collection|{n} gifts added to your collection', giftCount) }}
         </p>
 
         <button
@@ -268,7 +270,7 @@ const confetti = Array.from({ length: 44 }, () => ({
           }"
           @click="emit('close')"
         >
-          Awesome!
+          {{ $t('Awesome!') }}
           <span class="win-shine absolute inset-0" />
         </button>
       </div>

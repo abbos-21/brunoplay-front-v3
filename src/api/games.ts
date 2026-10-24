@@ -1,54 +1,60 @@
 import client from './client';
 import type {
-  SpinTierInfo, SpinTier, SpinResult, LiveWin,
-  RoulettePrize, RouletteResult,
-  RideSession, RideClaimResult,
-  PaginatedResponse,
+  SpinTierInfo, SpinResult, LiveWin,
+  ChestState, ChestPickResult,
+  RideInfo, RideRun, RideFinishResult,
+  PlayerGift, PaginatedResponse,
 } from '@/types';
 
 // === Spin ===
 export function getSpinTiers() {
-  return client.get<{ tiers: SpinTierInfo[] }>('/games/spin/tiers').then((r) => r.data.tiers);
+  return client.get<{ tiers: SpinTierInfo[] }>('/spin/tiers').then((r) => r.data.tiers);
 }
 
-export function playSpin(tier: SpinTier, count: number) {
-  return client.post<SpinResult>('/games/spin/play', { tier, count }).then((r) => r.data);
-}
-
-export function getSpinPrizes(tier: SpinTier) {
-  return client.get<{ prizes: SpinTierInfo['prizes'] }>(`/games/spin/prizes/${tier}`).then((r) => r.data.prizes);
-}
-
-export function getSpinLiveWins() {
-  return client.get<{ wins: LiveWin[] }>('/games/spin/live-wins').then((r) => r.data.wins);
+export function playSpin(tier: string, count: number) {
+  return client.post<SpinResult>('/spin', { tier, count }).then((r) => r.data);
 }
 
 export function getSpinWinners(page = 1) {
-  return client.get<PaginatedResponse<LiveWin>>('/games/spin/winners', { params: { page } }).then((r) => r.data);
+  return client.get<PaginatedResponse<LiveWin>>('/spin/winners', { params: { page } }).then((r) => r.data);
 }
 
-// === Roulette ===
-export function playRoulette() {
-  return client.post<RouletteResult>('/games/roulette/play').then((r) => r.data);
+// === Chest ===
+export function getChest() {
+  return client.get<ChestState>('/chest').then((r) => r.data);
 }
 
-export function getRoulettePrizes() {
-  return client.get<{ prizes: RoulettePrize[] }>('/games/roulette/prizes').then((r) => r.data.prizes);
+/** Pays the round once (the prizes are drawn on the server at this moment). */
+export function startChestRound() {
+  return client.post<ChestState>('/chest/round').then((r) => r.data);
 }
 
-export function getRouletteLiveWins() {
-  return client.get<{ wins: LiveWin[] }>('/games/roulette/live-wins').then((r) => r.data.wins);
+export function pickChest(slot: number) {
+  return client.post<ChestPickResult>('/chest/pick', { slot }).then((r) => r.data);
 }
 
-// === Bruno's Ride ===
-export function startRide() {
-  return client.post<RideSession>('/games/brunos-ride/start').then((r) => r.data);
+// === Ride ===
+export function getRideInfo() {
+  return client.get<RideInfo>('/ride/me').then((r) => r.data);
 }
 
-export function claimRide(sessionId: string, coins: number, score: number) {
-  return client.post<RideClaimResult>('/games/brunos-ride/claim', { sessionId, coins, score }).then((r) => r.data);
+export function startRide(adViewId?: string) {
+  return client.post<RideRun>('/ride/start', { adViewId }).then((r) => r.data);
 }
 
-export function getRideStatus() {
-  return client.get<{ session: RideSession | null }>('/games/brunos-ride/status').then((r) => r.data.session);
+export function finishRide(runId: number, coins: number, score: number) {
+  return client.post<RideFinishResult>('/ride/finish', { runId, coins, score }).then((r) => r.data);
+}
+
+// === Gifts ===
+export function getGifts() {
+  return client.get<{ gifts: PlayerGift[] | null }>('/gifts').then((r) => r.data.gifts ?? []);
+}
+
+export function sellGift(id: number) {
+  return client.post<{ stars: number; newBalance: number }>(`/gifts/${id}/sell`).then((r) => r.data);
+}
+
+export function claimGift(id: number) {
+  return client.post<PlayerGift>(`/gifts/${id}/claim`).then((r) => r.data);
 }

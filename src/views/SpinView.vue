@@ -1,15 +1,18 @@
 <script setup lang="ts">
+import { t } from '@/i18n'
+import { useRouter } from 'vue-router'
 import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
 import SpinWheel, { type WheelSlot } from '@/components/SpinWheel.vue'
 import StarBalance from '@/components/StarBalance.vue'
 import { useTopUp } from '@/composables/useTopUp'
 import { sparkles, FRAME } from '@/views/spin-sparkles'
-import { StarIcon } from '@/assets/svgs'
+import { ArrowLeftSVG, StarIcon } from '@/assets/svgs'
 import { CoinImage, TrophyImage, GiftBoxImage } from '@/assets/images'
 import { Win1, Win2, Win3, Win4, Win5 } from '@/assets/images/spin'
 import { useGamesStore } from '@/stores/games'
 import { useAuthStore } from '@/stores/auth'
 import { useToast } from '@/composables/useToast'
+import { playSfx } from '@/composables/useSfx'
 import { apiMessage } from '@/composables/apiError'
 import { isApiDisabled } from '@/api/client'
 import * as gamesApi from '@/api/games'
@@ -23,6 +26,11 @@ const games = useGamesStore()
 const auth = useAuthStore()
 const toast = useToast()
 const topUp = useTopUp()
+const router = useRouter()
+
+function back() {
+  router.push('/games')
+}
 
 
 // ───────────────────────── data ─────────────────────────
@@ -143,7 +151,9 @@ function simulate(): SpinResult {
 function slotFor(prize: SpinPrize) {
   const matches = wheelPrizes.value
     .map((r, i) => ({ r: overrides.value[i] ?? r, i }))
-    .filter(({ r }) => r.prize.type === prize.type && r.prize.value === prize.value)
+    .filter(({ r }) =>
+      prize.gift && r.prize.gift ? r.prize.gift === prize.gift : r.prize.type === prize.type && r.prize.value === prize.value,
+    )
     .map(({ i }) => i)
   if (matches.length) return matches[Math.floor(Math.random() * matches.length)]!
 
@@ -160,6 +170,7 @@ function spinTo(slot: number, ms: number, turns: number) {
   const delta = (((-slotAngle - jitter - current) % 360) + 360) % 360
   duration.value = ms
   rotation.value += 360 * turns + delta
+  playSfx('spinStart')
   return wait(ms + 150)
 }
 
@@ -175,7 +186,7 @@ const progress = ref({ current: 0, total: 0 })
 async function spin() {
   if (spinning.value) return
   if (!isApiDisabled && auth.user && auth.user.starsBalance < totalCost.value) {
-    toast.show('Not enough stars', 'warning')
+    toast.show(t('Not enough stars'), 'warning')
     return
   }
   spinning.value = true
@@ -190,7 +201,10 @@ async function spin() {
     for (const [i, prize] of res.results.entries()) {
       progress.value.current = i + 1
       await spinTo(slotFor(prize), multi ? 2600 : 4500, multi ? 3 : 5)
-      if (multi && i < res.results.length - 1) await wait(650) // let the player see the prize
+      if (multi && i < res.results.length - 1) {
+        playSfx('reveal')
+        await wait(650) // let the player see the prize
+      }
     }
 
     result.value = res
@@ -221,7 +235,7 @@ async function loadWinners(reset = false) {
   winnersLoading.value = true
   try {
     const data = await gamesApi.getSpinWinners(winnersPage.value + 1)
-    winners.value.push(...data.data)
+    winners.value.push(...(data.data ?? []))
     winnersPage.value = data.page
     winnersTotalPages.value = data.totalPages
   } catch {
@@ -250,25 +264,38 @@ function openWinners() {
 
     <div class="relative z-10 w-full h-full overflow-y-auto overflow-x-hidden select-none [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
       <div class="min-h-full flex flex-col items-center gap-2.5 p-4 pb-5">
-        <!-- stars and the two lists -->
+        <!-- back and stars -->
         <div class="w-full flex items-center justify-between gap-2">
+          <button
+            type="button"
+            :disabled="spinning"
+            class="btn-orange shrink-0 size-[clamp(2.4rem,11vw,2.9rem)] p-[0.5rem] rounded-full flex justify-center items-center active:translate-y-px disabled:opacity-50"
+            :aria-label="$t('Back')"
+            @click="back"
+          >
+            <ArrowLeftSVG class="w-full" />
+          </button>
           <StarBalance />
-          <div class="flex gap-1.5">
+        </div>
+
+        <!-- the two lists -->
+        <div class="w-full flex items-center gap-2">
+          <div class="flex w-full gap-2 [&>button]:flex-1 [&>button]:justify-center">
             <button
               type="button"
               :disabled="spinning"
-              class="flex items-center gap-1.5 rounded-full border border-[#b9722a] bg-[#fff4d6] py-1 pl-2 pr-3.5 font-bold text-[#552a0f] text-[length:clamp(0.8rem,3.8vw,1rem)] shadow-[0px_3px_3px_rgba(0,0,0,0.25)] active:translate-y-px disabled:opacity-50"
+              class="flex items-center gap-1 whitespace-nowrap rounded-full border border-[#b9722a] bg-[#fff4d6] py-1 pl-1.5 pr-2.5 font-bold text-[#552a0f] text-[length:clamp(0.7rem,3.5vw,1rem)] shadow-[0px_3px_3px_rgba(0,0,0,0.25)] active:translate-y-px disabled:opacity-50"
               @click="openWinners"
             >
-              <img :src="TrophyImage" alt="" class="h-[1.35em] w-auto" />Winners
+              <img :src="TrophyImage" alt="" class="h-[1.35em] w-auto" />{{ $t('Winners') }}
             </button>
             <button
               type="button"
               :disabled="spinning"
-              class="flex items-center gap-1.5 rounded-full border border-[#b9722a] bg-[#fff4d6] py-1 pl-2 pr-3.5 font-bold text-[#552a0f] text-[length:clamp(0.8rem,3.8vw,1rem)] shadow-[0px_3px_3px_rgba(0,0,0,0.25)] active:translate-y-px disabled:opacity-50"
+              class="flex items-center gap-1 whitespace-nowrap rounded-full border border-[#b9722a] bg-[#fff4d6] py-1 pl-1.5 pr-2.5 font-bold text-[#552a0f] text-[length:clamp(0.7rem,3.5vw,1rem)] shadow-[0px_3px_3px_rgba(0,0,0,0.25)] active:translate-y-px disabled:opacity-50"
               @click="modal = 'prizes'"
             >
-              <img :src="GiftBoxImage" alt="" class="h-[1.35em] w-auto" />Prizes
+              <img :src="GiftBoxImage" alt="" class="h-[1.35em] w-auto" />{{ $t('Prizes') }}
             </button>
           </div>
         </div>
@@ -276,7 +303,7 @@ function openWinners() {
         <!-- live wins: a "LIVE" tag and a ticker of the latest wins -->
         <div class="w-full flex items-center gap-2 rounded-full border border-white/15 bg-black/25 p-1.5">
           <span class="shrink-0 flex items-center gap-1 rounded-full bg-[#e5261b] px-2.5 py-0.5 font-extrabold uppercase tracking-wide text-white text-[0.68rem]">
-            <span class="size-1.5 rounded-full bg-white animate-pulse" />Live
+            <span class="size-1.5 rounded-full bg-white animate-pulse" />{{ $t('Live') }}
           </span>
           <div class="ticker min-w-0 flex-1 overflow-hidden">
             <div class="live-track flex items-center w-max" :style="{ '--dur': `${Math.max(20, tiles.length * 5)}s` }">
@@ -304,7 +331,7 @@ function openWinners() {
 
         <!-- controls -->
         <div class="w-full max-w-[24rem] rounded-3xl border-2 border-[#cf8741] bg-[#fff4d6] p-3 shadow-[0px_6px_10px_rgba(0,0,0,0.3)]">
-          <p class="px-1 font-bold uppercase tracking-wide text-[#8a5a2b] text-[0.65rem]">Price per spin</p>
+          <p class="px-1 font-bold uppercase tracking-wide text-[#8a5a2b] text-[0.65rem]">{{ $t('Price per spin') }}</p>
           <div class="mt-1 grid gap-1" :style="{ gridTemplateColumns: `repeat(${tiers.length}, minmax(0, 1fr))` }">
             <button
               v-for="(t, i) in tiers"
@@ -323,7 +350,7 @@ function openWinners() {
             </button>
           </div>
 
-          <p class="mt-3 px-1 font-bold uppercase tracking-wide text-[#8a5a2b] text-[0.65rem]">Spins</p>
+          <p class="mt-3 px-1 font-bold uppercase tracking-wide text-[#8a5a2b] text-[0.65rem]">{{ $t('Spins') }}</p>
           <div class="mt-1 grid grid-cols-4 gap-1">
             <button
               v-for="(n, i) in COUNTS"
@@ -349,11 +376,11 @@ function openWinners() {
             @click="enough ? spin() : topUp.open()"
           >
             <template v-if="spinning">
-              {{ progress.total > 1 ? `Spin ${progress.current}/${progress.total}` : 'Spinning…' }}
+              {{ progress.total > 1 ? `${$t('Spin')} ${progress.current}/${progress.total}` : $t('Spinning…') }}
             </template>
-            <template v-else-if="!enough">Get stars</template>
+            <template v-else-if="!enough">{{ $t('Get stars') }}</template>
             <template v-else>
-              Spin
+              {{ $t('Spin') }}
               <img :src="StarIcon" alt="" class="w-[1.15em]" />{{ totalCost.toLocaleString('en-US') }}
             </template>
           </button>

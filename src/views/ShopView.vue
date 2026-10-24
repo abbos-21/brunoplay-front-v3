@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { t } from '@/i18n'
 import { computed, onMounted, ref } from 'vue'
 import CoinBalance from '@/components/CoinBalance.vue'
 import StarBalance from '@/components/StarBalance.vue'
@@ -6,6 +7,7 @@ import HamburgerButton from '@/components/HamburgerButton.vue'
 import SlidePanel from '@/components/SlidePanel.vue'
 import { RouterLink } from 'vue-router'
 import { MiningRate, CoinCapacity, CoinImage } from '@/assets/images'
+import { StarIcon } from '@/assets/svgs'
 import { useShopStore } from '@/stores/shop'
 import { useAuthStore } from '@/stores/auth'
 import { useToast } from '@/composables/useToast'
@@ -25,8 +27,8 @@ const ORDER: CardName[] = ['MINING_RATE', 'COIN_CAPACITY']
 
 // shown until the server answers
 const PLACEHOLDER: CardInfo[] = [
-  { cardName: 'MINING_RATE', currentLevel: 1, currentValue: 0.025, nextLevel: 2, nextValue: 0.03, upgradeCost: 700, canUpgrade: false, requirements: [] },
-  { cardName: 'COIN_CAPACITY', currentLevel: 1, currentValue: 5, nextLevel: 2, nextValue: 10, upgradeCost: 500, canUpgrade: false, requirements: [] },
+  { cardName: 'MINING_RATE', currentLevel: 1, currentValue: 0.025, nextLevel: 2, nextValue: 0.03, upgradeCost: 700, upgradeCurrency: 'COIN', canUpgrade: false, requirements: [] },
+  { cardName: 'COIN_CAPACITY', currentLevel: 1, currentValue: 5, nextLevel: 2, nextValue: 10, upgradeCost: 500, upgradeCurrency: 'COIN', canUpgrade: false, requirements: [] },
 ]
 
 const cards = computed(() => {
@@ -43,11 +45,15 @@ const busy = ref<CardName | null>(null)
 
 /** why the card cannot be upgraded right now (first unmet requirement, else the price) */
 function reason(c: CardInfo): string {
-  if (c.nextLevel === null) return 'This card is at the maximum level'
+  if (c.nextLevel === null) return t('This card is at the maximum level')
   const unmet = c.requirements.find((r) => !r.met)
-  if (unmet) return `Needs: ${unmet.description}`
-  if (c.upgradeCost !== null && (auth.user?.coins ?? 0) < c.upgradeCost)
-    return `You need ${c.upgradeCost.toLocaleString('en-US')} coins`
+  if (unmet) return t('Needs: {text}', { text: t(unmet.description) })
+  if (c.upgradeCost !== null) {
+    // a card is paid in coins or in stars, as the owner set it per level
+    const stars = c.upgradeCurrency === 'STAR'
+    const have = stars ? (auth.user?.starsBalance ?? 0) : (auth.user?.coins ?? 0)
+    if (have < c.upgradeCost) return t(stars ? 'You need {n} stars' : 'You need {n} coins', { n: c.upgradeCost.toLocaleString('en-US') })
+  }
   return ''
 }
 
@@ -61,7 +67,7 @@ async function upgrade(c: CardInfo) {
   busy.value = c.cardName
   try {
     await shop.upgradeCard(c.cardName)
-    toast.show(`${IMAGES[c.cardName].title} upgraded!`, 'success')
+    toast.show(t('{name} upgraded!', { name: t(IMAGES[c.cardName].title) }), 'success')
   } catch (e) {
     toast.show(apiMessage(e, 'Could not upgrade'), 'error')
   } finally {
@@ -85,13 +91,13 @@ async function upgrade(c: CardInfo) {
         to="/shop"
         class="border border-[#c17e23] shadow-[0px_4px_4px_rgba(0,0,0,0.25),inset_0px_4px_4px_rgba(255,255,255,0.25),inset_0px_-4px_4px_rgba(0,0,0,0.25)] rounded-2xl flex justify-center items-center font-bold py-[5px] bg-[#c17e23] text-white"
       >
-        Cards
+        {{ $t('Cards') }}
       </RouterLink>
       <RouterLink
         to="/shop/boosters"
         class="border border-[#c17e23] shadow-[0px_4px_4px_rgba(0,0,0,0.25),inset_0px_4px_4px_rgba(255,255,255,0.25),inset_0px_-4px_4px_rgba(0,0,0,0.25)] rounded-2xl flex justify-center items-center font-bold py-[5px] bg-[#fde7b8] text-[#552a0f]"
       >
-        Boosters
+        {{ $t('Boosters') }}
       </RouterLink>
     </div>
 
@@ -106,29 +112,29 @@ async function upgrade(c: CardInfo) {
           <div
             class="shrink-0 w-[clamp(4rem,19vw,5.25rem)] aspect-square rounded-2xl bg-[radial-gradient(circle_at_50%_40%,#fff6bf,#fbe166_70%)] border border-[#cf8741] shadow-[inset_0px_-4px_6px_rgba(193,126,35,0.45)] flex items-center justify-center p-2"
           >
-            <img :src="IMAGES[item.cardName].img" :alt="IMAGES[item.cardName].title" class="w-full h-full object-contain" />
+            <img :src="IMAGES[item.cardName].img" :alt="$t(IMAGES[item.cardName].title)" class="w-full h-full object-contain" />
           </div>
 
           <div class="flex-1 min-w-0">
             <h2 class="font-bold text-[#552a0f] leading-tight text-[length:clamp(1.15rem,6vw,1.6rem)]">
-              {{ IMAGES[item.cardName].title }}
+              {{ $t(IMAGES[item.cardName].title) }}
             </h2>
             <p class="text-[#8a5a2b] leading-tight text-[length:clamp(0.75rem,3.6vw,0.95rem)]">
-              {{ IMAGES[item.cardName].hint }}
+              {{ $t(IMAGES[item.cardName].hint) }}
             </p>
           </div>
 
           <span
             class="shrink-0 self-start rounded-full bg-[#552a0f] px-3 py-0.5 font-bold text-[#fbe166] text-[length:clamp(0.75rem,3.6vw,0.95rem)] shadow-[inset_0px_-2px_2px_rgba(0,0,0,0.35)]"
           >
-            Lvl {{ item.currentLevel }}
+            {{ $t('Lvl {n}', { n: item.currentLevel }) }}
           </span>
         </div>
 
         <!-- now → next -->
         <div class="mt-3 flex items-stretch gap-2">
           <div class="flex-1 rounded-2xl bg-[#fde7b8] border border-[#e3b66f] py-1.5 text-center">
-            <div class="text-[#8a5a2b] text-[length:clamp(0.65rem,3vw,0.8rem)] uppercase tracking-wide font-bold">Now</div>
+            <div class="text-[#8a5a2b] text-[length:clamp(0.65rem,3vw,0.8rem)] uppercase tracking-wide font-bold">{{ $t('Now') }}</div>
             <div class="font-extrabold text-[#552a0f] tabular-nums text-[length:clamp(1.05rem,5.4vw,1.45rem)]">
               {{ fmt(item.currentValue) }}
             </div>
@@ -146,7 +152,7 @@ async function upgrade(c: CardInfo) {
               class="text-[length:clamp(0.65rem,3vw,0.8rem)] uppercase tracking-wide font-bold"
               :class="item.nextLevel === null ? 'text-[#8a5a2b]' : 'text-[#2f7a12]'"
             >
-              {{ item.nextLevel === null ? 'Top level' : `Lvl ${item.nextLevel}` }}
+              {{ item.nextLevel === null ? $t('Top level') : $t('Lvl {n}', { n: item.nextLevel }) }}
             </div>
             <div
               class="font-extrabold tabular-nums text-[length:clamp(1.05rem,5.4vw,1.45rem)]"
@@ -174,11 +180,11 @@ async function upgrade(c: CardInfo) {
           :disabled="busy !== null"
           @click="upgrade(item)"
         >
-          <template v-if="busy === item.cardName">Upgrading…</template>
+          <template v-if="busy === item.cardName">{{ $t('Upgrading…') }}</template>
           <template v-else>
-            Upgrade
+            {{ $t('Upgrade') }}
             <span class="flex items-center gap-1">
-              <img :src="CoinImage" alt="" class="w-[1.2em]" />
+              <img :src="item.upgradeCurrency === 'STAR' ? StarIcon : CoinImage" alt="" class="w-[1.2em]" />
               {{ item.upgradeCost === null ? '' : item.upgradeCost.toLocaleString('en-US') }}
             </span>
           </template>
@@ -187,7 +193,7 @@ async function upgrade(c: CardInfo) {
           v-else
           class="mt-3 w-full rounded-2xl border-2 border-[#74c14e] bg-[#e4f7d6] py-2 text-center font-extrabold text-[#1f6a05] text-[length:clamp(1.05rem,5.4vw,1.4rem)]"
         >
-          Fully upgraded ✓
+          {{ $t('Fully upgraded ✓') }}
         </div>
       </article>
     </div>

@@ -1,6 +1,8 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import { RouterLink } from 'vue-router'
+import { useGamesStore } from '@/stores/games'
+import { useCountdown } from '@/composables/useCountdown'
 import CoinBalance from '@/components/CoinBalance.vue'
 import StarBalance from '@/components/StarBalance.vue'
 import HamburgerButton from '@/components/HamburgerButton.vue'
@@ -8,6 +10,20 @@ import SlidePanel from '@/components/SlidePanel.vue'
 import { GameMegaChest, GameSpin, GameRide } from '@/assets/images'
 
 const isMenuOpen = ref(false)
+const games = useGamesStore()
+
+// the tournament running now (or the next one) and the gifts waiting in the collection
+const tournament = computed(() => games.activeTournament)
+const { formatted } = useCountdown(() => {
+  const x = tournament.value
+  return x ? (x.status === 'SCHEDULED' ? x.startAt : x.endAt) : null
+})
+const giftCount = computed(() => games.gifts.filter((g) => g.status === 'OWNED').length)
+
+onMounted(() => {
+  games.fetchTournaments().catch(() => {})
+  games.fetchGifts().catch(() => {})
+})
 
 const gameCards = [
   {
@@ -59,6 +75,33 @@ const gameCards = [
     <div
       class="flex flex-col gap-4 mt-4 px-1 pb-2 overflow-y-scroll flex-1 min-h-0 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
     >
+      <RouterLink
+        v-if="tournament"
+        :to="`/tournaments/${tournament.id}`"
+        class="shrink-0 rounded-3xl border-2 border-[#cf8741] bg-[linear-gradient(135deg,#fbe166,#f9b23a)] p-3 shadow-[0px_4px_4px_rgba(0,0,0,0.25)] flex items-center gap-3"
+      >
+        <span class="text-4xl">🏆</span>
+        <span class="flex-1 min-w-0">
+          <span class="block font-extrabold text-[#552a0f] leading-tight truncate text-[length:clamp(1.05rem,5.2vw,1.4rem)]">{{ tournament.name }}</span>
+          <span class="block font-bold text-[#7a3a0a] tabular-nums text-[length:clamp(0.8rem,3.9vw,1rem)]">
+            {{ tournament.status === 'SCHEDULED' ? $t('Starts in') : $t('Ends in') }} {{ formatted }}
+            <template v-if="tournament.joined && tournament.rank"> · #{{ tournament.rank }}</template>
+          </span>
+        </span>
+        <span class="shrink-0 rounded-full bg-[#c8200f] px-3 py-1 font-bold text-white text-[length:clamp(0.8rem,4vw,1rem)]">
+          {{ tournament.joined ? $t('Open') : $t('Join') }}
+        </span>
+      </RouterLink>
+
+      <RouterLink
+        to="/gifts"
+        class="shrink-0 rounded-3xl border-2 border-[#cf8741] bg-[#fff4d6] p-3 shadow-[0px_4px_4px_rgba(0,0,0,0.25)] flex items-center gap-3"
+      >
+        <span class="text-3xl">🎁</span>
+        <span class="flex-1 font-bold text-[#552a0f] text-[length:clamp(1rem,5vw,1.3rem)]">{{ $t('My gifts') }}</span>
+        <span v-if="giftCount" class="rounded-full bg-[#c8200f] px-2.5 py-px font-bold text-white">{{ giftCount }}</span>
+      </RouterLink>
+
       <article
         v-for="game in gameCards"
         :key="game.key"
@@ -69,7 +112,7 @@ const gameCards = [
             class="shrink-0 w-[clamp(4.75rem,23vw,6.25rem)] aspect-square rounded-2xl overflow-hidden game-tile"
             :class="{ 'grayscale opacity-70': !game.to }"
           >
-            <img :src="game.img" :alt="game.title" class="game-art w-full h-full object-cover" :class="game.motion" />
+            <img :src="game.img" :alt="$t(game.title)" class="game-art w-full h-full object-cover" :class="game.motion" />
           </div>
 
           <div class="flex-1 min-w-0">
@@ -77,23 +120,23 @@ const gameCards = [
               class="inline-block rounded-full px-2.5 py-px font-bold text-white leading-tight text-[length:clamp(0.65rem,3.1vw,0.8rem)] uppercase tracking-wide"
               :style="{ backgroundColor: game.accent }"
             >
-              {{ game.tag }}
+              {{ $t(game.tag) }}
             </span>
-            <h2 class="mt-1 font-bold text-[#552a0f] leading-tight text-[length:clamp(1.2rem,6.2vw,1.7rem)]">{{ game.title }}</h2>
-            <p class="text-[#8a5a2b] leading-tight text-[length:clamp(0.75rem,3.6vw,0.95rem)]">{{ game.hint }}</p>
+            <h2 class="mt-1 font-bold text-[#552a0f] leading-tight text-[length:clamp(1.2rem,6.2vw,1.7rem)]">{{ $t(game.title) }}</h2>
+            <p class="text-[#8a5a2b] leading-tight text-[length:clamp(0.75rem,3.6vw,0.95rem)]">{{ $t(game.hint) }}</p>
           <RouterLink
             v-if="game.to"
             :to="game.to"
             class="mt-2 inline-flex items-center justify-center rounded-full border px-7 py-1 font-bold text-white text-[length:clamp(0.95rem,4.6vw,1.2rem)] shadow-[inset_0px_3px_3px_rgba(255,255,255,0.25),inset_0px_-3px_3px_rgba(0,0,0,0.2)] active:translate-y-px"
             :style="{ backgroundColor: game.accent, borderColor: game.accentDark }"
           >
-            Play
+            {{ $t('Play') }}
           </RouterLink>
           <span
             v-else
             class="mt-2 inline-flex items-center justify-center rounded-full border border-[#b59468] bg-[#c9a97d] px-5 py-1 font-bold text-white text-[length:clamp(0.95rem,4.6vw,1.2rem)] select-none"
           >
-            Coming soon
+            {{ $t('Coming soon') }}
           </span>
           </div>
         </div>

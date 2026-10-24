@@ -11,6 +11,8 @@ import ChestView from '@/views/ChestView.vue'
 import WithdrawView from '@/views/WithdrawView.vue'
 import WithdrawalHistoryView from '@/views/WithdrawalHistoryView.vue'
 import LevelsView from '@/views/LevelsView.vue'
+import GiftsView from '@/views/GiftsView.vue'
+import TournamentView from '@/views/TournamentView.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -66,15 +68,27 @@ const router = createRouter({
       meta: { hideNav: true },
     },
     {
+      path: '/gifts',
+      name: 'gifts',
+      component: GiftsView,
+    },
+    {
+      path: '/tournaments/:id',
+      name: 'tournament',
+      component: TournamentView,
+      meta: { hideNav: true },
+    },
+    {
       path: '/tasks',
       name: 'tasks',
       component: TasksView,
     },
     {
-      path: '/levels',
-      name: 'levels',
+      path: '/level',
+      name: 'level',
       component: LevelsView,
     },
+    { path: '/levels', redirect: '/level' },
     {
       path: '/friends',
       name: 'friends',

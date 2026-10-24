@@ -2,13 +2,14 @@
 import { computed, onBeforeUnmount, ref, watch } from 'vue'
 import LevelBadge from '@/components/LevelBadge.vue'
 import { levelStyle } from '@/composables/levelStyles'
+import { playSfx } from '@/composables/useSfx'
 import { useLevelUp } from '@/composables/useLevelUp'
 
 /**
  * Plays when the player's level goes up: the old badge charges up and turns away, the new one spins in
  * with a burst of light, then "LEVEL UP!" lands. Tap anywhere to continue (it also closes by itself).
  */
-const { level, hasLevel, hold } = useLevelUp()
+const { level, hasLevel, hold, reward } = useLevelUp()
 
 const active = ref<{ id: number; from: number; to: number } | null>(null)
 const leaving = ref(false)
@@ -34,6 +35,7 @@ const reduced = typeof window !== 'undefined' && window.matchMedia?.('(prefers-r
 
 function start(from: number, to: number) {
   hold.value = from // the header badge waits on the old level
+  playSfx('levelUp')
   leaving.value = false
   active.value = { id: ++counter, from, to }
   autoClose = setTimeout(close, reduced ? 2200 : 4600)
@@ -45,6 +47,7 @@ function close() {
   leaving.value = true
   leaveTimer = setTimeout(() => {
     active.value = null
+    reward.value = null
     hold.value = null // the header badge now takes the new level (and pops)
     leaving.value = false
   }, 350)
@@ -75,7 +78,7 @@ const sparks = Array.from({ length: 16 }, (_, i) => ({
     :class="{ leaving }"
     :style="{ '--glow': glow }"
     role="dialog"
-    aria-label="Level up"
+    :aria-label="$t('Level up')"
     @click="close"
   >
     <div class="absolute inset-0 bg-[radial-gradient(circle_at_50%_45%,rgba(30,10,50,0.78),rgba(0,0,0,0.9))]" />
@@ -110,12 +113,18 @@ const sparks = Array.from({ length: 16 }, (_, i) => ({
         class="title mt-5 font-extrabold tracking-wide text-white text-[length:clamp(2.2rem,12vw,3.2rem)] leading-none"
         :style="{ textShadow: `0 3px 0 ${look.stroke}, 0 0 18px ${glow}, 0 0 4px ${look.stroke}` }"
       >
-        LEVEL UP!
+        {{ $t('LEVEL UP!') }}
       </h2>
       <p class="sub mt-2 font-bold text-white text-[length:clamp(1.05rem,5.4vw,1.5rem)]">
-        Level {{ active.to }} · <span :style="{ color: glow }">{{ look.name }}</span>
+        {{ $t('Level {n}', { n: active.to }) }} · <span :style="{ color: glow }">{{ $t(look.name) }}</span>
       </p>
-      <p class="hint mt-7 text-white/70 text-[length:clamp(0.8rem,4vw,1rem)]">Tap to continue</p>
+      <p v-if="reward" class="sub mt-3 font-extrabold text-[#fbe166] text-[length:clamp(1rem,5vw,1.35rem)] [text-shadow:0_2px_0_rgba(0,0,0,0.35)]">
+        {{ $t('Reward') }}:
+        <template v-if="reward.coins">+{{ reward.coins.toLocaleString('en-US') }} {{ $t('coins') }}</template>
+        <template v-if="reward.coins && reward.stars"> · </template>
+        <template v-if="reward.stars">+{{ reward.stars.toLocaleString('en-US') }} {{ $t('stars') }}</template>
+      </p>
+      <p class="hint mt-7 text-white/70 text-[length:clamp(0.8rem,4vw,1rem)]">{{ $t('Tap to continue') }}</p>
     </div>
   </div>
 </template>

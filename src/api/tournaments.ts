@@ -1,8 +1,12 @@
 import client from './client';
 import type { Tournament, LeaderboardResponse } from '@/types';
 
-export function getActiveTournament() {
-  return client.get<{ tournament: Tournament | null }>('/tournaments/active').then((r) => r.data.tournament);
+export function getTournaments() {
+  return client.get<{ tournaments: Tournament[] | null }>('/tournaments').then((r) => r.data.tournaments ?? []);
+}
+
+export function joinTournament(id: number) {
+  return client.post(`/tournaments/${id}/join`).then((r) => r.data);
 }
 
 export function getLeaderboard(tournamentId: number, page = 1) {

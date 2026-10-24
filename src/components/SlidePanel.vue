@@ -3,9 +3,12 @@ import { computed, onMounted, ref } from 'vue'
 import { storeToRefs } from 'pinia'
 import { getAppInfo, updateSettings } from '@/api/user'
 import { getTelegram } from '@/composables/useTelegram'
+import { locale, setLocale, type Locale } from '@/i18n'
+import { playSfx, setSfxEnabled, sfxEnabled } from '@/composables/useSfx'
 import type { AppInfo } from '@/types'
-import { ArrowLeftSVG, LanguageArrowSVG } from '@/assets/svgs'
+import { ArrowLeftSVG } from '@/assets/svgs'
 import { useAuthStore } from '@/stores/auth'
+import NotificationSettings from '@/components/NotificationSettings.vue'
 import {
   ProfileImage,
   UkFlagImage,
@@ -33,7 +36,7 @@ const photoUrl = ref(getTelegram()?.initDataUnsafe.user?.photo_url ?? '')
 const auth = useAuthStore()
 const { user } = storeToRefs(auth)
 
-// Support / News / FAQ links come from the server (/user/app-info)
+// Support / News / FAQ links come from the server (/app-info)
 const info = ref<AppInfo | null>(null)
 onMounted(() => {
   getAppInfo()
@@ -44,21 +47,30 @@ onMounted(() => {
 function openLink(url?: string) {
   if (!url) return
   const tg = getTelegram()
-  if (tg && /^https:\/\/t\.me\//.test(url)) tg.openTelegramLink(url)
+  if (tg && url.startsWith('https://t.me/')) tg.openTelegramLink(url)
   else window.open(url, '_blank', 'noopener')
 }
 
-// language: saved on the server; the screens are English only for now
-const language = computed(() => user.value?.language ?? 'EN')
-async function toggleLanguage() {
-  const next = language.value === 'EN' ? 'RU' : 'EN'
+// language: applied at once, remembered on the phone and saved on the server
+const language = computed<Locale>(() => locale.value)
+async function chooseLanguage(next: Locale) {
+  if (next === locale.value) return
+  setLocale(next)
+  auth.updateUser({ language: next === 'ru' ? 'RU' : 'EN' })
   try {
-    await updateSettings({ language: next })
-    auth.updateUser({ language: next })
+    await updateSettings({ language: next === 'ru' ? 'RU' : 'EN' })
   } catch {
-    // keep the current language
+    // the choice still works here; the server copy is saved next time
   }
 }
+function onToggleSfx() {
+  setSfxEnabled(!sfxEnabled.value)
+  playSfx('success')
+}
+const languages: { code: Locale; name: string; flag: string }[] = [
+  { code: 'en', name: 'English', flag: UkFlagImage },
+  { code: 'ru', name: 'Русский', flag: RuFlagImage },
+]
 </script>
 
 <template>
@@ -85,54 +97,56 @@ async function toggleLanguage() {
           <!-- <div class="border border-white w-20 h-20 rounded-full"></div> -->
           <img
             :src="photoUrl || ProfileImage"
-            alt="profile-image"
+            alt=""
             :class="photoUrl ? 'object-cover' : 'object-contain'"
             class="w-20 aspect-square rounded-full bg-white"
             referrerpolicy="no-referrer"
             @error="photoUrl = ''"
           />
           <h1 class="text-3xl font-bold mt-1">{{ user?.firstName }}</h1>
-          <h1 class="text-lg font-bold">ID: {{ user?.telegramId }}</h1>
+          <h1 class="text-lg font-bold">{{ $t('ID') }}: {{ user?.telegramId }}</h1>
 
-          <button
-            @click="toggleLanguage"
-            type="button"
-            class="bg-[#fde7b8] border border-[#cf8741] w-full rounded-2xl p-4 flex justify-between items-center mt-4 cursor-pointer"
-            style="
-              box-shadow:
-                inset 0px 2px 2px rgba(255, 255, 255, 0.25),
-                inset 0px -2px 2px rgba(0, 0, 0, 0.25);
-            "
-          >
-            <div class="flex items-center gap-4">
-              <img :src="language === 'RU' ? RuFlagImage : UkFlagImage" alt="flag" class="h-10" />
-              <span class="font-bold text-lg">{{ language === 'RU' ? 'Русский' : 'English' }}</span>
-            </div>
-
-            <LanguageArrowSVG class="w-5" />
-          </button>
+          <div class="mt-4 grid w-full grid-cols-2 gap-2" role="radiogroup" :aria-label="$t('Language')">
+            <button
+              v-for="l in languages"
+              :key="l.code"
+              type="button"
+              role="radio"
+              :aria-checked="language === l.code"
+              class="flex min-w-0 items-center justify-center gap-1.5 rounded-2xl border px-1.5 py-3 font-bold transition-colors active:translate-y-px"
+              :class="
+                language === l.code
+                  ? 'border-[#d9680f] bg-[#f96a07] text-white shadow-[inset_0px_3px_3px_rgba(255,255,255,0.25),inset_0px_-3px_3px_rgba(0,0,0,0.2)]'
+                  : 'border-[#cf8741] bg-[#fde7b8] text-[#552a0f] shadow-[inset_0px_2px_2px_rgba(255,255,255,0.25),inset_0px_-2px_2px_rgba(0,0,0,0.25)]'
+              "
+              @click="chooseLanguage(l.code)"
+            >
+              <img :src="l.flag" alt="" class="h-6 shrink-0" />
+              <span class="min-w-0 truncate text-[length:clamp(0.85rem,4vw,1rem)]">{{ l.name }}</span>
+            </button>
+          </div>
 
           <div
-            class="bg-[#fde7b8] border border-[#cf8741] w-full rounded-2xl p-4 flex justify-between items-center mt-4"
+            class="bg-[#fde7b8] border border-[#cf8741] w-full rounded-2xl p-3 flex justify-between items-center gap-2 mt-4"
             style="
               box-shadow:
                 inset 0px 2px 2px rgba(255, 255, 255, 0.25),
                 inset 0px -2px 2px rgba(0, 0, 0, 0.25);
             "
           >
-            <div class="flex items-center gap-4">
-              <img :src="MusicBoxImage" alt="music-box" class="h-10" />
-              <div class="flex flex-col items-start">
-                <span class="font-bold text-lg -mb-1">Music 1</span>
-                <span class="font-bold text-[rgba(85,42,15,.7)] -mt-1">Default</span>
+            <div class="flex min-w-0 items-center gap-3">
+              <img :src="MusicBoxImage" alt="" class="h-10 shrink-0" />
+              <div class="flex min-w-0 flex-col items-start">
+                <span class="whitespace-nowrap font-bold -mb-1 text-[length:clamp(1rem,4.6vw,1.125rem)]">{{ $t('Music') }} 1</span>
+                <span class="max-w-full truncate font-bold text-[rgba(85,42,15,.7)] -mt-1 text-[length:clamp(0.8rem,3.7vw,1rem)]">{{ $t('Default') }}</span>
               </div>
             </div>
 
-            <div class="flex gap-2 items-center">
+            <div class="flex shrink-0 gap-1 items-center">
               <button
                 type="button"
                 disabled
-                class="w-8 h-8 sm:w-10 sm:h-10 flex justify-center items-center opacity-40"
+                class="w-7 h-7 sm:w-10 sm:h-10 flex justify-center items-center opacity-40"
               >
                 <img :src="MusicPrevImage" alt="" class="w-full" />
               </button>
@@ -140,7 +154,7 @@ async function toggleLanguage() {
               <button
                 type="button"
                 @click="toggle"
-                class="w-8 h-8 sm:w-10 sm:h-10 flex justify-center items-center cursor-pointer"
+                class="w-7 h-7 sm:w-10 sm:h-10 flex justify-center items-center cursor-pointer"
               >
                 <img :src="MusicPauseImage" v-if="isPlaying" alt="" class="w-full" />
                 <img :src="MusicPlayImage" v-else alt="" class="w-full" />
@@ -149,19 +163,40 @@ async function toggleLanguage() {
               <button
                 type="button"
                 disabled
-                class="w-8 h-8 sm:w-10 sm:h-10 flex justify-center items-center opacity-40"
+                class="w-7 h-7 sm:w-10 sm:h-10 flex justify-center items-center opacity-40"
               >
                 <img :src="MusicNextImage" alt="" class="w-full" />
               </button>
             </div>
           </div>
+
+          <button
+            type="button"
+            role="switch"
+            :aria-checked="sfxEnabled"
+            class="mt-3 flex w-full items-center justify-between gap-3 rounded-2xl border border-[#cf8741] bg-[#fde7b8] px-4 py-2.5 font-bold text-[#552a0f] shadow-[inset_0px_2px_2px_rgba(255,255,255,0.25),inset_0px_-2px_2px_rgba(0,0,0,0.25)] active:translate-y-px"
+            @click="onToggleSfx"
+          >
+            <span class="min-w-0 text-left leading-tight text-[length:clamp(0.9rem,4.3vw,1.125rem)]">{{ $t('Sound effects') }}</span>
+            <span
+              class="relative block h-7 w-12 shrink-0 rounded-full transition-colors shadow-[inset_0px_2px_3px_rgba(0,0,0,0.3)]"
+              :class="sfxEnabled ? 'bg-[#1fb826]' : 'bg-[#c9a97d]'"
+            >
+              <span
+                class="absolute left-0.5 top-0.5 block size-6 rounded-full bg-white shadow-[0px_2px_3px_rgba(0,0,0,0.35)] transition-transform duration-200"
+                :class="sfxEnabled ? 'translate-x-5' : 'translate-x-0'"
+              />
+            </span>
+          </button>
+
+          <NotificationSettings :bot-username="info?.botUsername" />
         </div>
 
-        <div class="w-full grid grid-cols-3 gap-4">
+        <div class="w-full grid grid-cols-3 gap-2">
           <button
             type="button"
             :disabled="!info?.supportUrl"
-            class="flex flex-col items-center p-2 disabled:opacity-50"
+            class="flex min-w-0 flex-col items-center p-2 disabled:opacity-50"
             style="
               background: #fde7b8;
               border: 1px solid #cf8741;
@@ -172,14 +207,14 @@ async function toggleLanguage() {
             "
             @click="openLink(info?.supportUrl)"
           >
-            <img :src="SupportImage" alt="support" class="h-10" />
-            <span class="text-lg font-bold">Support</span>
+            <img :src="SupportImage" :alt="$t('Support')" class="h-10" />
+            <span class="max-w-full truncate font-bold text-[length:clamp(0.75rem,3.8vw,1.125rem)]">{{ $t('Support') }}</span>
           </button>
 
           <button
             type="button"
-            :disabled="!info?.communityUrl"
-            class="flex flex-col items-center p-2 disabled:opacity-50"
+            :disabled="!info?.newsUrl"
+            class="flex min-w-0 flex-col items-center p-2 disabled:opacity-50"
             style="
               background: #fde7b8;
               border: 1px solid #cf8741;
@@ -188,16 +223,16 @@ async function toggleLanguage() {
                 inset 0px -4px 4px rgba(0, 0, 0, 0.25);
               border-radius: 16px;
             "
-            @click="openLink(info?.communityUrl)"
+            @click="openLink(info?.newsUrl)"
           >
-            <img :src="NewsImage" alt="news" class="h-10" />
-            <span class="text-lg font-bold">News</span>
+            <img :src="NewsImage" :alt="$t('News')" class="h-10" />
+            <span class="max-w-full truncate font-bold text-[length:clamp(0.75rem,3.8vw,1.125rem)]">{{ $t('News') }}</span>
           </button>
 
           <button
             type="button"
-            :disabled="!info?.communityUrl"
-            class="flex flex-col items-center p-2 disabled:opacity-50"
+            :disabled="!info?.faqUrl"
+            class="flex min-w-0 flex-col items-center p-2 disabled:opacity-50"
             style="
               background: #fde7b8;
               border: 1px solid #cf8741;
@@ -206,10 +241,10 @@ async function toggleLanguage() {
                 inset 0px -4px 4px rgba(0, 0, 0, 0.25);
               border-radius: 16px;
             "
-            @click="openLink(info?.communityUrl)"
+            @click="openLink(info?.faqUrl)"
           >
-            <img :src="FaqImage" alt="faq" class="h-10" />
-            <span class="text-lg font-bold">FAQ</span>
+            <img :src="FaqImage" :alt="$t('FAQ')" class="h-10" />
+            <span class="max-w-full truncate font-bold text-[length:clamp(0.75rem,3.8vw,1.125rem)]">{{ $t('FAQ') }}</span>
           </button>
         </div>
       </div>

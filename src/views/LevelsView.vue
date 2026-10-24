@@ -6,6 +6,7 @@ import HamburgerButton from '@/components/HamburgerButton.vue'
 import SlidePanel from '@/components/SlidePanel.vue'
 import LevelBadge from '@/components/LevelBadge.vue'
 import { LEVEL_STYLES } from '@/composables/levelStyles'
+import { locale } from '@/i18n'
 
 const isMenuOpen = ref(false)
 </script>
@@ -21,7 +22,7 @@ const isMenuOpen = ref(false)
     </div>
 
     <h1 class="mt-4 text-center font-bold text-white text-[length:clamp(1.3rem,6.6vw,1.8rem)] [text-shadow:0px_2px_4px_rgba(0,0,0,0.35)]">
-      Levels
+      {{ $t('Levels') }}
     </h1>
 
     <div class="mt-3 grid grid-cols-2 gap-3 px-1 pb-2 overflow-y-scroll flex-1 min-h-0 content-start [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
@@ -32,8 +33,8 @@ const isMenuOpen = ref(false)
         :class="{ 'col-span-2': l.level === 10 }"
       >
         <LevelBadge :level="l.level" height="clamp(4.5rem,24vw,6rem)" class="!ms-0" />
-        <p class="mt-1 font-bold text-[#552a0f] text-[length:clamp(1rem,5vw,1.3rem)] leading-tight">{{ l.name }}</p>
-        <p class="text-[#8a5a2b] font-bold uppercase tracking-wide text-[length:clamp(0.65rem,3.1vw,0.8rem)]">Level {{ l.level }}</p>
+        <p class="mt-1 font-bold text-[#552a0f] text-[length:clamp(1rem,5vw,1.3rem)] leading-tight">{{ $t(l.name) }}</p>
+        <p class="text-[#8a5a2b] font-bold text-[length:clamp(0.65rem,3.1vw,0.8rem)]" :class="locale === 'en' ? 'uppercase tracking-wide' : ''">{{ $t('Level {n}', { n: l.level }) }}</p>
       </div>
     </div>
 

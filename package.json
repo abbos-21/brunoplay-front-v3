@@ -15,6 +15,7 @@
     "format": "prettier --write --experimental-cli src/"
   },
   "dependencies": {
+    "@tonconnect/ui": "^2.0.9",
     "@unocss/reset": "^66.6.0",
     "axios": "^1.13.6",
     "kaboom": "^3000.1.17",

@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { t } from '@/i18n'
 import { computed, onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import CoinBalance from '@/components/CoinBalance.vue'
@@ -11,6 +12,9 @@ import { apiMessage } from '@/composables/apiError'
 import { useTasksStore } from '@/stores/tasks'
 import { getTelegram } from '@/composables/useTelegram'
 import { useTaskAlerts } from '@/composables/useTaskAlerts'
+import { AdError } from '@/composables/useAds'
+import { isApiDisabled } from '@/api/client'
+import { StarIcon } from '@/assets/svgs'
 import PendingDot from '@/components/PendingDot.vue'
 import type { Task } from '@/types'
 
@@ -33,19 +37,19 @@ const fallbackMain: Task[] = [
 ]
 
 onMounted(async () => {
+  tasks.fetchBonus().catch(() => {})
   try {
     await tasks.fetchTasks()
   } catch {
-    // keep placeholder list when the API is unavailable
+    // keep the placeholder list when the API is unavailable
   }
-  // everything unfinished that was not seen before is NEW; from now on it counts as seen (the tab badge goes away)
-  const pending = [...mainList(), ...otherList()].filter((t) => !t.isCompleted).map((t) => t.id)
-  newIds.value = pending.filter((id) => !alerts.isSeen(id))
-  // only Main is on screen now: Others counts as seen when it is opened
-  alerts.markSeen(mainList().filter((t) => !t.isCompleted).map((t) => t.id))
+  // the server knows which tasks are new to this player; they are tagged until the player leaves the page
+  newIds.value = tasks.tasks.filter((t) => t.isNew && !t.isCompleted).map((t) => t.id)
+  alerts.markSeen()
 })
 
-const mainList = () => (tasks.mainTasks.length ? tasks.mainTasks : fallbackMain)
+// the placeholder list is only for developing the screens without a backend
+const mainList = () => (isApiDisabled && !tasks.mainTasks.length ? fallbackMain : tasks.mainTasks)
 const otherList = () => tasks.otherTasks
 
 // which tab still has tasks the player has not seen (and has not opened yet)
@@ -57,12 +61,11 @@ const othersHasNew = computed(
 function openTab(next: 'main' | 'others') {
   tab.value = next
   opened.value = new Set([...opened.value, next])
-  if (next === 'others') alerts.markSeen(otherList().filter((t) => !t.isCompleted).map((t) => t.id))
 }
 
 const list = computed(() => {
   if (tab.value === 'others') return otherList()
-  return tasks.mainTasks.length ? tasks.mainTasks : fallbackMain
+  return mainList()
 })
 
 function imageFor(task: Task) {
@@ -76,24 +79,49 @@ function imageFor(task: Task) {
 
 function complete(task: Task) {
   if (task.type === 'INVITE_FRIENDS') return router.push('/friends')
-  if (!task.channelUsername) return
-  const url = `https://t.me/${task.channelUsername.replace(/^@/, '')}`
+  // the link the admin set, else the channel; opening it also starts the server's timer for the check
+  const url = task.url || (task.channelUsername ? `https://t.me/${task.channelUsername.replace(/^@/, '')}` : '')
+  if (!url) return
+  void tasks.openTask(task.id)
   const tg = getTelegram()
-  if (tg) tg.openTelegramLink(url)
+  if (tg && url.startsWith('https://t.me/')) tg.openTelegramLink(url)
+  else if (tg) tg.openLink(url)
   else window.open(url, '_blank')
+}
+
+function rewardText(r: { reward: number; rewardStars?: number }) {
+  const parts: string[] = []
+  if (r.reward > 0) parts.push(t('{n} coins', { n: r.reward }))
+  if ((r.rewardStars ?? 0) > 0) parts.push(t('{n} stars', { n: r.rewardStars ?? 0 }))
+  return parts.join(' + ')
 }
 
 async function check(task: Task) {
   if (task.id < 0) return
   try {
-    const r = await tasks.checkTask(task.id)
-    if (r.completed && r.reward > 0) toast.show(`Done! You got ${r.reward} coins`, 'success')
-    else if (r.completed) toast.show('Already completed', 'info')
-    else toast.show(r.error || 'Not done yet', 'warning')
+    const r = task.type === 'WATCH_ADS' ? await tasks.watchTaskAd(task.id) : await tasks.checkTask(task.id)
+    if (r.completed && (r.reward > 0 || (r.rewardStars ?? 0) > 0)) toast.show(t('Done! You got {text}', { text: rewardText(r) }), 'success')
+    else if (r.completed) toast.show(t('Already completed'), 'info')
+    else if (task.type === 'WATCH_ADS' && r.progress !== undefined) toast.show(t('Ad watched: {n} of {total}', { n: r.progress, total: r.required ?? task.required ?? 1 }), 'success')
+    else toast.show(r.error ? t(r.error) : r.message ? t(r.message) : t('Not done yet'), 'warning')
   } catch (e) {
-    toast.show(apiMessage(e, 'Could not check the task'), 'error')
+    toast.show(e instanceof AdError ? e.message : apiMessage(e, 'Could not check the task'), e instanceof AdError ? 'warning' : 'error')
   }
 }
+
+async function claimBonus() {
+  try {
+    const r = await tasks.claimBonus()
+    toast.show(t('You got {n} coins', { n: r.coins }), 'success')
+  } catch (e) {
+    toast.show(e instanceof AdError ? e.message : apiMessage(e, 'Could not get the bonus'), e instanceof AdError ? 'warning' : 'error')
+  }
+}
+
+const progressText = (task: Task) =>
+  task.type === 'INVITE_FRIENDS' || task.type === 'WATCH_ADS'
+    ? `${task.progress ?? 0}/${task.required ?? task.requiredInvites ?? 1}`
+    : ''
 
 const tabBase =
   'relative border border-[#c17e23] shadow-[0px_4px_4px_rgba(0,0,0,0.25),inset_0px_4px_4px_rgba(255,255,255,0.25),inset_0px_-4px_4px_rgba(0,0,0,0.25)] rounded-2xl flex justify-center items-center font-bold py-[5px]'
@@ -115,20 +143,38 @@ const tabBase =
         :class="[tabBase, tab === 'main' ? 'bg-[#c17e23] text-white' : 'bg-[#fde7b8] text-[#552a0f]']"
         @click="openTab('main')"
       >
-        Main
+        {{ $t('Main') }}
       </button>
       <button
         type="button"
         :class="[tabBase, tab === 'others' ? 'bg-[#c17e23] text-white' : 'bg-[#fde7b8] text-[#552a0f]']"
         @click="openTab('others')"
       >
-        Others
+        {{ $t('Others') }}
         <Transition name="dot"><PendingDot v-if="othersHasNew" /></Transition>
       </button>
     </div>
 
     <div class="flex flex-col gap-4 mt-4 px-1 pb-2 overflow-y-scroll flex-1 min-h-0 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
-      <p v-if="!list.length" class="text-center font-bold text-[#552a0f] mt-8">No tasks here yet</p>
+      <article
+        v-if="tab === 'others' && tasks.bonus && tasks.bonus.perDay > 0"
+        class="shrink-0 rounded-3xl border-2 border-[#cf8741] bg-[#fff4d6] p-3 shadow-[0px_4px_4px_rgba(0,0,0,0.25)] flex items-center gap-3"
+      >
+        <div class="flex-1 min-w-0">
+          <h2 class="font-bold text-[#552a0f] leading-tight text-[length:clamp(1rem,5vw,1.3rem)]">{{ $t('Watch an ad, get coins') }}</h2>
+          <p class="mt-0.5 text-[#8a5a2b] text-[length:clamp(0.72rem,3.4vw,0.9rem)]">{{ $t('{n} left today', { n: tasks.bonus.left }) }}</p>
+        </div>
+        <button
+          type="button"
+          :disabled="tasks.isLoading || tasks.bonus.left <= 0"
+          class="shrink-0 flex items-center gap-1 rounded-full border border-[#15861b] bg-[#1fb826] px-3 py-1 font-bold text-white text-[length:clamp(0.82rem,4.1vw,1.15rem)] disabled:opacity-60"
+          @click="claimBonus"
+        >
+          <img :src="CoinImage" alt="" class="w-[1.2em]" />+{{ tasks.bonus.coins.toLocaleString('en-US') }}
+        </button>
+      </article>
+
+      <p v-if="!list.length" class="text-center font-bold text-[#552a0f] mt-8">{{ $t('No tasks here yet') }}</p>
 
       <article
         v-for="task in list"
@@ -140,7 +186,7 @@ const tabBase =
           <div
             class="shrink-0 size-[clamp(3.5rem,17vw,4.5rem)] rounded-2xl bg-[radial-gradient(circle_at_50%_40%,#fff6bf,#fbe166_75%)] border border-[#cf8741] flex items-center justify-center"
           >
-            <img :src="imageFor(task)" :alt="task.title" class="w-[82%] h-[82%] rounded-full object-cover" />
+            <img :src="imageFor(task)" :alt="$t(task.title)" class="w-[82%] h-[82%] rounded-full object-cover" />
           </div>
 
           <div class="flex-1 min-w-0">
@@ -149,41 +195,49 @@ const tabBase =
                 v-if="newIds.includes(task.id) && !task.isCompleted"
                 class="new-tag mr-1.5 inline-block align-middle rounded-full bg-[linear-gradient(180deg,#ff5a4f,#d0170c)] border border-white px-2 py-px text-[0.65rem] font-extrabold uppercase leading-tight tracking-wide text-white shadow-[0px_2px_3px_rgba(0,0,0,0.3)]"
               >
-                New
+                {{ $t('New') }}
               </span>
-              {{ task.title }}
+              {{ $t(task.title) }}
             </h2>
-            <p class="mt-0.5 text-[#8a5a2b] leading-tight text-[length:clamp(0.72rem,3.4vw,0.9rem)]">{{ task.description }}</p>
+            <p class="mt-0.5 text-[#8a5a2b] leading-tight text-[length:clamp(0.72rem,3.4vw,0.9rem)]">{{ $t(task.description) }}</p>
           </div>
         </div>
 
         <div class="mt-3 flex items-center gap-2">
           <span
-            class="shrink-0 flex items-center gap-1 rounded-full bg-[#fde7b8] border border-[#e3b66f] pl-1 pr-3 py-0.5 font-extrabold text-[#552a0f] text-[length:clamp(0.95rem,4.7vw,1.25rem)] tabular-nums"
+            class="shrink-0 flex items-center gap-1 rounded-full bg-[#fde7b8] border border-[#e3b66f] pl-1 pr-2 py-0.5 font-extrabold text-[#552a0f] text-[length:clamp(0.85rem,4.4vw,1.25rem)] tabular-nums"
           >
-            <img :src="CoinImage" alt="" class="w-[1.4em]" />
-            +{{ task.rewardCoins.toLocaleString('en-US') }}
+            <template v-if="task.rewardCoins > 0">
+              <img :src="CoinImage" alt="" class="w-[1.4em]" />
+              +{{ task.rewardCoins.toLocaleString('en-US') }}
+            </template>
+            <template v-if="(task.rewardStars ?? 0) > 0">
+              <img :src="StarIcon" alt="" class="w-[1.4em]" />
+              +{{ task.rewardStars!.toLocaleString('en-US') }}
+            </template>
           </span>
+          <span v-if="progressText(task) && !task.isCompleted" class="shrink-0 font-bold text-[#8a5a2b] tabular-nums">{{ progressText(task) }}</span>
 
           <div v-if="task.isCompleted" class="flex-1 text-right font-extrabold text-[#1f6a05] text-[length:clamp(0.95rem,4.7vw,1.25rem)]">
-            Completed ✓
+            {{ $t('Completed ✓') }}
           </div>
 
-          <div v-else class="flex-1 flex justify-end gap-2">
+          <div v-else class="flex-1 min-w-0 flex justify-end gap-1.5">
             <button
+              v-if="task.type !== 'WATCH_ADS'"
               type="button"
-              class="rounded-full border border-[#0a6ea8] bg-[#0e89d4] px-4 py-1 font-bold text-white text-[length:clamp(0.9rem,4.4vw,1.15rem)] shadow-[inset_0px_3px_3px_rgba(255,255,255,0.25),inset_0px_-3px_3px_rgba(0,0,0,0.2)] active:translate-y-px"
+              class="rounded-full border border-[#0a6ea8] bg-[#0e89d4] px-3 py-1 font-bold whitespace-nowrap text-white text-[length:clamp(0.82rem,4.1vw,1.15rem)] shadow-[inset_0px_3px_3px_rgba(255,255,255,0.25),inset_0px_-3px_3px_rgba(0,0,0,0.2)] active:translate-y-px"
               @click="complete(task)"
             >
-              {{ task.type === 'INVITE_FRIENDS' ? 'Invite' : 'Open' }}
+              {{ task.type === 'INVITE_FRIENDS' ? $t('Invite') : $t('Open') }}
             </button>
             <button
               type="button"
               :disabled="tasks.isLoading"
-              class="rounded-full border border-[#15861b] bg-[#1fb826] px-4 py-1 font-bold text-white text-[length:clamp(0.9rem,4.4vw,1.15rem)] shadow-[inset_0px_3px_3px_rgba(255,255,255,0.25),inset_0px_-3px_3px_rgba(0,0,0,0.2)] active:translate-y-px disabled:opacity-60"
+              class="rounded-full border border-[#15861b] bg-[#1fb826] px-3 py-1 font-bold whitespace-nowrap text-white text-[length:clamp(0.82rem,4.1vw,1.15rem)] shadow-[inset_0px_3px_3px_rgba(255,255,255,0.25),inset_0px_-3px_3px_rgba(0,0,0,0.2)] active:translate-y-px disabled:opacity-60"
               @click="check(task)"
             >
-              Check
+              {{ task.type === 'WATCH_ADS' ? $t('Watch') : $t('Check') }}
             </button>
           </div>
         </div>

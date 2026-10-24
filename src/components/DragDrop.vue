@@ -1,9 +1,11 @@
 <script setup lang="ts">
-import { ref, computed, onBeforeUnmount } from 'vue'
+import { t } from '@/i18n'
+import { ref, computed, onBeforeUnmount, watch } from 'vue'
 import { Hat, Fish, Net, Boots, Boat, Bucket, Backpack, Rod } from '@/assets/images'
 import { useDailyStore } from '@/stores/daily'
 import { useToast } from '@/composables/useToast'
 import { apiMessage } from '@/composables/apiError'
+import { AdError } from '@/composables/useAds'
 
 interface ImageItem {
   id: number
@@ -12,18 +14,20 @@ interface ImageItem {
 
 const MAX_CELLS = 4
 
-const sourceImages: ImageItem[] = [
-  { id: 1, src: Hat },
-  { id: 2, src: Fish },
-  { id: 3, src: Net },
-  { id: 4, src: Boots },
-  { id: 5, src: Boat },
-  { id: 6, src: Bucket },
-  { id: 7, src: Backpack },
-  { id: 8, src: Rod },
-]
+/** the artwork of the pictures the server knows (an admin can add a picture with an image link instead) */
+const ART: Record<number, string> = { 1: Hat, 2: Fish, 3: Net, 4: Boots, 5: Boat, 6: Bucket, 7: Backpack, 8: Rod }
+const DEFAULT_IDS = [1, 2, 3, 4, 5, 6, 7, 8]
 
-const gallery = ref<ImageItem[]>([...sourceImages])
+const daily = useDailyStore()
+const toast = useToast()
+
+const sourceImages = computed<ImageItem[]>(() => {
+  const items = daily.comboStatus?.items
+  if (!items?.length) return DEFAULT_IDS.map((id) => ({ id, src: ART[id]! }))
+  return items.map((i) => ({ id: i.id, src: ART[i.id] ?? (/^(https?:)?\/\/|^\//.test(i.icon) ? i.icon : '') }))
+})
+
+const gallery = computed(() => sourceImages.value)
 
 // ✅ FIXED GRID (IMPORTANT)
 const container = ref<(ImageItem | null)[]>(Array(MAX_CELLS).fill(null))
@@ -146,21 +150,53 @@ onBeforeUnmount(cleanupTouch)
 
 /* ───────── Submit ───────── */
 
-const daily = useDailyStore()
-const toast = useToast()
-const alreadyPlayed = computed(() => !!daily.comboStatus?.alreadyAttempted)
+const status = computed(() => daily.comboStatus)
+const alreadyPlayed = computed(() => !!status.value?.alreadyAttempted)
+const canClaim = computed(() => !!status.value?.canClaim)
+const claimed = computed(() => !!status.value?.claimed)
+// an extra attempt (after the free one) is paid with an ad; the best attempt of the day counts
+const canRetry = computed(() => alreadyPlayed.value && !claimed.value && (status.value?.extraAttemptsLeft ?? 0) > 0)
+const marks = ref<boolean[] | null>(null)
+
+// show the arrangement of the last attempt (with its marks) when the panel opens
+watch(
+  () => [status.value?.lastItems, status.value?.lastCorrect] as const,
+  ([items, correct]) => {
+    if (!items?.length || container.value.some((c) => c !== null)) return
+    const byId = new Map(gallery.value.map((g) => [g.id, g]))
+    container.value = items.map((id) => byId.get(id) ?? null)
+    marks.value = correct ?? null
+  },
+  { immediate: true },
+)
+
+function fail(e: unknown, fallback: string) {
+  toast.show(e instanceof AdError ? e.message : apiMessage(e, fallback), e instanceof AdError ? 'warning' : 'error')
+}
 
 async function handleSubmit() {
-  if (!isFull.value || alreadyPlayed.value || daily.isLoading) return
+  if (!isFull.value || daily.isLoading) return
+  if (alreadyPlayed.value && !canRetry.value) return
   const ids = container.value.map((i) => i!.id)
   try {
     const r = await daily.submitCombo(ids)
+    marks.value = r.correct
     toast.show(
-      r.reward > 0 ? `${r.correctCount} correct! You won ${r.reward} coins` : 'No correct pictures this time, try again tomorrow',
-      r.reward > 0 ? 'success' : 'info',
+      r.correctCount > 0
+        ? t('{n} correct! Best today: {best}', { n: r.correctCount, best: r.bestCorrect })
+        : t('No correct pictures this time'),
+      r.correctCount > 0 ? 'success' : 'info',
     )
   } catch (e) {
-    toast.show(apiMessage(e, 'Could not send your answer'), 'error')
+    fail(e, 'Could not send your answer')
+  }
+}
+
+async function handleClaim(double: boolean) {
+  try {
+    await daily.claimCombo(double)
+  } catch (e) {
+    fail(e, 'Could not claim the reward')
   }
 }
 </script>
@@ -185,6 +221,12 @@ async function handleSubmit() {
         @dragleave="overIndex = null"
         @drop.prevent="onDropToContainer(n - 1)"
       >
+        <span
+          v-if="marks && container[n - 1] && alreadyPlayed"
+          class="absolute -top-2 -right-1 z-10 w-6 h-6 rounded-full flex items-center justify-center text-white text-sm font-extrabold shadow-md"
+          :class="marks[n - 1] ? 'bg-[#22b615]' : 'bg-[#e11d10]'"
+          :aria-label="marks[n - 1] ? $t('Correct') : $t('Wrong')"
+        >{{ marks[n - 1] ? '✓' : '✕' }}</span>
         <template v-if="container[n - 1]">
           <div
             draggable="true"
@@ -304,13 +346,50 @@ async function handleSubmit() {
       </div>
     </div>
 
+    <p v-if="alreadyPlayed && status" class="mt-3 font-bold text-[#552a0f] text-center">
+      {{ $t('Best today: {n} of {total} correct', { n: status.bestCorrect, total: status.slots }) }}
+      <template v-if="status.reward > 0"> · {{ $t('Reward: {n} coins', { n: status.reward }) }}</template>
+    </p>
+
+    <div v-if="canClaim" class="flex flex-col items-center gap-2 w-full">
+      <button
+        type="button"
+        :disabled="daily.isLoading"
+        class="claim bg-[#5edf3d] text-white font-bold text-3xl rounded-full border border-[#552a0f] mt-3 px-5 py-[2px] disabled:bg-slate-400"
+        @click="handleClaim(false)"
+      >
+        {{ $t('Claim') }}
+      </button>
+      <button
+        type="button"
+        :disabled="daily.isLoading"
+        class="claim bg-[#fb7a38] text-white font-bold text-xl rounded-full border border-[#552a0f] px-5 py-[2px] disabled:bg-slate-400"
+        @click="handleClaim(true)"
+      >
+        {{ $t('Claim ×2 (watch an ad)') }}
+      </button>
+      <p class="text-[rgba(85,42,15,.7)] text-sm text-center">{{ $t('Claim before the day ends or the reward is lost') }}</p>
+    </div>
+
     <button
-      @click="handleSubmit"
-      :disabled="!isFull || alreadyPlayed || daily.isLoading"
+      v-if="!canClaim"
       type="button"
+      :disabled="!isFull || daily.isLoading || (alreadyPlayed && !canRetry)"
       class="claim bg-[#5edf3d] text-white font-bold text-3xl rounded-full border border-[#552a0f] mt-4 px-5 py-[2px] disabled:bg-slate-400"
+      @click="handleSubmit"
     >
-      {{ alreadyPlayed ? 'Come back tomorrow' : 'Claim' }}
+      <template v-if="claimed || (alreadyPlayed && !canRetry)">{{ $t('Come back tomorrow') }}</template>
+      <template v-else-if="canRetry">{{ $t('Try again (watch an ad)') }}</template>
+      <template v-else>{{ $t('Check') }}</template>
+    </button>
+    <button
+      v-else-if="canRetry"
+      type="button"
+      :disabled="!isFull || daily.isLoading"
+      class="text-[#552a0f] underline font-bold mt-2"
+      @click="handleSubmit"
+    >
+      {{ $t('Try again (watch an ad)') }}
     </button>
   </div>
 </template>

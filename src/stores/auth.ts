@@ -6,6 +6,8 @@ import * as authApi from '@/api/auth';
 import * as userApi from '@/api/user';
 import { isApiDisabled } from '@/api/client';
 import { getTelegramInitData, getTelegramStartParam, initTelegram } from '@/composables/useTelegram';
+import { gate } from '@/composables/useAppGate';
+import { markAuthReady } from '@/composables/authReady';
 
 export type AuthState = 'idle' | 'loading' | 'authenticated' | 'error';
 
@@ -27,6 +29,14 @@ export const useAuthStore = defineStore('auth', () => {
    * 4. If not inside Telegram, show an appropriate error
    */
   async function init(): Promise<void> {
+    try {
+      await signIn();
+    } finally {
+      markAuthReady();
+    }
+  }
+
+  async function signIn(): Promise<void> {
     if (isApiDisabled) {
       console.info('[dev] API is disabled — skipping authentication (set VITE_USE_API=true to enable)');
       return;
@@ -41,8 +51,9 @@ export const useAuthStore = defineStore('auth', () => {
     // Step 2: If we have a stored token, try to restore the session
     if (token.value) {
       try {
-        user.value = await userApi.getMe();
+        user.value = await userApi.getMe(true);
         state.value = 'authenticated';
+        showBlocked();
         return;
       } catch {
         // Token is invalid/expired — clear it and fall through to re-auth
@@ -52,37 +63,52 @@ export const useAuthStore = defineStore('auth', () => {
       }
     }
 
-    // Step 3: Authenticate with Telegram initData
+    // Step 3: Authenticate with Telegram initData (a referral code travels inside it as start_param)
     const initData = getTelegramInitData();
-
-    if (!initData) {
-      state.value = 'error';
-      error.value = 'Please open this app from Telegram.';
-      return;
-    }
-
-    // Parse referral code from start_param (format: "ref_123" or plain number)
-    const startParam = getTelegramStartParam();
-    const refCode = startParam || undefined;
+    const devId = Number(import.meta.env.VITE_DEV_TG_ID);
 
     try {
-      const res = await authApi.authenticate(initData, refCode);
+      let res;
+      if (initData) {
+        res = await authApi.authenticate(initData);
+      } else if (import.meta.env.DEV && devId > 0) {
+        // development only: sign in without Telegram (the backend needs DEV_AUTH=true)
+        res = await authApi.authenticateDev(devId, getTelegramStartParam());
+      } else {
+        state.value = 'error';
+        error.value = 'Please open this app from Telegram.';
+        return;
+      }
       token.value = res.token;
       user.value = res.user;
       localStorage.setItem('token', res.token);
       state.value = 'authenticated';
+      showBlocked();
     } catch (e) {
       state.value = 'error';
       error.value = apiMessage(e, 'Authentication failed');
     }
   }
 
-  /** Re-authenticate (e.g. after 401) */
-  async function reAuth(): Promise<void> {
-    token.value = null;
-    user.value = null;
-    localStorage.removeItem('token');
-    await init();
+  /** A blocked account can still sign in; the app shows the blocked screen instead of the game. */
+  function showBlocked() {
+    if (user.value?.isBlocked) {
+      gate.value = { kind: 'blocked', text: user.value.blockReason ?? '', until: '' };
+    }
+  }
+
+  /** Re-authenticate (e.g. after 401); many failing requests share one attempt */
+  let reauth: Promise<void> | null = null;
+  function reAuth(): Promise<void> {
+    if (!reauth) {
+      token.value = null;
+      user.value = null;
+      localStorage.removeItem('token');
+      reauth = init().finally(() => {
+        reauth = null;
+      });
+    }
+    return reauth;
   }
 
   /** Fetch fresh user data from the server */

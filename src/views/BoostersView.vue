@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { t, tn } from '@/i18n'
 import { computed, onMounted, ref } from 'vue'
 import { RouterLink } from 'vue-router'
 import CoinBalance from '@/components/CoinBalance.vue'
@@ -22,15 +23,14 @@ onMounted(() => {
 
 const DAY_MINUTES = 60 * 24
 
-const defaults: { type: BoosterType; title: string; img: string; hint: string; duration: string; cost: number }[] = [
-  { type: 'AUTO_MINING', title: 'Auto Collect', img: BoosterAutoCollect, hint: 'Collects your coins for you, no tapping', duration: 'Lifetime', cost: 500 },
-  { type: 'MINING_BOOST_1_5X', title: 'Booster', img: BoosterMining, hint: 'Fish 1.5 times faster', duration: '30 days', cost: 100 },
+const defaults: { type: BoosterType; title: string; img: string; hint: string; minutes: number; cost: number }[] = [
+  { type: 'AUTO_MINING', title: 'Auto Collect', img: BoosterAutoCollect, hint: 'Collects your coins for you, no tapping', minutes: 0, cost: 500 },
+  { type: 'MINING_BOOST_1_5X', title: 'Booster', img: BoosterMining, hint: 'Fish 1.5 times faster', minutes: 30 * DAY_MINUTES, cost: 100 },
 ]
 
 function formatDuration(minutes: number) {
-  if (!minutes) return 'Lifetime'
-  const days = Math.round(minutes / DAY_MINUTES)
-  return `${days} ${days === 1 ? 'day' : 'days'}`
+  if (!minutes) return t('Lifetime')
+  return tn('{n} day|{n} days', Math.round(minutes / DAY_MINUTES))
 }
 
 const items = computed(() =>
@@ -38,7 +38,7 @@ const items = computed(() =>
     const info = shop.boosters.find((b) => b.type === d.type)
     return {
       ...d,
-      duration: info ? formatDuration(info.durationMinutes) : d.duration,
+      duration: formatDuration(info ? info.durationMinutes : d.minutes),
       cost: info?.costStars ?? d.cost,
       isActive: info?.isActive ?? false,
     }
@@ -52,7 +52,7 @@ async function buy(type: BoosterType) {
   buying.value = type
   try {
     await shop.purchaseBooster(type)
-    toast.show('Booster activated!', 'success')
+    toast.show(t('Booster activated!'), 'success')
   } catch (e) {
     toast.show(apiMessage(e, 'Could not buy the booster'), 'error')
   } finally {
@@ -76,13 +76,13 @@ async function buy(type: BoosterType) {
         to="/shop"
         class="border border-[#c17e23] shadow-[0px_4px_4px_rgba(0,0,0,0.25),inset_0px_4px_4px_rgba(255,255,255,0.25),inset_0px_-4px_4px_rgba(0,0,0,0.25)] rounded-2xl flex justify-center items-center font-bold py-[5px] bg-[#fde7b8] text-[#552a0f]"
       >
-        Cards
+        {{ $t('Cards') }}
       </RouterLink>
       <RouterLink
         to="/shop/boosters"
         class="border border-[#c17e23] shadow-[0px_4px_4px_rgba(0,0,0,0.25),inset_0px_4px_4px_rgba(255,255,255,0.25),inset_0px_-4px_4px_rgba(0,0,0,0.25)] rounded-2xl flex justify-center items-center font-bold py-[5px] bg-[#c17e23] text-white"
       >
-        Boosters
+        {{ $t('Boosters') }}
       </RouterLink>
     </div>
 
@@ -97,18 +97,18 @@ async function buy(type: BoosterType) {
           <div
             class="relative shrink-0 w-[clamp(4rem,19vw,5.25rem)] aspect-square rounded-2xl border border-[#cf8741] overflow-hidden"
           >
-            <img :src="item.img" :alt="item.title" class="w-full h-full object-cover" />
+            <img :src="item.img" :alt="$t(item.title)" class="w-full h-full object-cover" />
           </div>
 
           <div class="flex-1 min-w-0">
-            <h2 class="font-bold text-[#552a0f] leading-tight text-[length:clamp(1.15rem,6vw,1.6rem)]">{{ item.title }}</h2>
-            <p class="text-[#8a5a2b] leading-tight text-[length:clamp(0.75rem,3.6vw,0.95rem)]">{{ item.hint }}</p>
+            <h2 class="font-bold text-[#552a0f] leading-tight text-[length:clamp(1.15rem,6vw,1.6rem)]">{{ $t(item.title) }}</h2>
+            <p class="text-[#8a5a2b] leading-tight text-[length:clamp(0.75rem,3.6vw,0.95rem)]">{{ $t(item.hint) }}</p>
           </div>
         </div>
 
         <!-- how long it lasts -->
         <div class="mt-3 flex items-center justify-between rounded-2xl bg-[#fde7b8] border border-[#e3b66f] px-3 py-1.5">
-          <span class="text-[#8a5a2b] uppercase tracking-wide font-bold text-[length:clamp(0.65rem,3vw,0.8rem)]">Lasts</span>
+          <span class="text-[#8a5a2b] uppercase tracking-wide font-bold text-[length:clamp(0.65rem,3vw,0.8rem)]">{{ $t('Lasts') }}</span>
           <span class="font-extrabold text-[#552a0f] text-[length:clamp(1rem,5vw,1.3rem)]">{{ item.duration }}</span>
         </div>
 
@@ -117,7 +117,7 @@ async function buy(type: BoosterType) {
           v-if="item.isActive"
           class="mt-3 w-full rounded-2xl border-2 border-[#74c14e] bg-[#e4f7d6] py-2 text-center font-extrabold text-[#1f6a05] text-[length:clamp(1.05rem,5.4vw,1.4rem)]"
         >
-          Active ✓
+          {{ $t('Active ✓') }}
         </div>
         <button
           v-else
@@ -126,9 +126,9 @@ async function buy(type: BoosterType) {
           class="mt-3 w-full rounded-full border border-[#d9680f] bg-[#f96a07] py-2 flex items-center justify-center gap-2 font-bold text-white text-[length:clamp(1.1rem,5.6vw,1.45rem)] shadow-[inset_0px_4px_4px_rgba(255,255,255,0.25),inset_0px_-4px_4px_rgba(0,0,0,0.25)] [text-shadow:0px_4px_4px_rgba(0,0,0,0.25)] active:translate-y-px disabled:opacity-60"
           @click="buy(item.type)"
         >
-          <template v-if="buying === item.type">Buying…</template>
+          <template v-if="buying === item.type">{{ $t('Buying…') }}</template>
           <template v-else>
-            Buy
+            {{ $t('Buy') }}
             <span class="flex items-center gap-1">
               <img :src="StarIcon" alt="" class="w-[1.2em]" />
               {{ item.cost.toLocaleString('en-US') }}

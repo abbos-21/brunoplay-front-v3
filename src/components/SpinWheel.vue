@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, onBeforeUnmount, ref, watch } from 'vue'
+import { playSfx } from '@/composables/useSfx'
 import {
   CenterA, CenterB, Pointer1, Pointer3, WheelDot, WheelRimA, WheelRimB, WheelRimC,
 } from '@/assets/svgs/spin'
@@ -30,6 +31,43 @@ const place = (size: number, cx = C, cy = C) => ({
   left: wu(cx - size / 2),
   top: wu(cy - size / 2),
 })
+
+// a tick every time a stud passes the pointer: the real angle is read while the wheel turns, so the clicks
+// follow the slowing down of the CSS transition
+const turning = ref<HTMLElement | null>(null)
+let raf = 0
+let lastStud = 0
+const angleNow = () => {
+  const m = turning.value ? getComputedStyle(turning.value).transform : 'none'
+  if (!m || m === 'none') return null
+  const [a = 1, b = 0] = m.slice(m.indexOf('(') + 1, -1).split(',').map(Number)
+  return (Math.atan2(b, a) * 180) / Math.PI
+}
+function followWheel(until: number) {
+  cancelAnimationFrame(raf)
+  const first = angleNow()
+  lastStud = Math.floor(((first ?? 0) + 360) / 45)
+  const step = (now: number) => {
+    const a = angleNow()
+    if (a !== null) {
+      const stud = Math.floor((a + 360) / 45)
+      if (stud !== lastStud) {
+        lastStud = stud
+        playSfx('tick', { rate: 0.95 + Math.random() * 0.1 })
+      }
+    }
+    if (now < until) raf = requestAnimationFrame(step)
+  }
+  raf = requestAnimationFrame(step)
+}
+watch(
+  () => props.rotation,
+  () => {
+    if (props.duration) followWheel(performance.now() + props.duration + 100)
+  },
+  { flush: 'post' },
+)
+onBeforeUnmount(() => cancelAnimationFrame(raf))
 
 const rotStyle = computed(() => ({
   transform: `rotate(${props.rotation}deg)`,
@@ -105,7 +143,7 @@ const pointers = [
 
     <img :src="WheelRimC" alt="" :style="place(710)" />
 
-    <div class="absolute inset-0" :style="rotStyle">
+    <div ref="turning" class="absolute inset-0" :style="rotStyle">
       <img v-for="(s, i) in studs" :key="`stud-${i}`" :src="WheelDot" alt="" :style="s" />
 
       <div v-for="(p, i) in prizes" :key="i" :style="p.style">

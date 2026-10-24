@@ -88,9 +88,9 @@ const emit = defineEmits<{ (e: 'update:modelValue', value: boolean): void }>()
         </svg>
       </button>
 
-      <h1 class="font-bold text-3xl text-center text-[#552a0f]">Daily Combo</h1>
+      <h1 class="font-bold text-3xl text-center text-[#552a0f]">{{ $t('Daily Combo') }}</h1>
       <h2 class="font-bold text-lg text-center text-[rgba(85,42,15,.7)]">
-        Place the pictures in the correct order to collect the reward = coins
+        {{ $t('Place the pictures in the correct order to collect the reward = coins') }}
       </h2>
 
       <DragDrop class="mt-2" />

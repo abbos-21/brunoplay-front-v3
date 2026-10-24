@@ -10,6 +10,7 @@ export interface TelegramWebApp {
   close(): void;
   setHeaderColor(color: string): void;
   setBackgroundColor(color: string): void;
+  openInvoice(url: string, callback?: (status: 'paid' | 'cancelled' | 'failed' | 'pending') => void): void;
   openTelegramLink(url: string): void;
   openLink(url: string): void;
   HapticFeedback: {
@@ -46,8 +47,6 @@ export function initTelegram(): TelegramWebApp | null {
  * Empty string if not inside Telegram.
  */
 export function getTelegramInitData(): string {
-  // Dev only: lets you log in against a local backend that has DEV_AUTH=true, e.g. VITE_DEV_INIT_DATA=dev:1001:Abbos
-  if (import.meta.env.DEV && import.meta.env.VITE_DEV_INIT_DATA) return import.meta.env.VITE_DEV_INIT_DATA;
   return getTelegram()?.initData ?? '';
 }
 

@@ -1,0 +1,131 @@
+- generic [ref=f12e4]:
+  - generic [ref=f12e5]:
+    - generic [ref=f12e6]:
+      - generic [ref=f12e7]:
+        - img "Монеты"
+        - generic [ref=f12e8]: 2,104,024
+        - link "Вывод" [ref=f12e10] [cursor=pointer]:
+          - /url: /withdraw
+      - generic [ref=f12e13]:
+        - generic [ref=f12e14]:
+          - img "Звёзды" [ref=f12e15]
+          - generic [ref=f12e16]: 641,000
+          - button "Пополнить звёзды" [ref=f12e18] [cursor=pointer]
+        - button [ref=f12e21] [cursor=pointer]
+    - heading "Уровни" [level=1] [ref=f12e25]
+    - generic [ref=f12e26]:
+      - generic [ref=f12e27]:
+        - img "Уровень 1" [ref=f12e28]:
+          - generic: УР1
+        - paragraph [ref=f12e48]: Уголёк
+        - paragraph [ref=f12e49]: Уровень 1
+      - generic [ref=f12e50]:
+        - img "Уровень 2" [ref=f12e51]:
+          - generic: УР2
+        - paragraph [ref=f12e71]: Луг
+        - paragraph [ref=f12e72]: Уровень 2
+      - generic [ref=f12e73]:
+        - img "Уровень 3" [ref=f12e74]:
+          - generic: УР3
+        - paragraph [ref=f12e94]: Лагуна
+        - paragraph [ref=f12e95]: Уровень 3
+      - generic [ref=f12e96]:
+        - img "Уровень 4" [ref=f12e97]:
+          - generic: УР4
+        - paragraph [ref=f12e117]: Серебро
+        - paragraph [ref=f12e118]: Уровень 4
+      - generic [ref=f12e119]:
+        - img "Уровень 5" [ref=f12e120]:
+          - generic: УР5
+        - paragraph [ref=f12e140]: Золото
+        - paragraph [ref=f12e141]: Уровень 5
+      - generic [ref=f12e142]:
+        - img "Уровень 6" [ref=f12e143]:
+          - generic: УР6
+        - paragraph [ref=f12e163]: Рубин
+        - paragraph [ref=f12e164]: Уровень 6
+      - generic [ref=f12e165]:
+        - img "Уровень 7" [ref=f12e166]:
+          - generic: УР7
+        - paragraph [ref=f12e186]: Аметист
+        - paragraph [ref=f12e187]: Уровень 7
+      - generic [ref=f12e188]:
+        - img "Уровень 8" [ref=f12e189]:
+          - generic: УР8
+        - paragraph [ref=f12e209]: Изумруд
+        - paragraph [ref=f12e210]: Уровень 8
+      - generic [ref=f12e211]:
+        - img "Уровень 9" [ref=f12e212]:
+          - generic: УР9
+        - paragraph [ref=f12e232]: Обсидиан
+        - paragraph [ref=f12e233]: Уровень 9
+      - generic [ref=f12e234]:
+        - img "Уровень 10" [ref=f12e235]:
+          - generic: УР10
+        - paragraph [ref=f12e255]: Легенда
+        - paragraph [ref=f12e256]: Уровень 10
+    - generic [ref=f12e258]:
+      - button [ref=f12e259] [cursor=pointer]
+      - generic [ref=f12e264]:
+        - generic [ref=f12e265]:
+          - heading [level=1]
+          - heading "ID:" [level=1] [ref=f12e266]
+          - radiogroup "Язык" [ref=f12e267]:
+            - radio "English" [ref=f12e268] [cursor=pointer]
+            - radio "Русский" [checked] [ref=f12e270] [cursor=pointer]
+          - generic [ref=f12e272]:
+            - generic [ref=f12e274]:
+              - generic [ref=f12e275]: Музыка 1
+              - generic [ref=f12e276]: По умолчанию
+            - generic [ref=f12e277]:
+              - button [disabled] [ref=f12e278]
+              - button [ref=f12e279] [cursor=pointer]
+              - button [disabled] [ref=f12e280]
+        - generic [ref=f12e281]:
+          - button "Поддержка Поддержка" [disabled] [ref=f12e282]:
+            - img "Поддержка"
+            - generic [ref=f12e283]: Поддержка
+          - button "Новости Новости" [disabled] [ref=f12e284]:
+            - img "Новости"
+            - generic [ref=f12e285]: Новости
+          - button "FAQ FAQ" [disabled] [ref=f12e286]:
+            - img "FAQ"
+            - generic [ref=f12e287]: FAQ
+  - navigation [ref=f12e289]:
+    - link [ref=f12e290] [cursor=pointer]:
+      - /url: /
+      - img "Рыбалка" [ref=f12e291]
+      - heading "Рыбалка" [level=1] [ref=f12e292]
+    - link [ref=f12e293] [cursor=pointer]:
+      - /url: /shop
+      - img "Магазин" [ref=f12e294]
+      - heading "Магазин" [level=1] [ref=f12e295]
+    - link [ref=f12e296] [cursor=pointer]:
+      - /url: /games
+      - img "Игры" [ref=f12e297]
+      - heading "Игры" [level=1] [ref=f12e298]
+    - link [ref=f12e299] [cursor=pointer]:
+      - /url: /tasks
+      - img "Задания" [ref=f12e300]
+      - heading "Задания" [level=1] [ref=f12e301]
+    - link [ref=f12e302] [cursor=pointer]:
+      - /url: /friends
+      - img "Друзья" [ref=f12e303]
+      - heading "Друзья" [level=1] [ref=f12e304]
+  - generic [ref=f12e306]:
+    - button [ref=f12e307] [cursor=pointer]
+    - heading "Пополнение звёзд" [level=1] [ref=f12e312]
+    - generic [ref=f12e313]:
+      - button "Звёзды" [ref=f12e314] [cursor=pointer]
+      - button "TON +10%" [ref=f12e315] [cursor=pointer]:
+        - text: TON
+        - generic [ref=f12e316]: +10%
+    - generic [ref=f12e317]:
+      - button "200" [ref=f12e318] [cursor=pointer]
+      - button "500" [ref=f12e320] [cursor=pointer]
+      - button "1000" [ref=f12e322] [cursor=pointer]
+      - button "2500" [ref=f12e324] [cursor=pointer]
+      - button "5000" [ref=f12e326] [cursor=pointer]
+      - button "10000" [ref=f12e328] [cursor=pointer]
+      - button "25000" [ref=f12e330] [cursor=pointer]
+      - button "50000" [ref=f12e332] [cursor=pointer]

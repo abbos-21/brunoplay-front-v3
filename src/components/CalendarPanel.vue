@@ -2,13 +2,22 @@
 import { CoinImage } from '@/assets/images'
 import { TickSVG } from '@/assets/svgs'
 import { useDailyStore } from '@/stores/daily'
+import { AdError } from '@/composables/useAds'
+import { useToast } from '@/composables/useToast'
+import { apiMessage } from '@/composables/apiError'
 
 defineProps<{ modelValue: boolean }>()
 const emit = defineEmits<{ (e: 'update:modelValue', value: boolean): void }>()
 
 const daily = useDailyStore()
-async function handleClaim() {
-  await daily.claimDaily()
+const toast = useToast()
+
+async function handleClaim(double = false) {
+  try {
+    await daily.claimDaily(double)
+  } catch (e) {
+    toast.show(e instanceof AdError ? e.message : apiMessage(e, 'Could not claim the reward'), e instanceof AdError ? 'warning' : 'error')
+  }
 }
 </script>
 
@@ -91,9 +100,9 @@ async function handleClaim() {
         </svg>
       </button>
 
-      <h1 class="font-bold text-3xl text-center text-[#552a0f]">Daily Activity</h1>
+      <h1 class="font-bold text-3xl text-center text-[#552a0f]">{{ $t('Daily Activity') }}</h1>
       <h2 class="font-bold text-lg text-center text-[rgba(85,42,15,.7)]">
-        Visit daily to grow your streak and unlock the maximum reward after 10 days in a row.
+        {{ $t('Visit daily to grow your streak and unlock the maximum reward after 10 days in a row.') }}
       </h2>
 
       <div
@@ -109,7 +118,7 @@ async function handleClaim() {
             'border border-[#cf8741]': !day.claimed,
           }"
         >
-          <h3>Day {{ day.day }}</h3>
+          <h3>{{ $t('Day {n}', { n: day.day }) }}</h3>
           <div class="flex gap-1 items-center">
             <img :src="CoinImage" alt="coin-image" class="w-5" />
             <span>{{ day.coins }}</span>
@@ -152,10 +161,20 @@ async function handleClaim() {
       <button
         type="button"
         :disabled="!daily.activityStatus?.canClaim || daily.isLoading"
-        @click="handleClaim"
+        @click="handleClaim(false)"
         class="claim bg-[#5edf3d] text-white font-bold text-3xl rounded-full border border-[#552a0f] mt-4 px-5 py-[2px] disabled:bg-slate-400"
       >
-        {{ daily.activityStatus?.canClaim ? 'Claim' : 'Claimed' }}
+        {{ daily.activityStatus?.canClaim ? $t('Claim') : $t('Claimed') }}
+      </button>
+      <!-- twice the reward for watching one ad -->
+      <button
+        v-if="daily.activityStatus?.canClaim && daily.activityStatus?.doubleAvailable"
+        type="button"
+        :disabled="daily.isLoading"
+        @click="handleClaim(true)"
+        class="claim bg-[#fb7a38] text-white font-bold text-xl rounded-full border border-[#552a0f] mt-2 px-5 py-[2px] disabled:bg-slate-400"
+      >
+        {{ $t('Claim ×2 (watch an ad)') }}
       </button>
     </div>
   </div>

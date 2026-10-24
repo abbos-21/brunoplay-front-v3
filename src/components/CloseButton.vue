@@ -6,7 +6,7 @@ defineEmits<{ (e: 'click'): void }>()
 <template>
   <button
     type="button"
-    aria-label="Close"
+    :aria-label="$t('Close')"
     class="close bg-[#fb7a38] aspect-square rounded-full flex justify-center items-center active:translate-y-px"
     @click="$emit('click')"
   >

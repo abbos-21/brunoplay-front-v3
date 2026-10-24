@@ -1,5 +1,5 @@
 import client from './client';
-import type { CardInfo, UpgradeResult, BoosterInfo, CardName, BoosterType } from '@/types';
+import type { CardInfo, UpgradeResult, BoosterInfo, CardName, BoosterType, LevelInfo } from '@/types';
 
 export function getCards() {
   return client.get<{ cards: CardInfo[] }>('/shop/cards').then((r) => r.data.cards);
@@ -14,5 +14,9 @@ export function getBoosters() {
 }
 
 export function purchaseBooster(type: BoosterType) {
-  return client.post<BoosterInfo>(`/shop/boosters/${type}/purchase`).then((r) => r.data);
+  return client.post<BoosterInfo>(`/shop/boosters/${type}/buy`).then((r) => r.data);
+}
+
+export function getLevels() {
+  return client.get<{ levels: LevelInfo[]; current: number; maxLevel: number }>('/levels').then((r) => r.data);
 }

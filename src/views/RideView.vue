@@ -19,6 +19,8 @@ import { apiMessage } from '@/composables/apiError'
 import { isApiDisabled } from '@/api/client'
 import { useAuthStore } from '@/stores/auth'
 import { useTopUp } from '@/composables/useTopUp'
+import { AdError } from '@/composables/useAds'
+import { t } from '@/i18n'
 
 const router = useRouter()
 const games = useGamesStore()
@@ -31,9 +33,11 @@ const topUp = useTopUp()
    ENTRY: every run costs stars (there are no free runs)
    The price matches the server's default; the server checks it again when the run starts.
 ======================= */
-const RUN_COST = 1
-// the balance is unknown until the player has loaded (then the run can start, the server checks it)
-const canPlay = computed(() => !auth.user || auth.user.starsBalance >= RUN_COST)
+const RUN_COST = computed(() => games.rideInfo?.runCostStars ?? 1)
+const hasStars = computed(() => !auth.user || auth.user.starsBalance >= RUN_COST.value)
+// when the stars ran out the server may offer a run for an ad (a few per day)
+const adRun = computed(() => !hasStars.value && games.rideInfo?.adOffered === true)
+const canPlay = computed(() => hasStars.value || adRun.value)
 
 /* =======================
    GAME CONFIG (same values as the original runner)
@@ -95,7 +99,9 @@ async function finish(finalScore: number, finalCoins: number) {
   if (sessionId && !isApiDisabled) {
     saving.value = true
     try {
-      await games.claimRide(finalCoins, finalScore)
+      const r = await games.finishRide(finalCoins, finalScore)
+      if (r.capped) toast.show(t('Daily coin limit reached, come back tomorrow'), 'info')
+      if (r.bestScore > best.value) best.value = r.bestScore
     } catch (e) {
       toast.show(apiMessage(e, 'Could not save your result'), 'error')
     } finally {
@@ -111,8 +117,8 @@ async function play() {
   starting.value = true
   try {
     if (!isApiDisabled) {
-      const session = await games.startRide()
-      sessionId = session?.sessionId ?? null
+      const run = await games.startRide(adRun.value)
+      sessionId = run ? String(run.runId) : null
       if (!sessionId) throw new Error('no session')
     }
     score.value = 0
@@ -121,7 +127,7 @@ async function play() {
     k.go('game')
     canvas.value?.focus()
   } catch (e) {
-    toast.show(apiMessage(e, 'Could not start the game'), 'error')
+    toast.show(e instanceof AdError ? e.message : apiMessage(e, 'Could not start the game'), e instanceof AdError ? 'warning' : 'error')
   } finally {
     starting.value = false
   }
@@ -136,6 +142,15 @@ function leave() {
 ======================= */
 onMounted(async () => {
   if (!canvas.value || !host.value) return
+  // price, daily limits and the best score live on the server
+  if (!isApiDisabled) {
+    games
+      .fetchRideInfo()
+      .then((i) => {
+        if (i.bestScore > best.value) best.value = i.bestScore
+      })
+      .catch(() => {})
+  }
 
   // the page background music would clash with the engine sound
   musicWasPlaying = music.isPlaying.value
@@ -443,11 +458,11 @@ onBeforeUnmount(() => {
         class="absolute top-3 left-4 right-4 flex items-start justify-between pointer-events-none outlined [--outline:#3b2412] tabular-nums"
       >
         <div class="leading-none">
-          <p class="font-bold uppercase tracking-wider text-white/80 text-[0.65rem]">Score</p>
+          <p class="font-bold uppercase tracking-wider text-white/80 text-[0.65rem]">{{ $t('Score') }}</p>
           <p class="mt-0.5 font-extrabold text-[length:clamp(1.5rem,7vw,2rem)]">{{ score }}</p>
         </div>
         <div class="text-right leading-none">
-          <p class="font-bold uppercase tracking-wider text-white/80 text-[0.65rem]">Coins</p>
+          <p class="font-bold uppercase tracking-wider text-white/80 text-[0.65rem]">{{ $t('Coins') }}</p>
           <p class="mt-0.5 flex items-center justify-end gap-1 font-extrabold text-[length:clamp(1.5rem,7vw,2rem)]">
             <img :src="CoinImage" alt="" class="w-[0.9em]" />{{ coins }}
           </p>
@@ -459,19 +474,19 @@ onBeforeUnmount(() => {
         v-if="phase === 'loading'"
         class="absolute inset-0 flex items-center justify-center bg-[#fbe166]"
       >
-        <span class="font-bold text-2xl text-[#552a0f] animate-pulse">Loading…</span>
+        <span class="font-bold text-2xl text-[#552a0f] animate-pulse">{{ $t('Loading…') }}</span>
       </div>
       <div
         v-else-if="phase === 'error'"
         class="absolute inset-0 flex flex-col items-center justify-center gap-4 bg-[#fbe166] p-6 text-center"
       >
-        <p class="font-bold text-2xl text-[#552a0f]">Could not load the game 😢</p>
+        <p class="font-bold text-2xl text-[#552a0f]">{{ $t('Could not load the game') }} 😢</p>
         <button
           type="button"
           class="btn-gradient-orange border-[3px] border-[#c66a27] px-8 py-1 text-2xl font-extrabold outlined [--outline:#D76826] !rounded-full"
           @click="leave"
         >
-          Back
+          {{ $t('Back') }}
         </button>
       </div>
 
@@ -484,22 +499,22 @@ onBeforeUnmount(() => {
           class="w-full max-w-[17rem] rounded-3xl border-2 border-[#cf8741] bg-[#fff4d6] px-4 py-4 text-center text-[#552a0f] shadow-[0px_6px_10px_rgba(0,0,0,0.3)]"
         >
           <h1 class="font-extrabold leading-tight text-[length:clamp(1.3rem,6vw,1.6rem)]">
-            {{ phase === 'over' ? 'Crash!' : 'Bruno’s Ride' }}
+            {{ phase === 'over' ? $t('Crash!') : $t('Bruno’s Ride') }}
           </h1>
 
           <div v-if="phase === 'over'" class="mt-3 grid grid-cols-3 gap-1">
             <div>
-              <p class="font-bold uppercase tracking-wide text-[#8a5a2b] text-[0.62rem]">Score</p>
+              <p class="font-bold uppercase tracking-wide text-[#8a5a2b] text-[0.62rem]">{{ $t('Score') }}</p>
               <p class="font-extrabold tabular-nums text-[length:clamp(1rem,4.8vw,1.25rem)]">{{ score }}</p>
             </div>
             <div>
-              <p class="font-bold uppercase tracking-wide text-[#8a5a2b] text-[0.62rem]">Coins</p>
+              <p class="font-bold uppercase tracking-wide text-[#8a5a2b] text-[0.62rem]">{{ $t('Coins') }}</p>
               <p class="flex items-center justify-center gap-0.5 font-extrabold tabular-nums text-[length:clamp(1rem,4.8vw,1.25rem)]">
                 <img :src="CoinImage" alt="" class="w-[1.1em]" />{{ coins }}
               </p>
             </div>
             <div>
-              <p class="font-bold uppercase tracking-wide text-[#8a5a2b] text-[0.62rem]">Top score</p>
+              <p class="font-bold uppercase tracking-wide text-[#8a5a2b] text-[0.62rem]">{{ $t('Top score') }}</p>
               <p
                 class="font-extrabold tabular-nums text-[length:clamp(1rem,4.8vw,1.25rem)]"
                 :class="newBest ? 'text-[#c8200f]' : ''"
@@ -515,11 +530,12 @@ onBeforeUnmount(() => {
             :disabled="starting || saving"
             @click="canPlay ? play() : topUp.open()"
           >
-            <template v-if="starting">Starting…</template>
-            <template v-else-if="!canPlay">Get stars</template>
+            <template v-if="starting">{{ $t('Starting…') }}</template>
+            <template v-else-if="!canPlay">{{ $t('Get stars') }}</template>
             <template v-else>
-              {{ phase === 'over' ? 'Again' : 'Play' }}
-              <img :src="StarIcon" alt="" class="w-[1.15em]" />{{ RUN_COST }}
+              {{ phase === 'over' ? $t('Again') : $t('Play') }}
+              <template v-if="adRun">{{ $t('(watch an ad)') }}</template>
+              <template v-else><img :src="StarIcon" alt="" class="w-[1.15em]" />{{ RUN_COST }}</template>
             </template>
           </button>
 
@@ -528,7 +544,7 @@ onBeforeUnmount(() => {
             class="mt-2 text-[#8a5a2b] font-bold text-[length:clamp(0.85rem,4vw,1rem)] underline-offset-2 active:opacity-70"
             @click="leave"
           >
-            Back
+            {{ $t('Back') }}
           </button>
         </div>
       </div>

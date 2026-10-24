@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { t } from '@/i18n'
 import { computed } from 'vue'
 import { StarIcon } from '@/assets/svgs'
 import { CoinImage } from '@/assets/images'
@@ -38,7 +39,7 @@ const rows = computed(() =>
         : ''
     return {
       id: w.id,
-      name: w.username ? `@${w.username}` : 'Anonymous',
+      name: w.username ? `@${w.username}` : t('Anonymous'),
       initial: (w.username || '?').charAt(0).toUpperCase(),
       color: colors[w.id % colors.length]!,
       spend: spent ? spent.toLocaleString('en-US') : '',
@@ -60,15 +61,15 @@ function onScroll(e: Event) {
     class="absolute inset-0 z-40 flex items-center justify-center bg-black/60 p-4 backdrop-blur-[3px]"
     role="dialog"
     aria-modal="true"
-    aria-label="Winners list"
+    :aria-label="$t('Winners')"
     @click.self="emit('close')"
   >
     <div
       class="flex max-h-full w-full max-w-[24rem] flex-col rounded-3xl border-2 border-[#cf8741] bg-[#fff4d6] p-4 text-[#552a0f] shadow-[0px_6px_12px_rgba(0,0,0,0.35)]"
     >
       <div class="shrink-0 text-center">
-        <h2 class="font-extrabold leading-tight text-[length:clamp(1.35rem,6.4vw,1.75rem)]">Winners</h2>
-        <p class="text-[#8a5a2b] font-bold text-[length:clamp(0.8rem,3.8vw,0.95rem)]">Latest big wins</p>
+        <h2 class="font-extrabold leading-tight text-[length:clamp(1.35rem,6.4vw,1.75rem)]">{{ $t('Winners') }}</h2>
+        <p class="text-[#8a5a2b] font-bold text-[length:clamp(0.8rem,3.8vw,0.95rem)]">{{ $t('Latest big wins') }}</p>
       </div>
 
       <ul
@@ -91,7 +92,7 @@ function onScroll(e: Event) {
             <p class="truncate font-extrabold text-[length:clamp(0.9rem,4.3vw,1.1rem)]">{{ r.name }}</p>
             <p class="flex items-center gap-1 text-[#8a5a2b] font-bold text-[length:clamp(0.72rem,3.4vw,0.88rem)]">
               <template v-if="r.spend">
-                Spent <img :src="StarIcon" alt="" class="w-[1.2em]" />{{ r.spend }}
+                {{ $t('Spent') }} <img :src="StarIcon" alt="" class="w-[1.2em]" />{{ r.spend }}
               </template>
               <template v-else>{{ r.date }}</template>
             </p>
@@ -110,9 +111,9 @@ function onScroll(e: Event) {
         </li>
 
         <li v-if="!rows.length && !loading" class="py-8 text-center font-bold text-[#8a5a2b] text-[length:clamp(0.9rem,4.3vw,1.1rem)]">
-          No winners yet
+          {{ $t('No winners yet') }}
         </li>
-        <li v-if="loading" class="py-3 text-center font-bold text-[#8a5a2b] text-[length:clamp(0.8rem,3.8vw,0.95rem)]">Loading…</li>
+        <li v-if="loading" class="py-3 text-center font-bold text-[#8a5a2b] text-[length:clamp(0.8rem,3.8vw,0.95rem)]">{{ $t('Loading…') }}</li>
       </ul>
 
       <button
@@ -120,7 +121,7 @@ function onScroll(e: Event) {
         class="mt-3 w-full shrink-0 rounded-full border border-[#b9722a] bg-[#fff4d6] py-1.5 font-bold text-[#552a0f] shadow-[0px_3px_3px_rgba(0,0,0,0.2)] active:translate-y-px text-[length:clamp(1rem,4.8vw,1.25rem)]"
         @click="emit('close')"
       >
-        Close
+        {{ $t('Close') }}
       </button>
     </div>
   </div>

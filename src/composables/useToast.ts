@@ -1,6 +1,7 @@
 // composables/useToast.ts
 import { ref } from 'vue'
 import type { Toast, ToastType } from '@/types/toast'
+import { playSfx } from '@/composables/useSfx'
 
 const toasts = ref<Toast[]>([])
 let id = 0
@@ -15,6 +16,8 @@ export function useToast() {
     }
 
     toasts.value.push(toast)
+    if (type === 'error') playSfx('error')
+    else if (type === 'success') playSfx('success')
 
     setTimeout(() => {
       remove(toast.id)

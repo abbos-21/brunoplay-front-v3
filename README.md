@@ -46,3 +46,17 @@ npm run build
 ```sh
 npm run lint
 ```
+
+## Running against the v4 backend
+
+```sh
+# 1. backend (brunoplay-back-v4): DEV_AUTH=true, see its README; optional test numbers:
+#    ADMIN_PASSWORD=... node ../brunoplay-back-v4/scripts/dev-seed.mjs http://localhost:8080 you@example.com
+# 2. this app
+cp .env.example .env.development.local
+npm run dev
+```
+
+What talks to the server: `src/api/*` (one file per area), `src/stores/*` (state), `src/composables/useAds.ts` (Adsgram
+rewarded ads), `useTonConnect.ts` (TON payments), `useAppGate.ts` (maintenance / reload / blocked screens).
+Before going live: put the real address in `public/tonconnect-manifest.json` and serve the app over HTTPS.

@@ -1,30 +1,94 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { t } from '@/i18n'
+import { computed, ref, watch } from 'vue'
 import { StarIcon } from '@/assets/svgs'
 import { TonImage } from '@/assets/images'
 import { useToast } from '@/composables/useToast'
+import { useWalletStore } from '@/stores/wallet'
+import { getTelegram } from '@/composables/useTelegram'
+import { apiMessage } from '@/composables/apiError'
+import { payWithTon, isCancelled } from '@/composables/useTonConnect'
+import type { TopupPack } from '@/types'
 
 const toast = useToast()
+const wallet = useWalletStore()
 
-defineProps<{ modelValue: boolean }>()
+const props = defineProps<{ modelValue: boolean }>()
 const emit = defineEmits<{ (e: 'update:modelValue', value: boolean): void }>()
-
-// Real payments are not wired up yet.
-const soon = () => toast.show('Buying stars is coming soon!', 'info')
 
 type Tab = 'stars' | 'ton'
 const tab = ref<Tab>('stars')
+const loadError = ref(false)
+const busyPack = ref<number | null>(null)
 
-// Design only: no purchase is wired up yet.
-const BONUS = 0.1
-const AMOUNTS = [200, 500, 1000, 2500, 5000, 10000, 25000, 50000]
-const options = computed(() =>
-  AMOUNTS.map((stars) => ({
-    stars,
-    bonus: Math.round(stars * BONUS),
-    ton: (Math.floor((stars / 90) * 100) / 100).toFixed(2),
-  })),
+// the packs, prices and bonus percentages are the owner's settings: read them each time the panel opens
+watch(
+  () => props.modelValue,
+  async (open) => {
+    if (!open) return
+    loadError.value = false
+    try {
+      await wallet.fetchPacks()
+    } catch {
+      loadError.value = true
+    }
+  },
+  { immediate: true },
 )
+
+const packs = computed<TopupPack[]>(() => wallet.packs?.packs ?? [])
+const tonPercent = computed(() => wallet.packs?.tonBonusPercent ?? 0)
+const available = computed(() => (tab.value === 'ton' ? wallet.packs?.tonAvailable : wallet.packs?.telegramAvailable) !== false)
+
+const fmt = (n: number) => n.toLocaleString('en-US')
+
+/** Telegram Stars: Telegram shows its own payment sheet and tells our server when it is paid. */
+async function buyWithTelegram(p: TopupPack) {
+  const order = await wallet.createTelegramInvoice(p.stars)
+  const tg = getTelegram()
+  if (!order.invoiceLink || !tg) throw new Error('Open the app in Telegram to pay with Stars')
+  const status = await new Promise<string>((resolve) => tg.openInvoice(order.invoiceLink!, (s) => resolve(s)))
+  if (status === 'cancelled') return
+  if (status === 'failed') throw new Error('The payment failed')
+  const final = await wallet.waitForOrder(order.id)
+  if (final.status === 'PAID') toast.show(t('You got {n} stars!', { n: fmt(final.stars + final.bonusStars) }), 'success')
+  else toast.show(t('The payment is still being confirmed, your stars will arrive in a moment'), 'info')
+}
+
+/** TON: the wallet sends the transfer; the server finds it on the chain and credits the stars. */
+async function buyWithTon(p: TopupPack) {
+  const order = await wallet.createTonOrder(p.stars)
+  if (!order.address || !order.payload || !order.amountNano) throw new Error('Bad order')
+  try {
+    await payWithTon({
+      address: order.address,
+      amountNano: order.amountNano,
+      payload: order.payload,
+      validUntil: Math.floor(new Date(order.expiresAt).getTime() / 1000),
+    })
+  } catch (e) {
+    if (isCancelled(e)) return
+    throw e
+  }
+  toast.show(t('Payment sent. The stars arrive after the network confirms it.'), 'info')
+  const final = await wallet.waitForOrder(order.id, 180_000)
+  if (final.status === 'PAID') {
+    toast.show(t('You got {n} stars!', { n: fmt(final.stars + final.bonusStars) }), 'success')
+  }
+}
+
+async function buy(p: TopupPack) {
+  if (busyPack.value !== null) return
+  busyPack.value = p.stars
+  try {
+    if (tab.value === 'ton') await buyWithTon(p)
+    else await buyWithTelegram(p)
+  } catch (e) {
+    toast.show(e instanceof Error && !('response' in e) ? t(e.message) : apiMessage(e, 'Could not start the payment'), 'error')
+  } finally {
+    busyPack.value = null
+  }
+}
 
 const tabBase =
   'relative flex-1 h-11 rounded-[20px] border border-[#c17e23] font-bold text-xl shadow-[0px_4px_4px_rgba(0,0,0,0.25),inset_0px_4px_4px_rgba(255,255,255,0.25),inset_0px_-4px_4px_rgba(0,0,0,0.25)]'
@@ -100,7 +164,7 @@ const tabBase =
         </svg>
       </button>
 
-      <h1 class="font-bold text-3xl text-center text-[#552a0f]">Top up Stars</h1>
+      <h1 class="px-12 font-bold leading-tight text-center text-[#552a0f] text-[length:clamp(1.4rem,7vw,1.875rem)]">{{ $t('Top up Stars') }}</h1>
 
       <div class="flex gap-4 w-full mt-3 px-1">
         <button
@@ -111,7 +175,7 @@ const tabBase =
           ]"
           @click="tab = 'stars'"
         >
-          Stars
+          {{ $t('Stars') }}
         </button>
         <button
           type="button"
@@ -123,9 +187,10 @@ const tabBase =
         >
           TON
           <span
+            v-if="tonPercent > 0"
             class="absolute -top-2 -right-1 rounded-full bg-[#03ca00] px-2 text-[11px] leading-5 font-bold text-white shadow-[inset_0px_2px_3px_rgba(255,255,255,0.25),inset_0px_-2px_3px_rgba(0,0,0,0.25)]"
           >
-            +10%
+            +{{ tonPercent }}%
           </span>
         </button>
       </div>
@@ -133,31 +198,45 @@ const tabBase =
       <div
         class="flex flex-col gap-2.5 w-full mt-3 overflow-y-auto min-h-0 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
       >
+        <p v-if="loadError || (wallet.packs && !packs.length) || !available" class="py-6 text-center font-bold text-[#552a0f]">
+          {{ $t('Buying stars is not available right now') }}
+        </p>
         <button
-          v-for="o in options"
+          v-for="o in packs"
           :key="o.stars"
           type="button"
-          @click="soon"
+          :disabled="busyPack !== null || !available"
+          @click="buy(o)"
           class="shrink-0 flex items-center bg-[#fde7b8] border border-[#cf8741] rounded-[18px] h-[clamp(2.9rem,12vw,3.4rem)] px-3 font-bold text-[#552a0f] shadow-[inset_0px_4px_4px_rgba(255,255,255,0.25),inset_0px_-4px_4px_rgba(0,0,0,0.25)]"
           :class="tab === 'stars' ? 'justify-center' : 'justify-between'"
         >
           <span class="flex items-center gap-1.5 text-[length:clamp(1.15rem,5.2vw,1.4rem)]">
             <img :src="StarIcon" alt="" class="w-[clamp(1.5rem,7vw,1.8rem)]" />
-            {{ o.stars }}
+            {{ fmt(o.stars) }}
             <span
               v-if="tab === 'ton'"
               class="ml-1.5 text-[#038d01] text-[length:clamp(1rem,4.6vw,1.25rem)]"
             >
-              +{{ o.bonus }}
+              +{{ fmt(o.tonBonusStars) }}
+            </span>
+            <span
+              v-else-if="o.telegramBonusStars > 0"
+              class="ml-1.5 text-[#038d01] text-[length:clamp(1rem,4.6vw,1.25rem)]"
+            >
+              +{{ fmt(o.telegramBonusStars) }}
             </span>
           </span>
+          <span
+            v-if="tab === 'stars' && busyPack === o.stars"
+            class="ml-2 text-[length:clamp(0.85rem,4vw,1rem)] font-semibold"
+          >…</span>
 
           <span
             v-if="tab === 'ton'"
             class="flex items-center gap-1.5 font-semibold text-[length:clamp(1.05rem,4.9vw,1.3rem)]"
           >
             <img :src="TonImage" alt="" class="w-[clamp(1.4rem,6.5vw,1.7rem)] rounded-full" />
-            {{ o.ton }} TON
+            {{ busyPack === o.stars ? '…' : `${o.ton} TON` }}
           </span>
         </button>
       </div>

@@ -1,5 +1,5 @@
 import client from './client';
-import type { WithdrawalInfo, Withdrawal, StarsBalance, PaginatedResponse } from '@/types';
+import type { WithdrawalInfo, Withdrawal, PaginatedResponse, TopupPacks, TopupOrder } from '@/types';
 
 // === Withdrawals ===
 export function getWithdrawalInfo() {
@@ -11,18 +11,28 @@ export function createWithdrawal(targetAddress: string, amountCoins: number) {
 }
 
 export function getWithdrawalHistory(page = 1) {
-  return client.get<PaginatedResponse<Withdrawal>>('/withdrawals/history', { params: { page } }).then((r) => r.data);
+  return client.get<PaginatedResponse<Withdrawal>>('/withdrawals', { params: { page } }).then((r) => r.data);
 }
 
-// === Stars ===
-export function getStarsBalance() {
-  return client.get<StarsBalance>('/stars/balance').then((r) => r.data);
+export function cancelWithdrawal(id: number) {
+  return client.post<{ withdrawal: Withdrawal }>(`/withdrawals/${id}/cancel`).then((r) => r.data.withdrawal);
 }
 
-export function createStarsInvoice(amount: number) {
-  return client.post<{ invoiceUrl: string }>('/stars/create-invoice', { amount }).then((r) => r.data);
+// === Stars top-up ===
+export function getTopupPacks() {
+  return client.get<TopupPacks>('/topup/packs').then((r) => r.data);
 }
 
-export function topUpWithTon(amountTon: number) {
-  return client.post<{ starsAdded: number; newBalance: number }>('/stars/topup-ton', { amountTon }).then((r) => r.data);
+/** A Telegram Stars invoice for a pack; open `invoiceLink` with Telegram.WebApp.openInvoice. */
+export function createTelegramInvoice(packStars: number) {
+  return client.post<TopupOrder>('/topup/telegram-invoice', { packStars }).then((r) => r.data);
+}
+
+/** A TON order: send `amountNano` to `address` with the `payload` comment (TON Connect). */
+export function createTonOrder(packStars: number) {
+  return client.post<TopupOrder>('/topup/ton-order', { packStars }).then((r) => r.data);
+}
+
+export function getTopupOrder(id: string) {
+  return client.get<TopupOrder>(`/topup/orders/${id}`).then((r) => r.data);
 }

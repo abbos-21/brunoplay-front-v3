@@ -1,0 +1,95 @@
+- generic [ref=f1e4]:
+  - generic [ref=f1e5]:
+    - generic [ref=f1e6]:
+      - generic [ref=f1e7]:
+        - img "Coins" [ref=f1e8]
+        - generic [ref=f1e9]: 2,104,024
+        - link "Withdraw" [ref=f1e11] [cursor=pointer]:
+          - /url: /withdraw
+      - generic [ref=f1e14]:
+        - img "Level 1" [ref=f1e15]:
+          - generic: LV1
+        - button [ref=f1e35] [cursor=pointer]
+    - generic: "0.00"
+    - generic [ref=f1e41]:
+      - generic [ref=f1e42]:
+        - button "Daily reward" [ref=f1e43] [cursor=pointer]:
+          - img "Daily reward" [ref=f1e44]
+        - button "Daily combo" [ref=f1e45] [cursor=pointer]:
+          - img "Daily combo" [ref=f1e46]
+      - button "Fishing" [ref=f1e48] [cursor=pointer]
+    - generic [ref=f1e50]:
+      - button [ref=f1e51] [cursor=pointer]
+      - generic [ref=f1e56]:
+        - generic [ref=f1e57]:
+          - heading [level=1]
+          - heading "ID:" [level=1] [ref=f1e58]
+          - radiogroup "Language" [ref=f1e59]:
+            - radio "English" [checked] [ref=f1e60] [cursor=pointer]
+            - radio "Русский" [ref=f1e62] [cursor=pointer]
+          - generic [ref=f1e64]:
+            - generic [ref=f1e66]:
+              - generic [ref=f1e67]: Music 1
+              - generic [ref=f1e68]: Default
+            - generic [ref=f1e69]:
+              - button [disabled] [ref=f1e70]
+              - button [ref=f1e71] [cursor=pointer]
+              - button [disabled] [ref=f1e72]
+        - generic [ref=f1e73]:
+          - button "Support Support" [disabled] [ref=f1e74]:
+            - img "Support" [ref=f1e75]
+            - generic [ref=f1e76]: Support
+          - button "News News" [disabled] [ref=f1e77]:
+            - img "News" [ref=f1e78]
+            - generic [ref=f1e79]: News
+          - button "FAQ FAQ" [disabled] [ref=f1e80]:
+            - img "FAQ" [ref=f1e81]
+            - generic [ref=f1e82]: FAQ
+    - generic [ref=f1e84]:
+      - button [ref=f1e85] [cursor=pointer]
+      - heading "Daily Activity" [level=1] [ref=f1e90]
+      - heading "Visit daily to grow your streak and unlock the maximum reward after 10 days in a row." [level=2] [ref=f1e91]
+      - button "Claimed" [disabled] [ref=f1e92]
+    - generic [ref=f1e94]:
+      - button [ref=f1e95] [cursor=pointer]
+      - heading "Daily Combo" [level=1] [ref=f1e100]
+      - heading "Place the pictures in the correct order to collect the reward = coins" [level=2] [ref=f1e101]
+      - button "Claim" [disabled] [ref=f1e125]
+  - navigation [ref=f1e127]:
+    - link [ref=f1e128] [cursor=pointer]:
+      - /url: /
+      - img "Fishing" [ref=f1e129]
+      - heading "Fishing" [level=1] [ref=f1e130]
+    - link [ref=f1e131] [cursor=pointer]:
+      - /url: /shop
+      - img "Shop" [ref=f1e132]
+      - heading "Shop" [level=1] [ref=f1e133]
+    - link [ref=f1e134] [cursor=pointer]:
+      - /url: /games
+      - img "Games" [ref=f1e135]
+      - heading "Games" [level=1] [ref=f1e136]
+    - link [ref=f1e137] [cursor=pointer]:
+      - /url: /tasks
+      - img "Tasks" [ref=f1e138]
+      - heading "Tasks" [level=1] [ref=f1e139]
+    - link [ref=f1e140] [cursor=pointer]:
+      - /url: /friends
+      - img "Friends" [ref=f1e141]
+      - heading "Friends" [level=1] [ref=f1e142]
+  - generic [ref=f1e144]:
+    - button [ref=f1e145] [cursor=pointer]
+    - heading "Top up Stars" [level=1] [ref=f1e150]
+    - generic [ref=f1e151]:
+      - button "Stars" [ref=f1e152] [cursor=pointer]
+      - button "TON +10%" [ref=f1e153] [cursor=pointer]:
+        - text: TON
+        - generic [ref=f1e154]: +10%
+    - generic [ref=f1e155]:
+      - button "200" [ref=f1e156] [cursor=pointer]
+      - button "500" [ref=f1e158] [cursor=pointer]
+      - button "1000" [ref=f1e160] [cursor=pointer]
+      - button "2500" [ref=f1e162] [cursor=pointer]
+      - button "5000" [ref=f1e164] [cursor=pointer]
+      - button "10000" [ref=f1e166] [cursor=pointer]
+      - button "25000" [ref=f1e168] [cursor=pointer]
+      - button "50000" [ref=f1e170] [cursor=pointer]

@@ -1,0 +1,107 @@
+- generic [ref=f6e4]:
+  - generic [ref=f6e5]:
+    - generic [ref=f6e6]:
+      - generic [ref=f6e7]:
+        - img "Монеты" [ref=f6e8]
+        - generic [ref=f6e9]: 2,104,024
+        - link "Вывести" [ref=f6e11] [cursor=pointer]:
+          - /url: /withdraw
+      - generic [ref=f6e14]:
+        - generic [ref=f6e15]:
+          - img "Звёзды" [ref=f6e16]
+          - generic [ref=f6e17]: 641,000
+          - button "Пополнить звёзды" [ref=f6e19] [cursor=pointer]
+        - button [ref=f6e22] [cursor=pointer]
+    - generic [ref=f6e26]:
+      - article [ref=f6e27]:
+        - generic [ref=f6e28]:
+          - img "Мега-сундук" [ref=f6e30]
+          - generic [ref=f6e31]:
+            - generic [ref=f6e32]: Популярное
+            - heading "Мега-сундук" [level=2] [ref=f6e33]
+            - paragraph [ref=f6e34]: Выберите сундук и выиграйте до 5 000 монет
+            - link "Играть" [ref=f6e35] [cursor=pointer]:
+              - /url: /games/roulette
+      - article [ref=f6e36]:
+        - generic [ref=f6e37]:
+          - img "Колесо фортуны" [ref=f6e39]
+          - generic [ref=f6e40]:
+            - generic [ref=f6e41]: Горячее
+            - heading "Колесо фортуны" [level=2] [ref=f6e42]
+            - paragraph [ref=f6e43]: Крутите колесо за монеты и звёзды
+            - link "Играть" [ref=f6e44] [cursor=pointer]:
+              - /url: /games/spin
+      - article [ref=f6e45]:
+        - generic [ref=f6e46]:
+          - img "Поездка Бруно" [ref=f6e48]
+          - generic [ref=f6e49]:
+            - generic [ref=f6e50]: Обычное
+            - heading "Поездка Бруно" [level=2] [ref=f6e51]
+            - paragraph [ref=f6e52]: Мчитесь, уворачивайтесь и собирайте монеты
+            - link "Играть" [ref=f6e53] [cursor=pointer]:
+              - /url: /games/ride
+    - generic [ref=f6e55]:
+      - button [ref=f6e56] [cursor=pointer]
+      - generic [ref=f6e61]:
+        - generic [ref=f6e62]:
+          - heading [level=1]
+          - heading "ID:" [level=1] [ref=f6e63]
+          - radiogroup "Язык" [ref=f6e64]:
+            - radio "English" [ref=f6e65] [cursor=pointer]
+            - radio "Русский" [checked] [ref=f6e67] [cursor=pointer]
+          - generic [ref=f6e69]:
+            - generic [ref=f6e71]:
+              - generic [ref=f6e72]: Музыка 1
+              - generic [ref=f6e73]: По умолчанию
+            - generic [ref=f6e74]:
+              - button [disabled] [ref=f6e75]
+              - button [ref=f6e76] [cursor=pointer]
+              - button [disabled] [ref=f6e77]
+        - generic [ref=f6e78]:
+          - button "Поддержка Поддержка" [disabled] [ref=f6e79]:
+            - img "Поддержка" [ref=f6e80]
+            - generic [ref=f6e81]: Поддержка
+          - button "Новости Новости" [disabled] [ref=f6e82]:
+            - img "Новости" [ref=f6e83]
+            - generic [ref=f6e84]: Новости
+          - button "FAQ FAQ" [disabled] [ref=f6e85]:
+            - img "FAQ" [ref=f6e86]
+            - generic [ref=f6e87]: FAQ
+  - navigation [ref=f6e89]:
+    - link [ref=f6e90] [cursor=pointer]:
+      - /url: /
+      - img "Рыбалка" [ref=f6e91]
+      - heading "Рыбалка" [level=1] [ref=f6e92]
+    - link [ref=f6e93] [cursor=pointer]:
+      - /url: /shop
+      - img "Магазин" [ref=f6e94]
+      - heading "Магазин" [level=1] [ref=f6e95]
+    - link [ref=f6e96] [cursor=pointer]:
+      - /url: /games
+      - img "Игры" [ref=f6e97]
+      - heading "Игры" [level=1] [ref=f6e98]
+    - link [ref=f6e99] [cursor=pointer]:
+      - /url: /tasks
+      - img "Задания" [ref=f6e100]
+      - heading "Задания" [level=1] [ref=f6e101]
+    - link [ref=f6e102] [cursor=pointer]:
+      - /url: /friends
+      - img "Друзья" [ref=f6e103]
+      - heading "Друзья" [level=1] [ref=f6e104]
+  - generic [ref=f6e106]:
+    - button [ref=f6e107] [cursor=pointer]
+    - heading "Пополнение звёзд" [level=1] [ref=f6e112]
+    - generic [ref=f6e113]:
+      - button "Звёзды" [ref=f6e114] [cursor=pointer]
+      - button "TON +10%" [ref=f6e115] [cursor=pointer]:
+        - text: TON
+        - generic [ref=f6e116]: +10%
+    - generic [ref=f6e117]:
+      - button "200" [ref=f6e118] [cursor=pointer]
+      - button "500" [ref=f6e120] [cursor=pointer]
+      - button "1000" [ref=f6e122] [cursor=pointer]
+      - button "2500" [ref=f6e124] [cursor=pointer]
+      - button "5000" [ref=f6e126] [cursor=pointer]
+      - button "10000" [ref=f6e128] [cursor=pointer]
+      - button "25000" [ref=f6e130] [cursor=pointer]
+      - button "50000" [ref=f6e132] [cursor=pointer]
