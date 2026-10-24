@@ -9,6 +9,24 @@ import { getTelegramInitData, getTelegramStartParam, initTelegram } from '@/comp
 import { gate } from '@/composables/useAppGate';
 import { markAuthReady } from '@/composables/authReady';
 
+/** A network hiccup or a 5xx from the server: worth asking again. Anything else (401, 4xx) is a real answer. */
+function isTransient(e: unknown): boolean {
+  const status = (e as { response?: { status?: number } })?.response?.status;
+  return status === undefined || status >= 500;
+}
+
+/** Runs `fn`, asking again a few times when the connection fails, so a brief outage does not break the start of the app. */
+async function withRetry<T>(fn: () => Promise<T>, tries = 4): Promise<T> {
+  for (let attempt = 1; ; attempt++) {
+    try {
+      return await fn();
+    } catch (e) {
+      if (attempt >= tries || !isTransient(e)) throw e;
+      await new Promise((r) => setTimeout(r, 700 * attempt));
+    }
+  }
+}
+
 export type AuthState = 'idle' | 'loading' | 'authenticated' | 'error';
 
 export const useAuthStore = defineStore('auth', () => {
@@ -51,11 +69,17 @@ export const useAuthStore = defineStore('auth', () => {
     // Step 2: If we have a stored token, try to restore the session
     if (token.value) {
       try {
-        user.value = await userApi.getMe(true);
+        user.value = await withRetry(() => userApi.getMe(true));
         state.value = 'authenticated';
         showBlocked();
         return;
-      } catch {
+      } catch (e) {
+        if (isTransient(e)) {
+          // the server could not be reached: keep the token, the player can try again
+          state.value = 'error';
+          error.value = apiMessage(e, 'Cannot reach the server');
+          return;
+        }
         // Token is invalid/expired — clear it and fall through to re-auth
         token.value = null;
         user.value = null;
@@ -70,7 +94,7 @@ export const useAuthStore = defineStore('auth', () => {
     try {
       let res;
       if (initData) {
-        res = await authApi.authenticate(initData);
+        res = await withRetry(() => authApi.authenticate(initData));
       } else if (import.meta.env.DEV && devId > 0) {
         // development only: sign in without Telegram (the backend needs DEV_AUTH=true)
         res = await authApi.authenticateDev(devId, getTelegramStartParam());
