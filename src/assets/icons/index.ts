@@ -1,0 +1,11 @@
+// 3D emoji icons from Microsoft's Fluent UI Emoji set (MIT licence, https://github.com/microsoft/fluentui-emoji).
+export { default as TrophyIcon } from './trophy_3d.png'
+export { default as GiftIcon } from './wrapped_gift_3d.png'
+export { default as MedalFirst } from './1st_place_medal_3d.png'
+export { default as MedalSecond } from './2nd_place_medal_3d.png'
+export { default as MedalThird } from './3rd_place_medal_3d.png'
+export { default as CheckIcon } from './check_mark_button_3d.png'
+export { default as CrossIcon } from './cross_mark_3d.png'
+export { default as WarningIcon } from './warning_3d.png'
+export { default as InfoIcon } from './information_3d.png'
+export { default as BellIcon } from './bell_3d.png'

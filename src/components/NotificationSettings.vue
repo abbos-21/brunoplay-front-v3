@@ -1,6 +1,8 @@
 <script setup lang="ts">
-import { onMounted, ref } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import client from '@/api/client'
+import ToggleSwitch from '@/components/ToggleSwitch.vue'
+import { BellIcon } from '@/assets/icons'
 import { getTelegram } from '@/composables/useTelegram'
 import { useToast } from '@/composables/useToast'
 import { apiMessage } from '@/composables/apiError'
@@ -38,9 +40,16 @@ async function save(body: { allOff?: boolean; off?: string[] }) {
   }
 }
 
-function toggle(c: Cat) {
+const master = computed(() => !!prefs.value && !prefs.value.allOff)
+
+function setMaster(on: boolean) {
+  void save({ allOff: !on })
+}
+
+function setCategory(c: Cat, on: boolean) {
   if (!prefs.value || c.mandatory) return
-  const off = prefs.value.categories.filter((x) => !x.mandatory && (x.key === c.key ? c.on : !x.on)).map((x) => x.key)
+  // the list of switched-off categories after this change
+  const off = prefs.value.categories.filter((x) => !x.mandatory && (x.key === c.key ? !on : !x.on)).map((x) => x.key)
   void save({ off, allOff: false })
 }
 
@@ -54,46 +63,33 @@ function openBot() {
 </script>
 
 <template>
-  <div v-if="prefs" class="mt-3 rounded-2xl border border-[#cf8741] bg-[#fde7b8] px-4 py-2.5 text-[#552a0f]">
-    <div class="flex items-center justify-between gap-3">
-      <span class="font-bold leading-tight text-[length:clamp(0.9rem,4.3vw,1.125rem)]">{{ $t('Bot notifications') }}</span>
-      <button
-        type="button"
-        role="switch"
-        :aria-checked="!prefs.allOff"
-        :disabled="busy"
-        class="relative block h-7 w-12 shrink-0 rounded-full transition-colors shadow-[inset_0px_2px_3px_rgba(0,0,0,0.3)]"
-        :class="!prefs.allOff ? 'bg-[#1fb826]' : 'bg-[#c9a97d]'"
-        @click="save({ allOff: !prefs.allOff })"
-      >
-        <span
-          class="absolute left-0.5 top-0.5 block size-6 rounded-full bg-white shadow-[0px_2px_3px_rgba(0,0,0,0.35)] transition-transform duration-200"
-          :class="!prefs.allOff ? 'translate-x-5' : 'translate-x-0'"
-        />
-      </button>
+  <section
+    v-if="prefs"
+    class="mt-3 w-full rounded-2xl border border-[#cf8741] bg-[#fde7b8] px-4 py-2.5 text-[#552a0f] shadow-[inset_0px_2px_2px_rgba(255,255,255,0.25),inset_0px_-2px_2px_rgba(0,0,0,0.25)]"
+  >
+    <div class="flex items-center gap-3">
+      <img :src="BellIcon" alt="" class="size-7 shrink-0 object-contain" />
+      <span class="min-w-0 flex-1 text-left font-bold leading-tight text-[length:clamp(0.9rem,4.3vw,1.125rem)]">{{ $t('Bot notifications') }}</span>
+      <ToggleSwitch :model-value="master" :disabled="busy" :label="$t('Bot notifications')" @update:model-value="setMaster" />
     </div>
 
     <button
       v-if="!prefs.botStarted || prefs.botBlocked"
       type="button"
-      class="mt-2 w-full rounded-full border border-[#0a6ea8] bg-[#0e89d4] py-1.5 font-bold text-white"
+      class="mt-2.5 w-full rounded-xl border border-[#0a6ea8] bg-[#0e89d4] px-3 py-1.5 text-center font-bold leading-tight text-white shadow-[inset_0px_3px_3px_rgba(255,255,255,0.25),inset_0px_-3px_3px_rgba(0,0,0,0.2)] active:translate-y-px text-[length:clamp(0.8rem,3.9vw,1rem)]"
       @click="openBot"
     >
       {{ prefs.botBlocked ? $t('Unblock the bot to get messages') : $t('Press Start in the bot to get messages') }}
     </button>
 
-    <ul v-if="!prefs.allOff" class="mt-2 flex flex-col gap-1">
-      <li v-for="c in prefs.categories" :key="c.key" class="flex items-center justify-between gap-2">
-        <span class="text-[length:clamp(0.8rem,3.9vw,1rem)]">{{ c.name }}</span>
-        <input
-          type="checkbox"
-          :checked="c.on"
-          :disabled="busy || c.mandatory"
-          class="size-5 accent-[#1fb826]"
-          :aria-label="c.name"
-          @change="toggle(c)"
-        />
+    <ul v-if="master" class="mt-2 divide-y divide-[#cf8741]/30 border-t border-[#cf8741]/40">
+      <li v-for="c in prefs.categories" :key="c.key" class="flex items-center justify-between gap-3 py-1.5">
+        <span class="min-w-0 truncate font-semibold text-[length:clamp(0.8rem,3.9vw,1rem)]" :class="{ 'opacity-70': c.mandatory }">
+          {{ c.name }}
+          <span v-if="c.mandatory" class="ml-1 text-[0.75em] font-bold uppercase tracking-wide text-[#8a5a2b]">{{ $t('always on') }}</span>
+        </span>
+        <ToggleSwitch size="sm" :model-value="c.on" :disabled="busy || c.mandatory" :label="c.name" @update:model-value="(v) => setCategory(c, v)" />
       </li>
     </ul>
-  </div>
+  </section>
 </template>

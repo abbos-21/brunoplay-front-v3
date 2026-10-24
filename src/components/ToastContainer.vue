@@ -2,26 +2,7 @@
   <div class="toast-container">
     <transition-group name="toast">
       <div v-for="toast in toasts" :key="toast.id" :class="['toast', toast.type]">
-        <span
-          v-if="toast.type === 'success'"
-          class="w-6 aspect-square rounded-full bg-[#1BB33F] text-white flex justify-center items-center"
-        >
-          <TickSVG class="w-3.5" />
-        </span>
-
-        <span
-          v-else-if="toast.type === 'error'"
-          class="w-6 aspect-square rounded-full bg-[#FB7A38] text-white flex justify-center items-center"
-        >
-          <TimesSVG class="w-3" />
-        </span>
-
-        <span
-          v-else-if="toast.type === 'warning'"
-          class="w-6 aspect-square rounded-full bg-[#FB7A38] text-white flex justify-center items-center"
-        >
-          <WarningSVG class="h-4" />
-        </span>
+        <img :src="ICONS[toast.type] ?? InfoIcon" alt="" class="toast-icon" />
 
         {{ toast.message }}
 
@@ -33,12 +14,22 @@
 
 <script setup lang="ts">
 import { useToast } from '@/composables/useToast'
-import { TickSVG, TimesSVG, WarningSVG } from '@/assets/svgs'
+import { CheckIcon, CrossIcon, WarningIcon, InfoIcon } from '@/assets/icons'
+
+const ICONS: Record<string, string> = { success: CheckIcon, error: CrossIcon, warning: WarningIcon, info: InfoIcon }
 
 const { toasts } = useToast()
 </script>
 
 <style scoped>
+.toast-icon {
+  width: 1.75rem;
+  height: 1.75rem;
+  flex: none;
+  object-fit: contain;
+  filter: drop-shadow(0 2px 2px rgba(85, 42, 15, 0.25));
+}
+
 .toast-container {
   width: 100%;
   position: absolute;

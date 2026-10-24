@@ -307,6 +307,15 @@ const ru: Record<string, string> = {
   'Bot notifications': 'Уведомления бота',
   'Press Start in the bot to get messages': 'Нажмите Start в боте, чтобы получать сообщения',
   'Unblock the bot to get messages': 'Разблокируйте бота, чтобы получать сообщения',
+  'Try again': 'Ещё раз',
+  'watch an ad': 'за рекламу',
+  Tournament: 'Турнир',
+  Entry: 'Взнос',
+  'Free entry': 'Вход бесплатный',
+  Soon: 'Скоро',
+  Ended: 'Завершён',
+  You: 'Вы',
+  'always on': 'всегда включено',
 }
 
 export default ru

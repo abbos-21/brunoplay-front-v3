@@ -3,6 +3,7 @@ import { computed, onMounted, ref } from 'vue'
 import { RouterLink } from 'vue-router'
 import { useGamesStore } from '@/stores/games'
 import { useCountdown } from '@/composables/useCountdown'
+import { TrophyIcon } from '@/assets/icons'
 import CoinBalance from '@/components/CoinBalance.vue'
 import StarBalance from '@/components/StarBalance.vue'
 import HamburgerButton from '@/components/HamburgerButton.vue'
@@ -12,17 +13,15 @@ import { GameMegaChest, GameSpin, GameRide } from '@/assets/images'
 const isMenuOpen = ref(false)
 const games = useGamesStore()
 
-// the tournament running now (or the next one) and the gifts waiting in the collection
+// the tournament running now (or the next one)
 const tournament = computed(() => games.activeTournament)
 const { formatted } = useCountdown(() => {
   const x = tournament.value
   return x ? (x.status === 'SCHEDULED' ? x.startAt : x.endAt) : null
 })
-const giftCount = computed(() => games.gifts.filter((g) => g.status === 'OWNED').length)
 
 onMounted(() => {
   games.fetchTournaments().catch(() => {})
-  games.fetchGifts().catch(() => {})
 })
 
 const gameCards = [
@@ -75,32 +74,38 @@ const gameCards = [
     <div
       class="flex flex-col gap-4 mt-4 px-1 pb-2 overflow-y-scroll flex-1 min-h-0 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
     >
-      <RouterLink
+      <!-- the tournament running now (or the next one) -->
+      <article
         v-if="tournament"
-        :to="`/tournaments/${tournament.id}`"
-        class="shrink-0 rounded-3xl border-2 border-[#cf8741] bg-[linear-gradient(135deg,#fbe166,#f9b23a)] p-3 shadow-[0px_4px_4px_rgba(0,0,0,0.25)] flex items-center gap-3"
+        class="shrink-0 rounded-3xl border-2 border-[#cf8741] bg-[#fff4d6] p-3 shadow-[0px_4px_4px_rgba(0,0,0,0.25)]"
       >
-        <span class="text-4xl">🏆</span>
-        <span class="flex-1 min-w-0">
-          <span class="block font-extrabold text-[#552a0f] leading-tight truncate text-[length:clamp(1.05rem,5.2vw,1.4rem)]">{{ tournament.name }}</span>
-          <span class="block font-bold text-[#7a3a0a] tabular-nums text-[length:clamp(0.8rem,3.9vw,1rem)]">
-            {{ tournament.status === 'SCHEDULED' ? $t('Starts in') : $t('Ends in') }} {{ formatted }}
-            <template v-if="tournament.joined && tournament.rank"> · #{{ tournament.rank }}</template>
-          </span>
-        </span>
-        <span class="shrink-0 rounded-full bg-[#c8200f] px-3 py-1 font-bold text-white text-[length:clamp(0.8rem,4vw,1rem)]">
-          {{ tournament.joined ? $t('Open') : $t('Join') }}
-        </span>
-      </RouterLink>
+        <div class="flex items-center gap-5">
+          <div
+            class="shrink-0 w-[clamp(4.75rem,23vw,6.25rem)] aspect-square rounded-2xl overflow-hidden flex items-center justify-center bg-[radial-gradient(circle_at_50%_35%,#fff6bf,#fbe166_70%,#f6b73c)] border border-[#e3b66f] shadow-[inset_0px_3px_3px_rgba(255,255,255,0.5),inset_0px_-3px_3px_rgba(0,0,0,0.12)]"
+          >
+            <img :src="TrophyIcon" alt="" class="game-art game-pulse w-[78%] drop-shadow-[0_4px_4px_rgba(85,42,15,0.35)]" />
+          </div>
 
-      <RouterLink
-        to="/gifts"
-        class="shrink-0 rounded-3xl border-2 border-[#cf8741] bg-[#fff4d6] p-3 shadow-[0px_4px_4px_rgba(0,0,0,0.25)] flex items-center gap-3"
-      >
-        <span class="text-3xl">🎁</span>
-        <span class="flex-1 font-bold text-[#552a0f] text-[length:clamp(1rem,5vw,1.3rem)]">{{ $t('My gifts') }}</span>
-        <span v-if="giftCount" class="rounded-full bg-[#c8200f] px-2.5 py-px font-bold text-white">{{ giftCount }}</span>
-      </RouterLink>
+          <div class="flex-1 min-w-0">
+            <span
+              class="inline-block rounded-full bg-[#c8200f] px-2.5 py-px font-bold text-white leading-tight text-[length:clamp(0.65rem,3.1vw,0.8rem)] uppercase tracking-wide"
+            >
+              {{ $t('Tournament') }}
+            </span>
+            <h2 class="mt-1 truncate font-bold text-[#552a0f] leading-tight text-[length:clamp(1.2rem,6.2vw,1.7rem)]">{{ tournament.name }}</h2>
+            <p class="font-bold tabular-nums text-[#8a5a2b] leading-tight text-[length:clamp(0.75rem,3.6vw,0.95rem)]">
+              {{ tournament.status === 'SCHEDULED' ? $t('Starts in') : $t('Ends in') }} {{ formatted }}
+              <template v-if="tournament.joined && tournament.rank"> · {{ $t('Place') }} #{{ tournament.rank }}</template>
+            </p>
+            <RouterLink
+              :to="`/tournaments/${tournament.id}`"
+              class="mt-2 inline-flex items-center justify-center rounded-full border border-[#a81a18] bg-[#de2623] px-7 py-1 font-bold text-white text-[length:clamp(0.95rem,4.6vw,1.2rem)] shadow-[inset_0px_3px_3px_rgba(255,255,255,0.25),inset_0px_-3px_3px_rgba(0,0,0,0.2)] active:translate-y-px"
+            >
+              {{ tournament.joined ? $t('Open') : $t('Join') }}
+            </RouterLink>
+          </div>
+        </div>
+      </article>
 
       <article
         v-for="game in gameCards"

@@ -103,7 +103,8 @@ async function check(task: Task) {
     if (r.completed && (r.reward > 0 || (r.rewardStars ?? 0) > 0)) toast.show(t('Done! You got {text}', { text: rewardText(r) }), 'success')
     else if (r.completed) toast.show(t('Already completed'), 'info')
     else if (task.type === 'WATCH_ADS' && r.progress !== undefined) toast.show(t('Ad watched: {n} of {total}', { n: r.progress, total: r.required ?? task.required ?? 1 }), 'success')
-    else toast.show(r.error ? t(r.error) : r.message ? t(r.message) : t('Not done yet'), 'warning')
+    // `error` is a machine code (TASK_NOT_COMPLETED, ...); the readable text is `message`, else the plain "not done"
+    else toast.show(r.message ? r.message : t('Not done yet'), 'warning')
   } catch (e) {
     toast.show(e instanceof AdError ? e.message : apiMessage(e, 'Could not check the task'), e instanceof AdError ? 'warning' : 'error')
   }

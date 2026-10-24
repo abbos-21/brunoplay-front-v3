@@ -9,6 +9,9 @@ import type { AppInfo } from '@/types'
 import { ArrowLeftSVG } from '@/assets/svgs'
 import { useAuthStore } from '@/stores/auth'
 import NotificationSettings from '@/components/NotificationSettings.vue'
+import ToggleSwitch from '@/components/ToggleSwitch.vue'
+import { GiftIcon } from '@/assets/icons'
+import { useRouter } from 'vue-router'
 import {
   ProfileImage,
   UkFlagImage,
@@ -34,6 +37,7 @@ const emit = defineEmits<{ (e: 'update:modelValue', value: boolean): void }>()
 const photoUrl = ref(getTelegram()?.initDataUnsafe.user?.photo_url ?? '')
 
 const auth = useAuthStore()
+const router = useRouter()
 const { user } = storeToRefs(auth)
 
 // Support / News / FAQ links come from the server (/app-info)
@@ -63,9 +67,14 @@ async function chooseLanguage(next: Locale) {
     // the choice still works here; the server copy is saved next time
   }
 }
-function onToggleSfx() {
-  setSfxEnabled(!sfxEnabled.value)
-  playSfx('success')
+function onToggleSfx(on: boolean) {
+  setSfxEnabled(on)
+  if (on) playSfx('success')
+}
+
+function openGifts() {
+  emit('update:modelValue', false)
+  void router.push('/gifts')
 }
 const languages: { code: Locale; name: string; flag: string }[] = [
   { code: 'en', name: 'English', flag: UkFlagImage },
@@ -92,7 +101,9 @@ const languages: { code: Locale; name: string; flag: string }[] = [
         <ArrowLeftSVG class="w-full" />
       </button>
 
-      <div class="flex flex-col justify-between text-[#552A0F] flex-1 px-2">
+      <div
+        class="flex flex-col justify-between gap-3 text-[#552A0F] flex-1 min-h-0 overflow-y-auto overscroll-contain px-2 pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+      >
         <div class="flex flex-col items-center">
           <!-- <div class="border border-white w-20 h-20 rounded-full"></div> -->
           <img
@@ -172,22 +183,20 @@ const languages: { code: Locale; name: string; flag: string }[] = [
 
           <button
             type="button"
-            role="switch"
-            :aria-checked="sfxEnabled"
-            class="mt-3 flex w-full items-center justify-between gap-3 rounded-2xl border border-[#cf8741] bg-[#fde7b8] px-4 py-2.5 font-bold text-[#552a0f] shadow-[inset_0px_2px_2px_rgba(255,255,255,0.25),inset_0px_-2px_2px_rgba(0,0,0,0.25)] active:translate-y-px"
-            @click="onToggleSfx"
+            class="mt-3 flex w-full items-center gap-3 rounded-2xl border border-[#cf8741] bg-[#fde7b8] px-4 py-2.5 text-left font-bold text-[#552a0f] shadow-[inset_0px_2px_2px_rgba(255,255,255,0.25),inset_0px_-2px_2px_rgba(0,0,0,0.25)] active:translate-y-px"
+            @click="openGifts"
           >
-            <span class="min-w-0 text-left leading-tight text-[length:clamp(0.9rem,4.3vw,1.125rem)]">{{ $t('Sound effects') }}</span>
-            <span
-              class="relative block h-7 w-12 shrink-0 rounded-full transition-colors shadow-[inset_0px_2px_3px_rgba(0,0,0,0.3)]"
-              :class="sfxEnabled ? 'bg-[#1fb826]' : 'bg-[#c9a97d]'"
-            >
-              <span
-                class="absolute left-0.5 top-0.5 block size-6 rounded-full bg-white shadow-[0px_2px_3px_rgba(0,0,0,0.35)] transition-transform duration-200"
-                :class="sfxEnabled ? 'translate-x-5' : 'translate-x-0'"
-              />
-            </span>
+            <img :src="GiftIcon" alt="" class="size-7 shrink-0 object-contain" />
+            <span class="min-w-0 flex-1 leading-tight text-[length:clamp(0.9rem,4.3vw,1.125rem)]">{{ $t('My gifts') }}</span>
+            <svg class="w-4 shrink-0 text-[#c17e23]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 5l7 7-7 7" /></svg>
           </button>
+
+          <div
+            class="mt-3 flex w-full items-center gap-3 rounded-2xl border border-[#cf8741] bg-[#fde7b8] px-4 py-2.5 font-bold text-[#552a0f] shadow-[inset_0px_2px_2px_rgba(255,255,255,0.25),inset_0px_-2px_2px_rgba(0,0,0,0.25)]"
+          >
+            <span class="min-w-0 flex-1 text-left leading-tight text-[length:clamp(0.9rem,4.3vw,1.125rem)]">{{ $t('Sound effects') }}</span>
+            <ToggleSwitch :model-value="sfxEnabled" :label="$t('Sound effects')" @update:model-value="onToggleSfx" />
+          </div>
 
           <NotificationSettings :bot-username="info?.botUsername" />
         </div>

@@ -157,6 +157,12 @@ const claimed = computed(() => !!status.value?.claimed)
 // an extra attempt (after the free one) is paid with an ad; the best attempt of the day counts
 const canRetry = computed(() => alreadyPlayed.value && !claimed.value && (status.value?.extraAttemptsLeft ?? 0) > 0)
 const marks = ref<boolean[] | null>(null)
+// the marks belong to the arrangement that was checked: once the player moves a picture they disappear
+const showMarks = computed(() => {
+  const last = status.value?.lastItems
+  if (!marks.value || !last?.length) return false
+  return container.value.length === last.length && container.value.every((c, i) => c?.id === last[i])
+})
 
 // show the arrangement of the last attempt (with its marks) when the panel opens
 watch(
@@ -222,11 +228,23 @@ async function handleClaim(double: boolean) {
         @drop.prevent="onDropToContainer(n - 1)"
       >
         <span
-          v-if="marks && container[n - 1] && alreadyPlayed"
-          class="absolute -top-2 -right-1 z-10 w-6 h-6 rounded-full flex items-center justify-center text-white text-sm font-extrabold shadow-md"
-          :class="marks[n - 1] ? 'bg-[#22b615]' : 'bg-[#e11d10]'"
+          v-if="showMarks && marks && container[n - 1]"
+          class="absolute -top-4 -right-1 z-10 w-6 aspect-square rounded-full flex justify-center items-center text-white pointer-events-none"
+          :class="marks[n - 1] ? 'bg-[#1BB33F]' : 'bg-[#E11D10]'"
+          style="
+            box-shadow:
+              inset 0px -3px 4px rgba(0, 0, 0, 0.25),
+              inset 0px 1px 0px rgba(255, 255, 255, 0.25);
+          "
           :aria-label="marks[n - 1] ? $t('Correct') : $t('Wrong')"
-        >{{ marks[n - 1] ? '✓' : '✕' }}</span>
+        >
+          <svg v-if="marks[n - 1]" class="w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M4 12.5l5 5L20 6.5" />
+          </svg>
+          <svg v-else class="w-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="4.5" stroke-linecap="round" aria-hidden="true">
+            <path d="M5 5l14 14M19 5L5 19" />
+          </svg>
+        </span>
         <template v-if="container[n - 1]">
           <div
             draggable="true"
@@ -249,6 +267,7 @@ async function handleClaim(double: boolean) {
             </span> -->
 
             <span
+              v-if="!showMarks"
               style="
                 box-shadow:
                   inset 0px -3px 4px rgba(0, 0, 0, 0.25),
@@ -375,11 +394,15 @@ async function handleClaim(double: boolean) {
       v-if="!canClaim"
       type="button"
       :disabled="!isFull || daily.isLoading || (alreadyPlayed && !canRetry)"
-      class="claim bg-[#5edf3d] text-white font-bold text-3xl rounded-full border border-[#552a0f] mt-4 px-5 py-[2px] disabled:bg-slate-400"
+      class="claim text-white font-bold rounded-full border border-[#552a0f] mt-4 px-5 disabled:bg-slate-400"
+      :class="canRetry && !claimed ? 'bg-[#fb7a38] text-xl py-1' : 'bg-[#5edf3d] text-3xl py-[2px]'"
       @click="handleSubmit"
     >
       <template v-if="claimed || (alreadyPlayed && !canRetry)">{{ $t('Come back tomorrow') }}</template>
-      <template v-else-if="canRetry">{{ $t('Try again (watch an ad)') }}</template>
+      <template v-else-if="canRetry">
+        {{ $t('Try again') }}
+        <span class="ml-1 text-sm font-semibold opacity-90">· {{ $t('watch an ad') }}</span>
+      </template>
       <template v-else>{{ $t('Check') }}</template>
     </button>
     <button
@@ -389,7 +412,7 @@ async function handleClaim(double: boolean) {
       class="text-[#552a0f] underline font-bold mt-2"
       @click="handleSubmit"
     >
-      {{ $t('Try again (watch an ad)') }}
+      {{ $t('Try again') }} · {{ $t('watch an ad') }}
     </button>
   </div>
 </template>
