@@ -21,6 +21,8 @@ const title = computed(() => {
 const text = computed(() => {
   const g = gate.value
   if (!g) return ''
+  // a blocked account: the reason the team wrote (if any)
+  if (g.kind === 'blocked') return g.text ? t('Reason: {text}', { text: g.text }) : t('If you think this is a mistake, contact support.')
   if (g.text) return g.text
   if (g.kind === 'maintenance') return t('We will be back soon.')
   if (g.kind === 'upgrade') return t('Close the game and open it again to get the new version.')

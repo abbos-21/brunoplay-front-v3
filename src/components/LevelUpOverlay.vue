@@ -22,10 +22,15 @@ watch(
   [level, hasLevel],
   ([now, has]) => {
     if (!has) {
-      prev = 1 // nothing known yet: the first real level is not a level-up
+      prev = null // nothing known yet
       return
     }
-    if (prev !== null && now > prev && !active.value) start(prev, now)
+    // the first level we learn about (the app just opened) is where the player already is, not a level-up
+    if (prev === null) {
+      prev = now
+      return
+    }
+    if (now > prev && !active.value) start(prev, now)
     prev = now
   },
   { immediate: true },

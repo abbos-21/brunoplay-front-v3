@@ -320,6 +320,13 @@ const ru: Record<string, string> = {
   'BrunoPlay runs inside Telegram. Open the bot and press Open game.': 'BrunoPlay работает внутри Telegram. Откройте бота и нажмите «Открыть игру».',
   'Open the bot': 'Открыть бота',
   'Check your connection and try again.': 'Проверьте соединение и попробуйте ещё раз.',
+  'In your collection': 'В вашей коллекции',
+  'Waiting for delivery': 'Ждёт отправки',
+  Delivered: 'Отправлен',
+  'Reason: {text}': 'Причина: {text}',
+  'Stars spent in games': 'Потрачено звёзд в играх',
+  'Best Ride score': 'Лучший результат в Ride',
+  'Coins mined': 'Добыто монет',
 }
 
 export default ru

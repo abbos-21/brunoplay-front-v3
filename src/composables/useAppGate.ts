@@ -24,6 +24,11 @@ export function applyGate(code: string | undefined, body: Body): boolean {
     code === 'MAINTENANCE' ? 'maintenance' : code === 'UPGRADE_REQUIRED' ? 'upgrade' : code === 'ACCOUNT_BLOCKED' ? 'blocked' : null
   if (!kind) return false
   const p = body?.error?.params ?? {}
+  // a blocked account's reason comes from the profile (see the auth store); the generic 403 message must not replace it
+  if (kind === 'blocked') {
+    if (gate.value?.kind !== 'blocked') gate.value = { kind, text: '', until: '' }
+    return true
+  }
   gate.value = {
     kind,
     text: String((p.text as string | undefined) || body?.error?.message || ''),

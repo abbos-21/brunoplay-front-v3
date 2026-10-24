@@ -238,6 +238,16 @@ onMounted(async () => {
       kk.z(10),
     ])
 
+    /* if a frame is very long (the app was in the background for a moment) the car can fall through the floor in one step:
+       keep it on the road, otherwise it vanishes and the run could never end */
+    const standY = kk.height() - CONFIG.FLOOR_HEIGHT - player.height
+    kk.onUpdate(() => {
+      if (player.pos.y > standY + 8) {
+        player.pos.y = standY
+        player.vel.y = 0
+      }
+    })
+
     /* speed grows with time */
     const currentSpeed = () => CONFIG.SPEED + gameTime * CONFIG.ACCELERATION
 
