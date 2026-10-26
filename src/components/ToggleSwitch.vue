@@ -59,9 +59,11 @@ function toggle() {
   border: 0;
   border-radius: 9999px;
   background: #c9a97d;
+  /* the shadows are kept small and the same on every side: a shadow that falls only downward (the old 2px offsets) makes the
+     knob look lower than it is, even though it is exactly centred */
   box-shadow:
     inset 0 0 0 1px var(--ring),
-    inset 0 2px 3px rgba(0, 0, 0, 0.28);
+    inset 0 0 3px rgba(0, 0, 0, 0.3);
   cursor: pointer;
   appearance: none;
   -webkit-appearance: none;
@@ -97,8 +99,8 @@ function toggle() {
   border-radius: 9999px;
   background: radial-gradient(circle at 35% 30%, #ffffff, #f1ece1);
   box-shadow:
-    0 2px 3px rgba(0, 0, 0, 0.35),
-    inset 0 -1px 1px rgba(0, 0, 0, 0.1);
+    0 0 3px rgba(0, 0, 0, 0.4),
+    0 0 0 0.5px rgba(0, 0, 0, 0.12);
   transition: transform 0.2s cubic-bezier(0.3, 0.9, 0.4, 1);
 }
 /* travel = track width - knob - both paddings: the same gap on the left when off and on the right when on */
