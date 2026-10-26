@@ -2,7 +2,6 @@
 import { computed, onMounted, ref } from 'vue'
 import client from '@/api/client'
 import ToggleSwitch from '@/components/ToggleSwitch.vue'
-import { BellIcon } from '@/assets/icons'
 import { getTelegram } from '@/composables/useTelegram'
 import { useToast } from '@/composables/useToast'
 import { apiMessage } from '@/composables/apiError'
@@ -68,7 +67,6 @@ function openBot() {
     class="mt-3 w-full rounded-2xl border border-[#cf8741] bg-[#fde7b8] px-4 py-2.5 text-[#552a0f] shadow-[inset_0px_2px_2px_rgba(255,255,255,0.25),inset_0px_-2px_2px_rgba(0,0,0,0.25)]"
   >
     <div class="flex items-center gap-3">
-      <img :src="BellIcon" alt="" class="size-7 shrink-0 object-contain" />
       <span class="min-w-0 flex-1 text-left font-bold leading-tight text-[length:clamp(0.9rem,4.3vw,1.125rem)]">{{ $t('Bot notifications') }}</span>
       <ToggleSwitch :model-value="master" :disabled="busy" :label="$t('Bot notifications')" @update:model-value="setMaster" />
     </div>

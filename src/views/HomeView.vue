@@ -43,10 +43,12 @@ onUnmounted(() => stopTicker?.())
 const streakPending = computed(() => daily.activityStatus?.canClaim === true)
 const comboPending = computed(() => daily.comboStatus?.alreadyAttempted === false)
 
-const canCollect = computed(() => fishing.canCollect)
+// with Autocollect the server collects every full tank and starts the next one: nothing to tap, no ad
+const auto = computed(() => fishing.isFishing && fishing.autoCollect)
+const canCollect = computed(() => fishing.canCollect && !auto.value)
 
 async function handleFishing() {
-  if (collecting.value || fishing.isLoading) return
+  if (collecting.value || fishing.isLoading || auto.value) return
   try {
     if (!fishing.isFishing) {
       await fishing.start()
@@ -118,10 +120,11 @@ async function handleFishing() {
       <button
         type="button"
         @click="handleFishing"
-        :disabled="collecting || fishing.isLoading"
+        :disabled="collecting || fishing.isLoading || auto"
         class="bg-[#fbe166] border border-[#552a0f] shadow-[inset_0px_-3px_4px_#935324] rounded-xl w-fit py-1 px-3 sm:px-5 font-bold text-white outlined [--outline:#532B23] text-xl sm:text-2xl cursor-pointer mb-10 ms-4"
       >
         <span v-if="!fishing.isFishing">{{ $t('Fishing') }}</span>
+        <span v-else-if="auto">{{ $t('Auto Collect') }}</span>
         <span v-else-if="canCollect">{{ $t('Collect') }}</span>
         <span v-else>{{ $t('Fishing…') }}</span>
         <!-- <span v-else>Fishing... wait for tank to fill</span> -->

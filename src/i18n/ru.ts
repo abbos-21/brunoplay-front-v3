@@ -1,6 +1,6 @@
 /**
  * Russian texts. The key is the English text used in the code.
- * Plurals ("one|many" in English) are written as "one|few|many" here: 1 день · 2 дня · 5 дней.
+ * Plurals ("one|many" in English) are written as "one|few|many" here: 1 день, 2 дня, 5 дней.
  */
 const ru: Record<string, string> = {
   // ── navigation and pages
@@ -327,6 +327,11 @@ const ru: Record<string, string> = {
   'Stars spent in games': 'Потрачено звёзд в играх',
   'Best Ride score': 'Лучший результат в Ride',
   'Coins mined': 'Добыто монет',
+  days: 'дн',
+  hours: 'час',
+  min: 'мин',
+  sec: 'сек',
+  players: 'игроков',
 }
 
 export default ru

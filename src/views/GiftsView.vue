@@ -6,6 +6,7 @@ import StarBalance from '@/components/StarBalance.vue'
 import HamburgerButton from '@/components/HamburgerButton.vue'
 import SlidePanel from '@/components/SlidePanel.vue'
 import { StarIcon } from '@/assets/svgs'
+import { useGiftAlerts } from '@/composables/useGiftAlerts'
 import { useGamesStore } from '@/stores/games'
 import { useToast } from '@/composables/useToast'
 import { apiMessage } from '@/composables/apiError'
@@ -16,10 +17,12 @@ const isMenuOpen = ref(false)
 const games = useGamesStore()
 const toast = useToast()
 const loaded = ref(false)
+const giftAlerts = useGiftAlerts()
 
 onMounted(async () => {
   try {
     await games.fetchGifts()
+    giftAlerts.markSeen()
   } catch (e) {
     toast.show(apiMessage(e, 'Could not load your gifts'), 'error')
   } finally {

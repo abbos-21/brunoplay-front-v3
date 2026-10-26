@@ -2,11 +2,7 @@
   <div class="toast-container">
     <transition-group name="toast">
       <div v-for="toast in toasts" :key="toast.id" :class="['toast', toast.type]">
-        <img :src="ICONS[toast.type] ?? InfoIcon" alt="" class="toast-icon" />
-
         {{ toast.message }}
-
-        <span class="w-6"></span>
       </div>
     </transition-group>
   </div>
@@ -14,22 +10,11 @@
 
 <script setup lang="ts">
 import { useToast } from '@/composables/useToast'
-import { CheckIcon, CrossIcon, WarningIcon, InfoIcon } from '@/assets/icons'
-
-const ICONS: Record<string, string> = { success: CheckIcon, error: CrossIcon, warning: WarningIcon, info: InfoIcon }
 
 const { toasts } = useToast()
 </script>
 
 <style scoped>
-.toast-icon {
-  width: 1.75rem;
-  height: 1.75rem;
-  flex: none;
-  object-fit: contain;
-  filter: drop-shadow(0 2px 2px rgba(85, 42, 15, 0.25));
-}
-
 .toast-container {
   width: 100%;
   position: absolute;
@@ -53,7 +38,7 @@ const { toasts } = useToast()
   background: #fbe166;
   text-align: center;
   display: flex;
-  justify-content: space-between;
+  justify-content: center;
   align-items: center;
 }
 

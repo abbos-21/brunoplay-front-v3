@@ -52,6 +52,8 @@ export interface FishingStatus {
   collectMinCoins: number
   nextRateChange: RateChange | null
   adsRequired: boolean
+  /** the Autocollect booster is on: the server collects a full tank and starts the next one by itself */
+  autoCollect: boolean
 }
 
 export interface CollectResult {

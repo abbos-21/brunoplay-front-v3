@@ -76,7 +76,6 @@ const router = createRouter({
       path: '/tournaments/:id',
       name: 'tournament',
       component: TournamentView,
-      meta: { hideNav: true },
     },
     {
       path: '/tasks',

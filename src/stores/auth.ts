@@ -70,6 +70,11 @@ export const useAuthStore = defineStore('auth', () => {
     if (token.value) {
       try {
         user.value = await withRetry(() => userApi.getMe(true));
+        // development: a saved login of another test player is dropped when VITE_DEV_TG_ID names a different one
+        const devId = Number(import.meta.env.VITE_DEV_TG_ID);
+        if (import.meta.env.DEV && devId > 0 && user.value.telegramId !== String(devId)) {
+          throw { response: { status: 401 } };
+        }
         state.value = 'authenticated';
         showBlocked();
         return;

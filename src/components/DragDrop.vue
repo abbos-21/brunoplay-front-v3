@@ -6,6 +6,7 @@ import { useDailyStore } from '@/stores/daily'
 import { useToast } from '@/composables/useToast'
 import { apiMessage } from '@/composables/apiError'
 import { AdError } from '@/composables/useAds'
+import { TickSVG } from '@/assets/svgs'
 
 interface ImageItem {
   id: number
@@ -227,24 +228,6 @@ async function handleClaim(double: boolean) {
         @dragleave="overIndex = null"
         @drop.prevent="onDropToContainer(n - 1)"
       >
-        <span
-          v-if="showMarks && marks && container[n - 1]"
-          class="absolute -top-4 -right-1 z-10 w-6 aspect-square rounded-full flex justify-center items-center text-white pointer-events-none"
-          :class="marks[n - 1] ? 'bg-[#1BB33F]' : 'bg-[#E11D10]'"
-          style="
-            box-shadow:
-              inset 0px -3px 4px rgba(0, 0, 0, 0.25),
-              inset 0px 1px 0px rgba(255, 255, 255, 0.25);
-          "
-          :aria-label="marks[n - 1] ? $t('Correct') : $t('Wrong')"
-        >
-          <svg v-if="marks[n - 1]" class="w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-            <path d="M4 12.5l5 5L20 6.5" />
-          </svg>
-          <svg v-else class="w-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="4.5" stroke-linecap="round" aria-hidden="true">
-            <path d="M5 5l14 14M19 5L5 19" />
-          </svg>
-        </span>
         <template v-if="container[n - 1]">
           <div
             draggable="true"
@@ -255,7 +238,9 @@ async function handleClaim(double: boolean) {
           >
             <img :src="container[n - 1]!.src" class="h-full" />
 
-            <!-- <span
+            <span
+              v-if="showMarks && marks && marks[n - 1] === true"
+              :aria-label="$t('Correct')"
               style="
                 box-shadow:
                   inset 0px -3px 4px rgba(0, 0, 0, 0.25),
@@ -264,10 +249,11 @@ async function handleClaim(double: boolean) {
               class="absolute w-6 aspect-square rounded-full bg-[#1BB33F] -top-4 -right-4 text-white flex justify-center items-center"
             >
               <TickSVG class="w-3.5" />
-            </span> -->
+            </span>
 
             <span
-              v-if="!showMarks"
+              v-if="showMarks && marks && marks[n - 1] === false"
+              :aria-label="$t('Wrong')"
               style="
                 box-shadow:
                   inset 0px -3px 4px rgba(0, 0, 0, 0.25),
@@ -367,7 +353,7 @@ async function handleClaim(double: boolean) {
 
     <p v-if="alreadyPlayed && status" class="mt-3 font-bold text-[#552a0f] text-center">
       {{ $t('Best today: {n} of {total} correct', { n: status.bestCorrect, total: status.slots }) }}
-      <template v-if="status.reward > 0"> · {{ $t('Reward: {n} coins', { n: status.reward }) }}</template>
+      <template v-if="status.reward > 0">, {{ $t('Reward: {n} coins', { n: status.reward }) }}</template>
     </p>
 
     <div v-if="canClaim" class="flex flex-col items-center gap-2 w-full">
@@ -401,7 +387,7 @@ async function handleClaim(double: boolean) {
       <template v-if="claimed || (alreadyPlayed && !canRetry)">{{ $t('Come back tomorrow') }}</template>
       <template v-else-if="canRetry">
         {{ $t('Try again') }}
-        <span class="ml-1 text-sm font-semibold opacity-90">· {{ $t('watch an ad') }}</span>
+        <span class="ml-1 text-sm font-semibold opacity-90">{{ $t('watch an ad') }}</span>
       </template>
       <template v-else>{{ $t('Check') }}</template>
     </button>
@@ -412,7 +398,7 @@ async function handleClaim(double: boolean) {
       class="text-[#552a0f] underline font-bold mt-2"
       @click="handleSubmit"
     >
-      {{ $t('Try again') }} · {{ $t('watch an ad') }}
+      {{ $t('Try again') }}: {{ $t('watch an ad') }}
     </button>
   </div>
 </template>

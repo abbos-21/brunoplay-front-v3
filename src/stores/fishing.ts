@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia';
-import { ref, computed } from 'vue';
+import { ref, computed, watch } from 'vue';
 import type { FishingStatus } from '@/types';
 import * as fishingApi from '@/api/fishing';
 import { withAd } from '@/composables/useAds';
@@ -59,10 +59,13 @@ export const useFishingStore = defineStore('fishing', () => {
   let refreshTimer: ReturnType<typeof setInterval> | null = null;
   let users = 0;
 
-  /** a fresh snapshot, and the balances (an Autocollect booster adds coins on its own) */
-  function refresh() {
-    fetchStatus();
-    useAuthStore().fetchUser();
+  /**
+   * A fresh snapshot, then the balances (in this order: with Autocollect, reading the snapshot is what collects a full tank,
+   * so the balance must be read after it).
+   */
+  async function refresh() {
+    await fetchStatus();
+    await useAuthStore().fetchUser();
   }
 
   function onVisible() {
@@ -87,6 +90,31 @@ export const useFishingStore = defineStore('fishing', () => {
       }
     };
   }
+
+  const autoCollect = computed(() => status.value?.autoCollect ?? false);
+
+  // Autocollect: the moment the tank is full the server collects it and starts the next one. Ask for it right away so the coins
+  // arrive in the balance (with the +N animation) and the tank starts over, instead of waiting for the next periodic refresh.
+  let settling = false;
+  async function settleAuto() {
+    if (settling) return;
+    settling = true;
+    try {
+      for (let attempt = 0; attempt < 6; attempt++) {
+        await new Promise((r) => setTimeout(r, attempt === 0 ? 400 : 1500));
+        await refresh();
+        if (!(isComplete.value && autoCollect.value)) break;
+      }
+    } finally {
+      settling = false;
+    }
+  }
+  watch(
+    () => isComplete.value && autoCollect.value,
+    (full) => {
+      if (full) void settleAuto();
+    },
+  );
 
   async function fetchStatus() {
     try {
@@ -121,7 +149,7 @@ export const useFishingStore = defineStore('fishing', () => {
   }
 
   return {
-    status, isLoading, isFishing, isComplete, canCollect, collectMin, liveTank, tankPercent,
-    fetchStatus, start, collect, startTicker,
+    status, isLoading, isFishing, isComplete, autoCollect, canCollect, collectMin, liveTank, tankPercent,
+    fetchStatus, refresh, start, collect, startTicker,
   };
 });

@@ -31,7 +31,7 @@ const rows = computed(() =>
     const d = new Date(w.createdAt)
     const date = Number.isNaN(d.getTime())
       ? ''
-      : `${pad(d.getDate())}.${pad(d.getMonth() + 1)} · ${pad(d.getHours())}:${pad(d.getMinutes())}`
+      : `${pad(d.getDate())}.${pad(d.getMonth() + 1)} ${pad(d.getHours())}:${pad(d.getMinutes())}`
     const spent = w.spentStars
     const profit =
       spent && spent > 0 && w.prizeType !== 'coins'

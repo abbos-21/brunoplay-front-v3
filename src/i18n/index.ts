@@ -57,7 +57,7 @@ export function t(key: string, params?: Record<string, string | number>): string
   return fill(text, params)
 }
 
-/** plural form: "one|many" in English, "one|few|many" in Russian (1 · 2-4 · 5-20) */
+/** plural form: "one|many" in English, "one|few|many" in Russian (1, 2-4, 5-20) */
 export function tn(key: string, n: number, params?: Record<string, string | number>): string {
   const all: Record<string, string | number> = { n: n.toLocaleString('en-US'), ...params }
   if (locale.value === 'ru') {

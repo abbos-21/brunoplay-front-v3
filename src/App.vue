@@ -3,6 +3,7 @@ import { ref, onMounted, watch } from 'vue'
 import { hasChosen, locale, setLocale } from '@/i18n'
 import { RouterView, useRoute } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
+import { useFishingStore } from '@/stores/fishing'
 import { useMusic } from '@/composables/useMusic'
 import NavigationMenu from '@/components/NavigationMenu.vue'
 import TopUpPanel from '@/components/TopUpPanel.vue'
@@ -18,6 +19,7 @@ import { BackgroundMusic } from './assets/audios'
 
 const auth = useAuthStore()
 const route = useRoute()
+const fishing = useFishingStore()
 const topUp = useTopUp()
 
 const i18nRu = () => locale.value === 'ru'
@@ -31,6 +33,21 @@ watch(
   (lang) => {
     if (lang && !hasChosen()) setLocale(lang === 'RU' ? 'ru' : 'en', false)
   },
+)
+
+// the tank runs on every screen, not only on Home: with Autocollect the coins must reach the balance wherever the player is
+let stopTank: (() => void) | null = null
+watch(
+  () => auth.isAuthenticated,
+  (yes) => {
+    stopTank?.()
+    stopTank = null
+    if (yes) {
+      stopTank = fishing.startTicker()
+      void fishing.refresh()
+    }
+  },
+  { immediate: true },
 )
 
 onMounted(() => {

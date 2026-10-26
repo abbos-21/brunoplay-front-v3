@@ -9,6 +9,6 @@ export function authenticate(initData: string) {
 /** Development only: sign in without Telegram (the backend needs DEV_AUTH=true). */
 export function authenticateDev(telegramId: number, startParam?: string) {
   return client
-    .post<AuthResponse>('/auth/dev', { telegramId, firstName: 'Dev', startParam: startParam || undefined })
+    .post<AuthResponse>('/auth/dev', { telegramId, firstName: import.meta.env.VITE_DEV_NAME || 'Dev', startParam: startParam || undefined })
     .then((r) => r.data);
 }
