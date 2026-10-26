@@ -1,16 +1,16 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue'
-import { useRouter } from 'vue-router'
+
 import WalletIcon from '@/components/WalletIcon.vue'
 import { ArrowLeftSVG } from '@/assets/svgs'
 import * as walletApi from '@/api/wallet'
 import { useWalletStore } from '@/stores/wallet'
 import { useToast } from '@/composables/useToast'
+import { useGoBack } from '@/composables/useGoBack'
 import { apiMessage } from '@/composables/apiError'
 import { t } from '@/i18n'
 import type { Withdrawal, WithdrawalStatus } from '@/types'
 
-const router = useRouter()
 const wallet = useWalletStore()
 const toast = useToast()
 
@@ -85,10 +85,8 @@ async function cancel(w: Withdrawal) {
   }
 }
 
-function back() {
-  if (window.history.length > 1) router.back()
-  else router.push('/withdraw')
-}
+// opened from a bot message there is no earlier page, so go to the withdrawal screen
+const back = useGoBack('/withdraw')
 </script>
 
 <template>

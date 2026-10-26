@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { t } from '@/i18n'
 import { computed, onMounted, ref } from 'vue'
-import { RouterLink, useRouter } from 'vue-router'
+import { RouterLink } from 'vue-router'
 import AnimatedNumber from '@/components/AnimatedNumber.vue'
 import CloseButton from '@/components/CloseButton.vue'
 import { CoinImage, TonImage } from '@/assets/images'
@@ -10,9 +10,9 @@ import { useWalletStore } from '@/stores/wallet'
 import { apiMessage } from '@/composables/apiError'
 import { apiCode } from '@/api/client'
 import { useToast } from '@/composables/useToast'
+import { useGoBack } from '@/composables/useGoBack'
 import type { WithdrawalInfo } from '@/types'
 
-const router = useRouter()
 const auth = useAuthStore()
 const wallet = useWalletStore()
 const toast = useToast()
@@ -127,10 +127,7 @@ async function submit() {
   }
 }
 
-function close() {
-  if (window.history.length > 1) router.back()
-  else router.push('/')
-}
+const close = useGoBack('/')
 </script>
 
 <template>
