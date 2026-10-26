@@ -1,13 +1,13 @@
 // Turns the game's PNG pictures into WebP (about 5 to 10 times smaller, same look) and points the code at the new files.
 //   node scripts/optimize-images.mjs          convert every PNG under src/assets and update the references
-// Run it again after adding a new PNG. The Ride game's own pictures (src/assets/ride) are left alone on purpose.
+// Run it again after adding a new PNG.
 import fs from 'node:fs'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import sharp from 'sharp'
 
 const ROOT = fileURLToPath(new URL('../src/assets', import.meta.url))
-const SKIP = ['ride']
+const SKIP = []
 const MAX_EDGE = 512 // nothing in the game is drawn bigger than this, even on a 3x screen
 const BACKGROUND_EDGE = 1600 // full-screen backgrounds keep their detail
 
@@ -20,7 +20,7 @@ let after = 0
 for (const f of files) {
   const out = f.replace(/\.png$/i, '.webp')
   const meta = await sharp(f).metadata()
-  const edge = f.includes(`${path.sep}backgrounds${path.sep}`) ? BACKGROUND_EDGE : MAX_EDGE
+  const edge = f.includes(`${path.sep}backgrounds${path.sep}`) || /background.png$/i.test(f) ? BACKGROUND_EDGE : MAX_EDGE
   const img = sharp(f).resize({ width: edge, height: edge, fit: 'inside', withoutEnlargement: true })
   await img.webp({ quality: 84, alphaQuality: 100, effort: 6, smartSubsample: true }).toFile(out)
   before += fs.statSync(f).size
