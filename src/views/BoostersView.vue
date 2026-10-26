@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { t, tn } from '@/i18n'
 import { computed, onMounted, ref } from 'vue'
-import { RouterLink } from 'vue-router'
+import PageTabs from '@/components/PageTabs.vue'
 import CoinBalance from '@/components/CoinBalance.vue'
 import StarBalance from '@/components/StarBalance.vue'
 import HamburgerButton from '@/components/HamburgerButton.vue'
@@ -71,20 +71,12 @@ async function buy(type: BoosterType) {
       </div>
     </div>
 
-    <div class="grid grid-cols-2 gap-4 px-2 mt-4 text-[length:clamp(0.8rem,4.1vw,1.15rem)]">
-      <RouterLink
-        to="/shop"
-        class="border border-[#c17e23] shadow-[0px_4px_4px_rgba(0,0,0,0.25),inset_0px_4px_4px_rgba(255,255,255,0.25),inset_0px_-4px_4px_rgba(0,0,0,0.25)] rounded-2xl flex justify-center items-center font-bold py-[5px] bg-[#fde7b8] text-[#552a0f]"
-      >
-        {{ $t('Cards') }}
-      </RouterLink>
-      <RouterLink
-        to="/shop/boosters"
-        class="border border-[#c17e23] shadow-[0px_4px_4px_rgba(0,0,0,0.25),inset_0px_4px_4px_rgba(255,255,255,0.25),inset_0px_-4px_4px_rgba(0,0,0,0.25)] rounded-2xl flex justify-center items-center font-bold py-[5px] bg-[#c17e23] text-white"
-      >
-        {{ $t('Boosters') }}
-      </RouterLink>
-    </div>
+    <PageTabs
+      :tabs="[
+        { key: 'cards', label: $t('Cards'), to: '/shop', active: false },
+        { key: 'boosters', label: $t('Boosters'), to: '/shop/boosters', active: true },
+      ]"
+    />
 
     <div class="flex flex-col gap-4 mt-4 px-1 pb-2 overflow-y-scroll flex-1 min-h-0 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
       <article
@@ -97,7 +89,7 @@ async function buy(type: BoosterType) {
           <div
             class="relative shrink-0 w-[clamp(4rem,19vw,5.25rem)] aspect-square rounded-2xl border border-[#cf8741] overflow-hidden"
           >
-            <img :src="item.img" :alt="$t(item.title)" class="w-full h-full object-cover" />
+            <img decoding="async" loading="lazy" :src="item.img" :alt="$t(item.title)" class="w-full h-full object-cover" />
           </div>
 
           <div class="flex-1 min-w-0">
@@ -130,7 +122,7 @@ async function buy(type: BoosterType) {
           <template v-else>
             {{ $t('Buy') }}
             <span class="flex items-center gap-1">
-              <img :src="StarIcon" alt="" class="w-[1.2em]" />
+              <img decoding="async" loading="lazy" :src="StarIcon" alt="" class="w-[1.2em]" />
               {{ item.cost.toLocaleString('en-US') }}
             </span>
           </template>

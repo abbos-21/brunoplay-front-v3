@@ -5,7 +5,7 @@ import CoinBalance from '@/components/CoinBalance.vue'
 import StarBalance from '@/components/StarBalance.vue'
 import HamburgerButton from '@/components/HamburgerButton.vue'
 import SlidePanel from '@/components/SlidePanel.vue'
-import { RouterLink } from 'vue-router'
+import PageTabs from '@/components/PageTabs.vue'
 import { MiningRate, CoinCapacity, CoinImage } from '@/assets/images'
 import { StarIcon } from '@/assets/svgs'
 import { useShopStore } from '@/stores/shop'
@@ -86,20 +86,12 @@ async function upgrade(c: CardInfo) {
       </div>
     </div>
 
-    <div class="grid grid-cols-2 gap-4 px-2 mt-4 text-base sm:text-xl">
-      <RouterLink
-        to="/shop"
-        class="border border-[#c17e23] shadow-[0px_4px_4px_rgba(0,0,0,0.25),inset_0px_4px_4px_rgba(255,255,255,0.25),inset_0px_-4px_4px_rgba(0,0,0,0.25)] rounded-2xl flex justify-center items-center font-bold py-[5px] bg-[#c17e23] text-white"
-      >
-        {{ $t('Cards') }}
-      </RouterLink>
-      <RouterLink
-        to="/shop/boosters"
-        class="border border-[#c17e23] shadow-[0px_4px_4px_rgba(0,0,0,0.25),inset_0px_4px_4px_rgba(255,255,255,0.25),inset_0px_-4px_4px_rgba(0,0,0,0.25)] rounded-2xl flex justify-center items-center font-bold py-[5px] bg-[#fde7b8] text-[#552a0f]"
-      >
-        {{ $t('Boosters') }}
-      </RouterLink>
-    </div>
+    <PageTabs
+      :tabs="[
+        { key: 'cards', label: $t('Cards'), to: '/shop', active: true },
+        { key: 'boosters', label: $t('Boosters'), to: '/shop/boosters', active: false },
+      ]"
+    />
 
     <div class="flex flex-col gap-4 mt-4 px-1 pb-2 overflow-y-scroll flex-1 min-h-0 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
       <article
@@ -112,7 +104,7 @@ async function upgrade(c: CardInfo) {
           <div
             class="shrink-0 w-[clamp(4rem,19vw,5.25rem)] aspect-square rounded-2xl bg-[radial-gradient(circle_at_50%_40%,#fff6bf,#fbe166_70%)] border border-[#cf8741] shadow-[inset_0px_-4px_6px_rgba(193,126,35,0.45)] flex items-center justify-center p-2"
           >
-            <img :src="IMAGES[item.cardName].img" :alt="$t(IMAGES[item.cardName].title)" class="w-full h-full object-contain" />
+            <img decoding="async" loading="lazy" :src="IMAGES[item.cardName].img" :alt="$t(IMAGES[item.cardName].title)" class="w-full h-full object-contain" />
           </div>
 
           <div class="flex-1 min-w-0">
@@ -184,7 +176,7 @@ async function upgrade(c: CardInfo) {
           <template v-else>
             {{ $t('Upgrade') }}
             <span class="flex items-center gap-1">
-              <img :src="item.upgradeCurrency === 'STAR' ? StarIcon : CoinImage" alt="" class="w-[1.2em]" />
+              <img decoding="async" loading="lazy" :src="item.upgradeCurrency === 'STAR' ? StarIcon : CoinImage" alt="" class="w-[1.2em]" />
               {{ item.upgradeCost === null ? '' : item.upgradeCost.toLocaleString('en-US') }}
             </span>
           </template>

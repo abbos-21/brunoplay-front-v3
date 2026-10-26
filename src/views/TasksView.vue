@@ -15,7 +15,7 @@ import { useTaskAlerts } from '@/composables/useTaskAlerts'
 import { AdError } from '@/composables/useAds'
 import { isApiDisabled } from '@/api/client'
 import { StarIcon } from '@/assets/svgs'
-import PendingDot from '@/components/PendingDot.vue'
+import PageTabs from '@/components/PageTabs.vue'
 import type { Task } from '@/types'
 
 const isMenuOpen = ref(false)
@@ -124,8 +124,6 @@ const progressText = (task: Task) =>
     ? `${task.progress ?? 0}/${task.required ?? task.requiredInvites ?? 1}`
     : ''
 
-const tabBase =
-  'relative border border-[#c17e23] shadow-[0px_4px_4px_rgba(0,0,0,0.25),inset_0px_4px_4px_rgba(255,255,255,0.25),inset_0px_-4px_4px_rgba(0,0,0,0.25)] rounded-2xl flex justify-center items-center font-bold py-[5px]'
 </script>
 
 <template>
@@ -138,23 +136,13 @@ const tabBase =
       </div>
     </div>
 
-    <div class="grid grid-cols-2 gap-4 px-2 mt-4 text-[length:clamp(0.8rem,4.1vw,1.15rem)]">
-      <button
-        type="button"
-        :class="[tabBase, tab === 'main' ? 'bg-[#c17e23] text-white' : 'bg-[#fde7b8] text-[#552a0f]']"
-        @click="openTab('main')"
-      >
-        {{ $t('Main') }}
-      </button>
-      <button
-        type="button"
-        :class="[tabBase, tab === 'others' ? 'bg-[#c17e23] text-white' : 'bg-[#fde7b8] text-[#552a0f]']"
-        @click="openTab('others')"
-      >
-        {{ $t('Others') }}
-        <Transition name="dot"><PendingDot v-if="othersHasNew" /></Transition>
-      </button>
-    </div>
+    <PageTabs
+      :tabs="[
+        { key: 'main', label: $t('Main'), active: tab === 'main' },
+        { key: 'others', label: $t('Others'), active: tab === 'others', dot: othersHasNew },
+      ]"
+      @select="(k) => openTab(k as 'main' | 'others')"
+    />
 
     <div class="flex flex-col gap-4 mt-4 px-1 pb-2 overflow-y-scroll flex-1 min-h-0 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
       <article
@@ -171,7 +159,7 @@ const tabBase =
           class="shrink-0 flex items-center gap-1 rounded-full border border-[#15861b] bg-[#1fb826] px-3 py-1 font-bold text-white text-[length:clamp(0.82rem,4.1vw,1.15rem)] disabled:opacity-60"
           @click="claimBonus"
         >
-          <img :src="CoinImage" alt="" class="w-[1.2em]" />+{{ tasks.bonus.coins.toLocaleString('en-US') }}
+          <img decoding="async" loading="lazy" :src="CoinImage" alt="" class="w-[1.2em]" />+{{ tasks.bonus.coins.toLocaleString('en-US') }}
         </button>
       </article>
 
@@ -187,7 +175,7 @@ const tabBase =
           <div
             class="shrink-0 size-[clamp(3.5rem,17vw,4.5rem)] rounded-2xl bg-[radial-gradient(circle_at_50%_40%,#fff6bf,#fbe166_75%)] border border-[#cf8741] flex items-center justify-center"
           >
-            <img :src="imageFor(task)" :alt="$t(task.title)" class="w-[82%] h-[82%] rounded-full object-cover" />
+            <img decoding="async" loading="lazy" :src="imageFor(task)" :alt="$t(task.title)" class="w-[82%] h-[82%] rounded-full object-cover" />
           </div>
 
           <div class="flex-1 min-w-0">
@@ -211,14 +199,14 @@ const tabBase =
               v-if="task.rewardCoins > 0"
               class="flex items-center gap-1 rounded-full bg-[#fde7b8] border border-[#e3b66f] pl-1 pr-2.5 py-0.5 font-extrabold leading-none text-[#552a0f] text-[length:clamp(0.8rem,4vw,1.15rem)] tabular-nums"
             >
-              <img :src="CoinImage" alt="" class="size-[1.5em] object-contain" />
+              <img decoding="async" loading="lazy" :src="CoinImage" alt="" class="size-[1.5em] object-contain" />
               <span>+{{ task.rewardCoins.toLocaleString('en-US') }}</span>
             </span>
             <span
               v-if="(task.rewardStars ?? 0) > 0"
               class="flex items-center gap-1 rounded-full bg-[#fde7b8] border border-[#e3b66f] pl-1 pr-2.5 py-0.5 font-extrabold leading-none text-[#552a0f] text-[length:clamp(0.8rem,4vw,1.15rem)] tabular-nums"
             >
-              <img :src="StarIcon" alt="" class="size-[1.5em] object-contain" />
+              <img decoding="async" loading="lazy" :src="StarIcon" alt="" class="size-[1.5em] object-contain" />
               <span>+{{ task.rewardStars!.toLocaleString('en-US') }}</span>
             </span>
             <span v-if="progressText(task) && !task.isCompleted" class="font-bold text-[#8a5a2b] tabular-nums text-[length:clamp(0.8rem,4vw,1.1rem)]">{{ progressText(task) }}</span>
