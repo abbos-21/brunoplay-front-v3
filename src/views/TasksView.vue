@@ -204,26 +204,31 @@ const tabBase =
           </div>
         </div>
 
-        <div class="mt-3 flex items-center gap-2">
-          <span
-            class="shrink-0 flex items-center gap-1 rounded-full bg-[#fde7b8] border border-[#e3b66f] pl-1 pr-2 py-0.5 font-extrabold text-[#552a0f] text-[length:clamp(0.85rem,4.4vw,1.25rem)] tabular-nums"
-          >
-            <template v-if="task.rewardCoins > 0">
-              <img :src="CoinImage" alt="" class="w-[1.4em]" />
-              +{{ task.rewardCoins.toLocaleString('en-US') }}
-            </template>
-            <template v-if="(task.rewardStars ?? 0) > 0">
-              <img :src="StarIcon" alt="" class="w-[1.4em]" />
-              +{{ task.rewardStars!.toLocaleString('en-US') }}
-            </template>
-          </span>
-          <span v-if="progressText(task) && !task.isCompleted" class="shrink-0 font-bold text-[#8a5a2b] tabular-nums">{{ progressText(task) }}</span>
+        <!-- rewards and buttons wrap onto a second line on narrow screens instead of overflowing -->
+        <div class="mt-3 flex flex-wrap items-center justify-between gap-x-2 gap-y-2">
+          <div class="flex min-w-0 flex-wrap items-center gap-1.5">
+            <span
+              v-if="task.rewardCoins > 0"
+              class="flex items-center gap-1 rounded-full bg-[#fde7b8] border border-[#e3b66f] pl-1 pr-2.5 py-0.5 font-extrabold leading-none text-[#552a0f] text-[length:clamp(0.8rem,4vw,1.15rem)] tabular-nums"
+            >
+              <img :src="CoinImage" alt="" class="size-[1.5em] object-contain" />
+              <span>+{{ task.rewardCoins.toLocaleString('en-US') }}</span>
+            </span>
+            <span
+              v-if="(task.rewardStars ?? 0) > 0"
+              class="flex items-center gap-1 rounded-full bg-[#fde7b8] border border-[#e3b66f] pl-1 pr-2.5 py-0.5 font-extrabold leading-none text-[#552a0f] text-[length:clamp(0.8rem,4vw,1.15rem)] tabular-nums"
+            >
+              <img :src="StarIcon" alt="" class="size-[1.5em] object-contain" />
+              <span>+{{ task.rewardStars!.toLocaleString('en-US') }}</span>
+            </span>
+            <span v-if="progressText(task) && !task.isCompleted" class="font-bold text-[#8a5a2b] tabular-nums text-[length:clamp(0.8rem,4vw,1.1rem)]">{{ progressText(task) }}</span>
+          </div>
 
-          <div v-if="task.isCompleted" class="flex-1 text-right font-extrabold text-[#1f6a05] text-[length:clamp(0.95rem,4.7vw,1.25rem)]">
+          <div v-if="task.isCompleted" class="ml-auto font-extrabold text-[#1f6a05] text-[length:clamp(0.95rem,4.7vw,1.25rem)]">
             {{ $t('Completed ✓') }}
           </div>
 
-          <div v-else class="flex-1 min-w-0 flex justify-end gap-1.5">
+          <div v-else class="ml-auto flex shrink-0 justify-end gap-1.5">
             <button
               v-if="task.type !== 'WATCH_ADS'"
               type="button"
