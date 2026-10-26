@@ -74,6 +74,7 @@ interface Fx {
 
 const FONT = '"Baloo 2", Nunito, sans-serif'
 const FLOOR_Y = RIDE.HEIGHT - RIDE.FLOOR_HEIGHT
+const JUMP_BUFFER = 0.1 // seconds
 
 const easeOutQuad = (t: number) => 1 - (1 - t) * (1 - t)
 const easeOutCubic = (t: number) => (t - 1) ** 3 + 1
@@ -144,6 +145,7 @@ export class RideGame {
   private carY = 0
   private carVy = 0
   private grounded = false
+  private jumpBuffer = 0
   private points = 0
   private collected = 0
   private gameTime = 0
@@ -300,6 +302,7 @@ export class RideGame {
     this.carX = RIDE.CAR_X
     this.carVy = 0
     this.grounded = false
+    this.jumpBuffer = 0
     this.points = 0
     this.collected = 0
     this.gameTime = 0
@@ -328,9 +331,13 @@ export class RideGame {
   }
 
   private jump() {
-    if (this.mode === 'running' && !this.gameOver && this.grounded) {
+    if (this.mode !== 'running' || this.gameOver) return
+    if (this.grounded) {
       this.carVy = -RIDE.JUMP_FORCE
       this.grounded = false
+    } else {
+      // a tap just before landing still counts: on a slow phone the tap often arrives a moment early
+      this.jumpBuffer = JUMP_BUFFER
     }
   }
 
@@ -388,8 +395,37 @@ export class RideGame {
     } else {
       this.grounded = false
     }
+    if (this.jumpBuffer > 0) {
+      this.jumpBuffer -= dt
+      if (this.grounded && !this.gameOver) {
+        this.carVy = -RIDE.JUMP_FORCE
+        this.grounded = false
+        this.jumpBuffer = 0
+      }
+    }
 
-    if (!this.gameOver) this.collide()
+    if (this.gameOver) this.pushOutOfObstacles()
+    else this.collide()
+  }
+
+  /**
+   * After a crash the obstacle is still solid: the car is pushed out of it the shorter way (back, or up so it rests on top),
+   * and the road keeps pulling it down. Without this the car sank into the obstacle while the crash played out.
+   */
+  private pushOutOfObstacles() {
+    for (const o of this.obstacles) {
+      const overlapX = this.carX + this.carW - o.x
+      const overlapY = this.carY + this.carH - o.y
+      if (overlapX <= 0 || overlapY <= 0) continue
+      if (this.carX >= o.x + this.obstacleW || this.carY >= o.y + RIDE.OBSTACLE_HEIGHT) continue
+      if (overlapY <= overlapX) {
+        this.carY -= overlapY
+        if (this.carVy > 0) this.carVy = 0
+        this.grounded = true
+      } else {
+        this.carX -= overlapX
+      }
+    }
   }
 
   private spawnObstacle() {
@@ -424,7 +460,7 @@ export class RideGame {
       const ow = this.obstacleW
       const oh = RIDE.OBSTACLE_HEIGHT
       if (cx < o.x + ow && cx + cw > o.x && cy < o.y + oh && cy + ch > o.y) {
-        this.crash(o)
+        this.crash()
         return
       }
     }
@@ -441,17 +477,13 @@ export class RideGame {
     }
   }
 
-  private crash(o: Mover) {
+  private crash() {
     this.gameOver = true
     this.shake = 16
     this.crashTimer = RIDE.CRASH_DELAY
     this.audio.play('crash')
     this.audio.fadeEngine(0.8)
-    // the obstacle is solid: the car is pushed out along the shorter way
-    const overlapX = this.carX + this.carW - o.x
-    const overlapY = this.carY + this.carH - o.y
-    if (overlapX < overlapY) this.carX -= overlapX
-    else this.carY -= overlapY
+    this.pushOutOfObstacles()
   }
 
   private tickEffects(dt: number) {
