@@ -16,6 +16,7 @@ import {
   UkFlagImage,
   RuFlagImage,
   MusicBoxImage,
+  MyGiftsImage,
   SupportImage,
   NewsImage,
   FaqImage,
@@ -185,9 +186,10 @@ const languages: { code: Locale; name: string; flag: string }[] = [
 
           <button
             type="button"
-            class="relative mt-3 flex w-full items-center gap-3 rounded-2xl border border-[#cf8741] bg-[#fde7b8] px-4 py-2.5 text-left font-bold text-[#552a0f] shadow-[inset_0px_2px_2px_rgba(255,255,255,0.25),inset_0px_-2px_2px_rgba(0,0,0,0.25)] active:translate-y-px"
+            class="relative mt-3 flex w-full items-center gap-3 rounded-2xl border border-[#cf8741] bg-[#fde7b8] py-2 pl-3 pr-4 text-left font-bold text-[#552a0f] shadow-[inset_0px_2px_2px_rgba(255,255,255,0.25),inset_0px_-2px_2px_rgba(0,0,0,0.25)] active:translate-y-px"
             @click="openGifts"
           >
+            <img :src="MyGiftsImage" alt="" class="size-[clamp(2rem,10vw,2.6rem)] shrink-0 object-contain drop-shadow-[0px_2px_2px_rgba(111,60,45,0.35)]" />
             <span class="min-w-0 flex-1 leading-tight text-[length:clamp(0.9rem,4.3vw,1.125rem)]">{{ $t('My gifts') }}</span>
             <Transition name="dot"><PendingDot v-if="giftAlerts.hasNew.value" /></Transition>
             <svg class="w-4 shrink-0 text-[#c17e23]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 5l7 7-7 7" /></svg>
