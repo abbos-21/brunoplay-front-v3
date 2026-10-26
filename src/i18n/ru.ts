@@ -295,6 +295,7 @@ const ru: Record<string, string> = {
   'You have no gifts yet. Win them in Fortune Spin!': 'У вас пока нет подарков. Выигрывайте их в Колесе фортуны!',
   'You joined the tournament': 'Вы участвуете в турнире',
   'Your account is blocked': 'Ваш аккаунт заблокирован',
+  Menu: 'Меню',
   'Your account is too new to withdraw': 'Аккаунт слишком новый для вывода',
   'Your place': 'Ваше место',
   'Your score': 'Ваш счёт',
