@@ -258,7 +258,7 @@ function openWinners() {
     <div class="absolute inset-0 pointer-events-none z-0 shadow-[inset_0px_0px_133px_97px_rgba(0,0,0,0.25)]" />
     <div class="absolute inset-0 z-0 overflow-hidden pointer-events-none [container-type:inline-size]">
       <div class="relative w-full" :style="{ aspectRatio: `${FRAME.w} / ${FRAME.h}` }">
-        <img v-for="(s, i) in sparkles" :key="i" :src="s.src" alt="" class="absolute" :style="s.style" />
+        <img decoding="async" v-for="(s, i) in sparkles" :key="i" :src="s.src" alt="" class="absolute" :style="s.style" />
       </div>
     </div>
 
@@ -287,7 +287,7 @@ function openWinners() {
               class="flex items-center gap-1 whitespace-nowrap rounded-full border border-[#b9722a] bg-[#fff4d6] py-1 pl-1.5 pr-2.5 font-bold text-[#552a0f] text-[length:clamp(0.7rem,3.5vw,1rem)] shadow-[0px_3px_3px_rgba(0,0,0,0.25)] active:translate-y-px disabled:opacity-50"
               @click="openWinners"
             >
-              <img :src="TrophyImage" alt="" class="h-[1.35em] w-auto" />{{ $t('Winners') }}
+              <img decoding="async" :src="TrophyImage" alt="" class="h-[1.35em] w-auto" />{{ $t('Winners') }}
             </button>
             <button
               type="button"
@@ -295,7 +295,7 @@ function openWinners() {
               class="flex items-center gap-1 whitespace-nowrap rounded-full border border-[#b9722a] bg-[#fff4d6] py-1 pl-1.5 pr-2.5 font-bold text-[#552a0f] text-[length:clamp(0.7rem,3.5vw,1rem)] shadow-[0px_3px_3px_rgba(0,0,0,0.25)] active:translate-y-px disabled:opacity-50"
               @click="modal = 'prizes'"
             >
-              <img :src="GiftBoxImage" alt="" class="h-[1.35em] w-auto" />{{ $t('Prizes') }}
+              <img decoding="async" :src="GiftBoxImage" alt="" class="h-[1.35em] w-auto" />{{ $t('Prizes') }}
             </button>
           </div>
         </div>
@@ -309,10 +309,10 @@ function openWinners() {
             <div class="live-track flex items-center w-max" :style="{ '--dur': `${Math.max(20, tiles.length * 5)}s` }">
               <div v-for="copy in 2" :key="copy" class="flex items-center shrink-0 gap-3 pr-3" :aria-hidden="copy === 2">
                 <div v-for="t in tiles" :key="`${copy}-${t.key}`" class="flex items-center gap-1.5 shrink-0" :title="t.title">
-                  <img :src="t.img" :alt="copy === 1 ? t.title : ''" class="size-8 rounded-lg object-cover" />
+                  <img decoding="async" :src="t.img" :alt="copy === 1 ? t.title : ''" class="size-8 rounded-lg object-cover" />
                   <span v-if="t.name" class="flex items-center gap-1 font-bold text-white/90 text-[0.78rem] whitespace-nowrap">
                     {{ t.name }}
-                    <img :src="t.stars ? StarIcon : CoinImage" alt="" class="w-[1.1em]" />
+                    <img decoding="async" :src="t.stars ? StarIcon : CoinImage" alt="" class="w-[1.1em]" />
                     <b class="text-white tabular-nums">{{ t.amount }}</b>
                   </span>
                 </div>
@@ -346,7 +346,7 @@ function openWinners() {
               "
               @click="tierIndex = i"
             >
-              <img :src="StarIcon" alt="" class="w-[1.1em]" />{{ shortCost(t.costStars) }}
+              <img decoding="async" :src="StarIcon" alt="" class="w-[1.1em]" />{{ shortCost(t.costStars) }}
             </button>
           </div>
 
@@ -381,7 +381,7 @@ function openWinners() {
             <template v-else-if="!enough">{{ $t('Get stars') }}</template>
             <template v-else>
               {{ $t('Spin') }}
-              <img :src="StarIcon" alt="" class="w-[1.15em]" />{{ totalCost.toLocaleString('en-US') }}
+              <img decoding="async" :src="StarIcon" alt="" class="w-[1.15em]" />{{ totalCost.toLocaleString('en-US') }}
             </template>
           </button>
         </div>

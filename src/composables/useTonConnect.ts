@@ -1,4 +1,4 @@
-import { TonConnectUI } from '@tonconnect/ui'
+import type { TonConnectUI } from '@tonconnect/ui'
 
 /**
  * Pays a TON order with the player's own wallet (TON Connect).
@@ -8,8 +8,10 @@ import { TonConnectUI } from '@tonconnect/ui'
 
 let ui: TonConnectUI | null = null
 
-function client(): TonConnectUI {
+/** The wallet library is large, so it is downloaded the first time a player pays, not when the game starts. */
+async function client(): Promise<TonConnectUI> {
   if (!ui) {
+    const { TonConnectUI } = await import('@tonconnect/ui')
     ui = new TonConnectUI({
       // must be reachable over HTTPS and name this app's real address (see public/tonconnect-manifest.json)
       manifestUrl: `${window.location.origin}/tonconnect-manifest.json`,
@@ -54,7 +56,7 @@ export interface TonPayment {
 
 /** Asks the wallet to send the transfer. Throws when the player declines or closes the window. */
 export async function payWithTon(p: TonPayment): Promise<void> {
-  const c = client()
+  const c = await client()
   await ensureWallet(c)
   await c.sendTransaction({
     validUntil: p.validUntil,

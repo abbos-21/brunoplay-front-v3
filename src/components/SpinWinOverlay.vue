@@ -117,7 +117,7 @@ const confetti = Array.from({ length: 44 }, () => ({
     <div class="win-glow absolute left-1/2 top-1/2" />
 
     <!-- sparkles bursting from the centre -->
-    <img
+    <img decoding="async"
       v-for="(s, i) in sparks"
       :key="`s${i}`"
       :src="s.src"
@@ -177,7 +177,7 @@ const confetti = Array.from({ length: 44 }, () => ({
             >
               <div class="win-pic-wrap relative flex items-center justify-center">
                 <div class="win-pic-glow absolute" />
-                <img
+                <img decoding="async"
                   :src="g.r.img"
                   :alt="g.r.name"
                   class="win-pic relative block object-contain drop-shadow-[0_6px_8px_rgba(0,0,0,0.35)]"
@@ -208,14 +208,14 @@ const confetti = Array.from({ length: 44 }, () => ({
                   padding: `0 ${u(16)}`,
                 }"
               >
-                <img
+                <img decoding="async"
                   v-if="g.r.kind !== 'gift'"
                   :src="g.r.kind === 'coins' ? CoinImage : StarIcon"
                   alt=""
                   :style="{ width: u(hero ? 50 : 36) }"
                 />
                 <template v-if="g.r.kind === 'gift'">
-                  <img :src="StarIcon" alt="" :style="{ width: u(hero ? 50 : 38) }" />
+                  <img decoding="async" :src="StarIcon" alt="" :style="{ width: u(hero ? 50 : 38) }" />
                   {{ g.r.amount }}
                 </template>
                 <template v-else>{{ g.r.amount }}</template>
@@ -240,12 +240,12 @@ const confetti = Array.from({ length: 44 }, () => ({
           :style="{ gap: u(34), fontSize: u(40), animationDelay: '1.1s', marginBottom: u(14) }"
         >
           <span v-if="result.totalCoinsWon" class="flex items-center" :style="{ gap: u(10) }">
-            <img :src="CoinImage" alt="" :style="{ width: u(52) }" />+{{
+            <img decoding="async" :src="CoinImage" alt="" :style="{ width: u(52) }" />+{{
               coins.toLocaleString('en-US')
             }}
           </span>
           <span v-if="result.totalStarsWon" class="flex items-center" :style="{ gap: u(10) }">
-            <img :src="StarIcon" alt="" :style="{ width: u(56) }" />+{{
+            <img decoding="async" :src="StarIcon" alt="" :style="{ width: u(56) }" />+{{
               stars.toLocaleString('en-US')
             }}
           </span>

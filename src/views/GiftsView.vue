@@ -95,12 +95,12 @@ async function act(g: PlayerGift, action: 'sell' | 'claim') {
       >
         <div class="flex items-center gap-3">
           <div class="shrink-0 size-[clamp(3.5rem,17vw,4.5rem)] rounded-2xl bg-[radial-gradient(circle_at_50%_40%,#fff6bf,#fbe166_75%)] border border-[#cf8741] flex items-center justify-center">
-            <img :src="art(g)" :alt="g.name" class="w-[82%] h-[82%] object-contain" />
+            <img decoding="async" loading="lazy" :src="art(g)" :alt="g.name" class="w-[82%] h-[82%] object-contain" />
           </div>
           <div class="flex-1 min-w-0">
             <h2 class="font-bold text-[#552a0f] leading-tight text-[length:clamp(1rem,5vw,1.3rem)]">{{ g.name }}</h2>
             <p class="flex items-center gap-1 font-extrabold text-[#552a0f] tabular-nums">
-              <img :src="StarIcon" alt="" class="w-[1.1em]" />{{ g.starValue.toLocaleString('en-US') }}
+              <img decoding="async" loading="lazy" :src="StarIcon" alt="" class="w-[1.1em]" />{{ g.starValue.toLocaleString('en-US') }}
             </p>
             <span
               class="mt-1 inline-block rounded-full border px-2.5 py-px font-bold leading-tight text-[length:clamp(0.62rem,3vw,0.78rem)]"

@@ -21,7 +21,7 @@ const coins = computed(() => user.value?.coins ?? FALLBACK_COINS)
     class="inline-flex gap-px items-center p-1 py-1.5 pe-1.5 relative z-[45] bg-[#fbe166] rounded-[50px] shadow-card"
   >
     <!-- the coin picture fills its whole box (the star has built-in margin), so it gets the gap itself and the same size as the star -->
-    <img :src="CoinImage" :alt="$t('Coins')" class="w-[clamp(1.35rem,6.8vw,1.8rem)] me-[3px]" />
+    <img decoding="async" :src="CoinImage" :alt="$t('Coins')" class="w-[clamp(1.35rem,6.8vw,1.8rem)] me-[3px]" />
     <AnimatedNumber kind="coins" :value="coins" :ready="!!user" />
     <RouterLink
       to="/withdraw"

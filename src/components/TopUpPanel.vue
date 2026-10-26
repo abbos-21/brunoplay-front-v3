@@ -211,7 +211,7 @@ const tabBase =
           :class="tab === 'stars' ? 'justify-center' : 'justify-between'"
         >
           <span class="flex items-center gap-1.5 text-[length:clamp(1.15rem,5.2vw,1.4rem)]">
-            <img :src="StarIcon" alt="" class="w-[clamp(1.5rem,7vw,1.8rem)]" />
+            <img decoding="async" loading="lazy" :src="StarIcon" alt="" class="w-[clamp(1.5rem,7vw,1.8rem)]" />
             {{ fmt(o.stars) }}
             <span
               v-if="tab === 'ton'"
@@ -235,7 +235,7 @@ const tabBase =
             v-if="tab === 'ton'"
             class="flex items-center gap-1.5 font-semibold text-[length:clamp(1.05rem,4.9vw,1.3rem)]"
           >
-            <img :src="TonImage" alt="" class="w-[clamp(1.4rem,6.5vw,1.7rem)] rounded-full" />
+            <img decoding="async" loading="lazy" :src="TonImage" alt="" class="w-[clamp(1.4rem,6.5vw,1.7rem)] rounded-full" />
             {{ busyPack === o.stars ? '…' : `${o.ton} TON` }}
           </span>
         </button>

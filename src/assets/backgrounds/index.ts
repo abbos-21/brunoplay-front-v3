@@ -1,2 +1,2 @@
-export { default as HomeBg } from './home.png'
-export { default as ShopBg } from './shop.png'
+export { default as HomeBg } from './home.webp'
+export { default as ShopBg } from './shop.webp'

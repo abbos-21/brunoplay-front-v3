@@ -1,18 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router'
+// only Home is in the first download; every other screen is its own file, fetched when it is opened (see prefetchScreens)
 import HomeView from '../views/HomeView.vue'
-import ShopView from '@/views/ShopView.vue'
-import GamesView from '@/views/GamesView.vue'
-import TasksView from '@/views/TasksView.vue'
-import FriendsView from '@/views/FriendsView.vue'
-import BoostersView from '@/views/BoostersView.vue'
-import SpinView from '@/views/SpinView.vue'
-import RideView from '@/views/RideView.vue'
-import ChestView from '@/views/ChestView.vue'
-import WithdrawView from '@/views/WithdrawView.vue'
-import WithdrawalHistoryView from '@/views/WithdrawalHistoryView.vue'
-import LevelsView from '@/views/LevelsView.vue'
-import GiftsView from '@/views/GiftsView.vue'
-import TournamentView from '@/views/TournamentView.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -25,73 +13,73 @@ const router = createRouter({
     {
       path: '/shop',
       name: 'shop',
-      component: ShopView,
+      component: () => import('@/views/ShopView.vue'),
     },
     {
       path: '/shop/boosters',
       name: 'shop-boosters',
-      component: BoostersView,
+      component: () => import('@/views/BoostersView.vue'),
     },
     {
       path: '/games',
       name: 'games',
-      component: GamesView,
+      component: () => import('@/views/GamesView.vue'),
     },
     {
       path: '/games/spin',
       name: 'games-spin',
-      component: SpinView,
+      component: () => import('@/views/SpinView.vue'),
       meta: { hideNav: true },
     },
     {
       path: '/withdraw',
       name: 'withdraw',
-      component: WithdrawView,
+      component: () => import('@/views/WithdrawView.vue'),
       meta: { hideNav: true },
     },
     {
       path: '/withdraw/history',
       name: 'withdraw-history',
-      component: WithdrawalHistoryView,
+      component: () => import('@/views/WithdrawalHistoryView.vue'),
       meta: { hideNav: true },
     },
     {
       path: '/games/roulette',
       name: 'games-roulette',
-      component: ChestView,
+      component: () => import('@/views/ChestView.vue'),
       meta: { hideNav: true },
     },
     {
       path: '/games/ride',
       name: 'games-ride',
-      component: RideView,
+      component: () => import('@/views/RideView.vue'),
       meta: { hideNav: true },
     },
     {
       path: '/gifts',
       name: 'gifts',
-      component: GiftsView,
+      component: () => import('@/views/GiftsView.vue'),
     },
     {
       path: '/tournaments/:id',
       name: 'tournament',
-      component: TournamentView,
+      component: () => import('@/views/TournamentView.vue'),
     },
     {
       path: '/tasks',
       name: 'tasks',
-      component: TasksView,
+      component: () => import('@/views/TasksView.vue'),
     },
     {
       path: '/level',
       name: 'level',
-      component: LevelsView,
+      component: () => import('@/views/LevelsView.vue'),
     },
     { path: '/levels', redirect: '/level' },
     {
       path: '/friends',
       name: 'friends',
-      component: FriendsView,
+      component: () => import('@/views/FriendsView.vue'),
     },
     { path: '/:pathMatch(.*)*', redirect: '/' },
     {
@@ -104,5 +92,18 @@ const router = createRouter({
     },
   ],
 })
+
+/** After the first screen has settled, quietly fetch the screens behind the bottom menu so they open instantly.
+ *  Games with a heavy engine (Ride) are left out on purpose: they load when the player opens them. */
+export function prefetchScreens() {
+  const go = () => {
+    void import('@/views/ShopView.vue')
+    void import('@/views/GamesView.vue')
+    void import('@/views/TasksView.vue')
+    void import('@/views/FriendsView.vue')
+  }
+  const idle = (window as unknown as { requestIdleCallback?: (cb: () => void, o?: { timeout: number }) => void }).requestIdleCallback
+  setTimeout(() => (idle ? idle(go, { timeout: 4000 }) : go()), 2500)
+}
 
 export default router

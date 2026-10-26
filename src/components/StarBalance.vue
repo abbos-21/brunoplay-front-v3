@@ -19,7 +19,7 @@ const stars = computed(() => user.value?.starsBalance ?? FALLBACK_STARS)
   <div
     class="inline-flex gap-px items-center p-1 py-1.5 pe-1.5 relative z-[45] bg-[#fbe166] rounded-[50px] shadow-card"
   >
-    <img :src="StarIcon" :alt="$t('Stars')" class="w-[clamp(1.35rem,6.8vw,1.8rem)]" />
+    <img decoding="async" :src="StarIcon" :alt="$t('Stars')" class="w-[clamp(1.35rem,6.8vw,1.8rem)]" />
     <AnimatedNumber kind="stars" :value="stars" :ready="!!user" />
     <button
       type="button"

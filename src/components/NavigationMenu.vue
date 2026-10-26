@@ -43,7 +43,7 @@ const navItems = [
         class="relative h-14 sm:h-18 aspect-square flex flex-col items-center justify-center rounded-full transition-[background-color,box-shadow,transform] duration-[250ms] ease active:translate-y-0 active:scale-[0.98]"
         active-class="bg-[#c17e23] shadow-[inset_0px_3px_4px_rgba(255,255,255,0.25),inset_0px_-3px_4px_rgba(0,0,0,0.25)] -translate-y-0.5 scale-105"
       >
-        <img :src="item.img" :alt="$t(item.label)" :class="item.imgClass" />
+        <img decoding="async" :src="item.img" :alt="$t(item.label)" :class="item.imgClass" />
         <h1 class="outlined [--outline:#532B23] -mt-2 sm:-mt-3 font-bold text-xs sm:text-sm">{{ $t(item.label) }}</h1>
         <Transition name="dot">
           <PendingDot v-if="item.to === '/tasks' && hasNew && route.path !== '/tasks'" />

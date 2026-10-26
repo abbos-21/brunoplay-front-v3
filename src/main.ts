@@ -5,7 +5,7 @@ import { createApp } from 'vue'
 import { createPinia } from 'pinia'
 
 import App from './App.vue'
-import router from './router'
+import router, { prefetchScreens } from './router'
 import { t, tn } from './i18n'
 import { installSfx } from './composables/useSfx'
 
@@ -21,3 +21,4 @@ app.config.globalProperties.$tn = tn
 installSfx()
 
 app.mount('#app')
+prefetchScreens()

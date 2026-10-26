@@ -71,14 +71,14 @@ function shareLink() {
       <div class="rounded-3xl border-2 border-[#cf8741] bg-[#fff4d6] px-3 py-2.5 shadow-[0px_4px_4px_rgba(0,0,0,0.25)]">
         <p class="text-[#8a5a2b] font-bold uppercase tracking-wide text-[length:clamp(0.62rem,3vw,0.78rem)]">{{ $t('Earned from friends') }}</p>
         <p class="mt-1 flex items-center gap-1.5 font-extrabold text-[#552a0f] tabular-nums text-[length:clamp(1.1rem,5.8vw,1.6rem)]">
-          <img :src="CoinImage" alt="" class="w-[1.3em]" />
+          <img decoding="async" loading="lazy" :src="CoinImage" alt="" class="w-[1.3em]" />
           {{ formatNumber(friends.stats?.referralEarnings ?? 0) }}
         </p>
       </div>
       <div class="rounded-3xl border-2 border-[#cf8741] bg-[#fff4d6] px-3 py-2.5 shadow-[0px_4px_4px_rgba(0,0,0,0.25)]">
         <p class="text-[#8a5a2b] font-bold uppercase tracking-wide text-[length:clamp(0.62rem,3vw,0.78rem)]">{{ $t('Friends invited') }}</p>
         <p class="mt-1 flex items-center gap-1.5 font-extrabold text-[#552a0f] tabular-nums text-[length:clamp(1.1rem,5.8vw,1.6rem)]">
-          <img :src="ReferralsImage" alt="" class="h-[1.3em]" />
+          <img decoding="async" loading="lazy" :src="ReferralsImage" alt="" class="h-[1.3em]" />
           {{ friends.stats?.totalReferrals ?? 0 }}
         </p>
       </div>
@@ -108,7 +108,7 @@ function shareLink() {
           >
             <span class="font-bold">{{ $t('Friend reaches level {n}', { n: tier.level }) }}</span>
             <span class="flex items-center gap-1 font-extrabold tabular-nums">
-              <img :src="CoinImage" alt="" class="w-[1.2em]" />
+              <img decoding="async" loading="lazy" :src="CoinImage" alt="" class="w-[1.2em]" />
               {{ formatNumber(tier.reward) }}
             </span>
           </div>
@@ -134,7 +134,7 @@ function shareLink() {
         </div>
 
         <span class="shrink-0 flex items-center gap-1 rounded-full bg-[#fde7b8] border border-[#e3b66f] pl-1 pr-3 py-0.5 font-extrabold text-[#552a0f] tabular-nums text-[length:clamp(0.9rem,4.5vw,1.2rem)]">
-          <img :src="CoinImage" alt="" class="w-[1.4em]" />
+          <img decoding="async" loading="lazy" :src="CoinImage" alt="" class="w-[1.4em]" />
           +{{ formatNumber(ref.reward) }}
         </span>
       </div>
@@ -163,7 +163,7 @@ function shareLink() {
         class="h-[clamp(2.4rem,11.5vw,3rem)] rounded-full border border-[#15861b] bg-[#1fb826] flex items-center justify-center gap-1.5 px-2 text-center leading-tight font-bold text-white text-[length:clamp(0.85rem,4.4vw,1.25rem)] shadow-[inset_0px_3px_3px_rgba(255,255,255,0.25),inset_0px_-3px_3px_rgba(0,0,0,0.2)] active:translate-y-px"
         @click="shareLink"
       >
-        <img :src="TelegramImage" alt="" class="size-7 object-contain shrink-0" />
+        <img decoding="async" loading="lazy" :src="TelegramImage" alt="" class="size-7 object-contain shrink-0" />
         {{ $t('Invite friends') }}
       </button>
     </div>

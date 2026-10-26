@@ -134,21 +134,21 @@ const pointers = [
 <template>
   <div class="relative w-full aspect-square [container-type:inline-size] [&_img]:max-w-none">
     <!-- rims carry a vertical light gradient, so they stay put while the wheel turns -->
-    <img :src="WheelRimA" alt="" :style="place(710)" />
-    <img :src="WheelRimB" alt="" :style="place(730)" />
+    <img decoding="async" :src="WheelRimA" alt="" :style="place(710)" />
+    <img decoding="async" :src="WheelRimB" alt="" :style="place(730)" />
 
     <div class="absolute inset-0" :style="rotStyle">
       <span v-for="(s, i) in spokes" :key="i" :style="s" />
     </div>
 
-    <img :src="WheelRimC" alt="" :style="place(710)" />
+    <img decoding="async" :src="WheelRimC" alt="" :style="place(710)" />
 
     <div ref="turning" class="absolute inset-0" :style="rotStyle">
-      <img v-for="(s, i) in studs" :key="`stud-${i}`" :src="WheelDot" alt="" :style="s" />
+      <img decoding="async" v-for="(s, i) in studs" :key="`stud-${i}`" :src="WheelDot" alt="" :style="s" />
 
       <div v-for="(p, i) in prizes" :key="i" :style="p.style">
         <div class="w-full" :style="counterStyle">
-          <img :src="p.slot.img" :alt="p.slot.alt" class="block w-full drop-shadow-[0_4px_4px_rgba(0,0,0,0.25)]" />
+          <img decoding="async" :src="p.slot.img" :alt="p.slot.alt" class="block w-full drop-shadow-[0_4px_4px_rgba(0,0,0,0.25)]" />
           <span
             v-if="p.slot.chip"
             class="absolute left-1/2 bottom-[4%] -translate-x-1/2 whitespace-nowrap font-extrabold text-white [text-shadow:0_2px_2px_rgba(0,0,0,0.6)]"
@@ -161,8 +161,8 @@ const pointers = [
     </div>
 
     <!-- fixed parts -->
-    <img :src="CenterA" alt="" :style="place(314)" />
-    <img :src="CenterB" alt="" :style="place(297.4)" />
-    <img v-for="(p, i) in pointers" :key="`ptr-${i}`" :src="p.src" alt="" :style="p.style" />
+    <img decoding="async" :src="CenterA" alt="" :style="place(314)" />
+    <img decoding="async" :src="CenterB" alt="" :style="place(297.4)" />
+    <img decoding="async" v-for="(p, i) in pointers" :key="`ptr-${i}`" :src="p.src" alt="" :style="p.style" />
   </div>
 </template>

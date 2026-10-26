@@ -81,7 +81,7 @@ const gameCards = [
       >
         <div class="flex items-center gap-5">
           <div class="shrink-0 w-[clamp(4.75rem,23vw,6.25rem)] aspect-square">
-            <img :src="TournamentBadge" :alt="tournament.name" class="game-art game-pulse w-full h-full object-contain drop-shadow-[0_4px_4px_rgba(85,42,15,0.35)]" />
+            <img decoding="async" loading="lazy" :src="TournamentBadge" :alt="tournament.name" class="game-art game-pulse w-full h-full object-contain drop-shadow-[0_4px_4px_rgba(85,42,15,0.35)]" />
           </div>
 
           <div class="flex-1 min-w-0">
@@ -115,7 +115,7 @@ const gameCards = [
             class="shrink-0 w-[clamp(4.75rem,23vw,6.25rem)] aspect-square rounded-2xl overflow-hidden game-tile"
             :class="{ 'grayscale opacity-70': !game.to }"
           >
-            <img :src="game.img" :alt="$t(game.title)" class="game-art w-full h-full object-cover" :class="game.motion" />
+            <img decoding="async" loading="lazy" :src="game.img" :alt="$t(game.title)" class="game-art w-full h-full object-cover" :class="game.motion" />
           </div>
 
           <div class="flex-1 min-w-0">

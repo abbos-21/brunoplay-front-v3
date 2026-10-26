@@ -93,9 +93,9 @@ onBeforeUnmount(() => {
 
     <!-- the prize floats up once the chest is open -->
     <div class="prize absolute left-1/2 bottom-[60%] w-[78%] -translate-x-1/2" aria-hidden="true">
-      <img v-if="img" :src="img" alt="" draggable="false" />
+      <img decoding="async" v-if="img" :src="img" alt="" draggable="false" />
       <span v-if="label" class="prize-label">
-        <img :src="kind === 'coins' ? CoinImage : StarIcon" alt="" class="label-icon" />{{ label }}
+        <img decoding="async" :src="kind === 'coins' ? CoinImage : StarIcon" alt="" class="label-icon" />{{ label }}
       </span>
     </div>
   </button>

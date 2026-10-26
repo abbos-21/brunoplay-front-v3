@@ -92,7 +92,7 @@ function onScroll(e: Event) {
             <p class="truncate font-extrabold text-[length:clamp(0.9rem,4.3vw,1.1rem)]">{{ r.name }}</p>
             <p class="flex items-center gap-1 text-[#8a5a2b] font-bold text-[length:clamp(0.72rem,3.4vw,0.88rem)]">
               <template v-if="r.spend">
-                {{ $t('Spent') }} <img :src="StarIcon" alt="" class="w-[1.2em]" />{{ r.spend }}
+                {{ $t('Spent') }} <img decoding="async" loading="lazy" :src="StarIcon" alt="" class="w-[1.2em]" />{{ r.spend }}
               </template>
               <template v-else>{{ r.date }}</template>
             </p>
@@ -100,7 +100,7 @@ function onScroll(e: Event) {
           </div>
 
           <div class="flex shrink-0 flex-col items-center gap-0.5">
-            <img :src="r.img" alt="" class="block size-[clamp(2.6rem,12vw,3.2rem)] object-contain drop-shadow-[0_3px_3px_rgba(0,0,0,0.3)]" />
+            <img decoding="async" loading="lazy" :src="r.img" alt="" class="block size-[clamp(2.6rem,12vw,3.2rem)] object-contain drop-shadow-[0_3px_3px_rgba(0,0,0,0.3)]" />
             <span
               v-if="r.profit"
               class="rounded-full bg-[#1fb826] px-2 py-px font-extrabold leading-tight text-white tabular-nums text-[length:clamp(0.65rem,3.1vw,0.8rem)]"

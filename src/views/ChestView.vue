@@ -180,7 +180,7 @@ async function finish(done: { results: SpinPrize[]; coins: number; stars: number
     />
     <div class="absolute inset-0 z-0 overflow-hidden pointer-events-none [container-type:inline-size]">
       <div class="relative w-full" :style="{ aspectRatio: `${FRAME.w} / ${FRAME.h}` }">
-        <img
+        <img decoding="async" loading="lazy"
           v-for="(s, i) in sparkles"
           :key="i"
           :src="s.src"
@@ -260,7 +260,7 @@ async function finish(done: { results: SpinPrize[]; coins: number; stars: number
           >
             <span class="inline-flex items-center justify-center gap-[0.25em]">
               {{ $t('Play again') }}
-              <img :src="StarIcon" alt="" class="w-[1.05em]" />{{ ROUND_COST }}
+              <img decoding="async" loading="lazy" :src="StarIcon" alt="" class="w-[1.05em]" />{{ ROUND_COST }}
             </span>
           </button>
           <button
@@ -290,7 +290,7 @@ async function finish(done: { results: SpinPrize[]; coins: number; stars: number
           <template v-if="!canPay">{{ $t('Get stars') }}</template>
           <template v-else>
             {{ $t('Play') }}
-            <img :src="StarIcon" alt="" class="w-[1.15em]" />{{ ROUND_COST }}
+            <img decoding="async" loading="lazy" :src="StarIcon" alt="" class="w-[1.15em]" />{{ ROUND_COST }}
           </template>
         </button>
         <button

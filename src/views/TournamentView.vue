@@ -158,7 +158,7 @@ const card = 'rounded-3xl border-2 border-[#cf8741] bg-[#fff4d6] shadow-[0px_4px
           >
             {{ $t(STATUS.label) }}
           </span>
-          <img :src="TournamentBadge" alt="" class="size-[clamp(9rem,46vw,12rem)] object-contain drop-shadow-[0_6px_6px_rgba(85,42,15,0.4)]" />
+          <img decoding="async" loading="lazy" :src="TournamentBadge" alt="" class="size-[clamp(9rem,46vw,12rem)] object-contain drop-shadow-[0_6px_6px_rgba(85,42,15,0.4)]" />
         </div>
 
         <div class="px-4 pb-4 text-center">
@@ -170,7 +170,7 @@ const card = 'rounded-3xl border-2 border-[#cf8741] bg-[#fff4d6] shadow-[0px_4px
               {{ $t(METRIC[tournament.metric] ?? tournament.metric) }}
             </span>
             <span class="rounded-full bg-[#fde7b8] border border-[#e3b66f] px-3 py-0.5 font-bold text-[#552a0f] text-[length:clamp(0.75rem,3.6vw,0.95rem)] inline-flex items-center gap-1">
-              <template v-if="tournament.entryFee > 0">{{ $t('Entry') }} <img :src="StarIcon" alt="" class="w-[1.1em]" />{{ num(tournament.entryFee) }}</template>
+              <template v-if="tournament.entryFee > 0">{{ $t('Entry') }} <img decoding="async" loading="lazy" :src="StarIcon" alt="" class="w-[1.1em]" />{{ num(tournament.entryFee) }}</template>
               <template v-else>{{ $t('Free entry') }}</template>
             </span>
             <span v-if="board" class="rounded-full bg-[#fde7b8] border border-[#e3b66f] px-3 py-0.5 font-bold text-[#552a0f] text-[length:clamp(0.75rem,3.6vw,0.95rem)]">
@@ -210,7 +210,7 @@ const card = 'rounded-3xl border-2 border-[#cf8741] bg-[#fff4d6] shadow-[0px_4px
             @click="join"
           >
             {{ $t('Join') }}
-            <template v-if="tournament.entryFee > 0"><img :src="StarIcon" alt="" class="w-[1.1em]" />{{ num(tournament.entryFee) }}</template>
+            <template v-if="tournament.entryFee > 0"><img decoding="async" loading="lazy" :src="StarIcon" alt="" class="w-[1.1em]" />{{ num(tournament.entryFee) }}</template>
           </button>
         </div>
       </section>
@@ -223,9 +223,9 @@ const card = 'rounded-3xl border-2 border-[#cf8741] bg-[#fff4d6] shadow-[0px_4px
           <div v-for="x in podium" :key="x.place" class="flex-1 min-w-0 flex flex-col items-center">
             <PlaceTrophy :place="x.place" :class="x.place === 1 ? 'size-[clamp(2.6rem,13vw,3.4rem)]' : 'size-[clamp(2rem,10vw,2.7rem)]'" />
             <div class="mt-1 flex flex-col items-center gap-0.5 font-extrabold text-[#552a0f] text-[length:clamp(0.78rem,3.9vw,1rem)] leading-tight">
-              <span v-if="x.prize.coins > 0" class="inline-flex items-center gap-1 tabular-nums"><img :src="CoinImage" alt="" class="w-[1.15em]" />{{ num(x.prize.coins) }}</span>
-              <span v-if="x.prize.stars > 0" class="inline-flex items-center gap-1 tabular-nums"><img :src="StarIcon" alt="" class="w-[1.15em]" />{{ num(x.prize.stars) }}</span>
-              <span v-if="x.prize.gift" class="inline-flex items-center gap-1 capitalize"><img :src="GiftIcon" alt="" class="w-[1.2em]" />{{ x.prize.gift }}</span>
+              <span v-if="x.prize.coins > 0" class="inline-flex items-center gap-1 tabular-nums"><img decoding="async" loading="lazy" :src="CoinImage" alt="" class="w-[1.15em]" />{{ num(x.prize.coins) }}</span>
+              <span v-if="x.prize.stars > 0" class="inline-flex items-center gap-1 tabular-nums"><img decoding="async" loading="lazy" :src="StarIcon" alt="" class="w-[1.15em]" />{{ num(x.prize.stars) }}</span>
+              <span v-if="x.prize.gift" class="inline-flex items-center gap-1 capitalize"><img decoding="async" loading="lazy" :src="GiftIcon" alt="" class="w-[1.2em]" />{{ x.prize.gift }}</span>
             </div>
             <div
               class="mt-2 w-full rounded-t-2xl border-2 border-b-0 flex items-start justify-center pt-1.5 font-extrabold text-white [text-shadow:0px_2px_2px_rgba(0,0,0,0.35)] text-[length:clamp(1.2rem,6vw,1.6rem)]"
@@ -240,9 +240,9 @@ const card = 'rounded-3xl border-2 border-[#cf8741] bg-[#fff4d6] shadow-[0px_4px
           <li v-for="p in otherPrizes" :key="p.place" class="flex items-center gap-3 rounded-2xl bg-[#fde7b8] border border-[#e3b66f] px-3 py-1.5 text-[length:clamp(0.9rem,4.4vw,1.15rem)]">
             <span class="w-9 shrink-0 text-center font-extrabold tabular-nums text-[#8a5a2b]">#{{ p.place }}</span>
             <span class="flex-1 min-w-0 flex flex-wrap items-center justify-end gap-x-3 gap-y-0.5 font-extrabold text-[#552a0f]">
-              <span v-if="p.coins > 0" class="inline-flex items-center gap-1 tabular-nums"><img :src="CoinImage" alt="" class="w-[1.2em]" />{{ num(p.coins) }}</span>
-              <span v-if="p.stars > 0" class="inline-flex items-center gap-1 tabular-nums"><img :src="StarIcon" alt="" class="w-[1.2em]" />{{ num(p.stars) }}</span>
-              <span v-if="p.gift" class="inline-flex items-center gap-1 capitalize"><img :src="GiftIcon" alt="" class="w-[1.3em]" />{{ p.gift }}</span>
+              <span v-if="p.coins > 0" class="inline-flex items-center gap-1 tabular-nums"><img decoding="async" loading="lazy" :src="CoinImage" alt="" class="w-[1.2em]" />{{ num(p.coins) }}</span>
+              <span v-if="p.stars > 0" class="inline-flex items-center gap-1 tabular-nums"><img decoding="async" loading="lazy" :src="StarIcon" alt="" class="w-[1.2em]" />{{ num(p.stars) }}</span>
+              <span v-if="p.gift" class="inline-flex items-center gap-1 capitalize"><img decoding="async" loading="lazy" :src="GiftIcon" alt="" class="w-[1.3em]" />{{ p.gift }}</span>
             </span>
           </li>
         </ul>
@@ -271,7 +271,7 @@ const card = 'rounded-3xl border-2 border-[#cf8741] bg-[#fff4d6] shadow-[0px_4px
               <span v-if="e.userId === auth.user?.id" class="ml-1 rounded-full bg-[#c8200f] px-1.5 text-[0.7em] uppercase text-white">{{ $t('You') }}</span>
             </span>
             <span class="inline-flex items-center gap-1 font-extrabold tabular-nums text-[#552a0f]">
-              <img v-if="metricIcon" :src="metricIcon" alt="" class="w-[1.1em]" />{{ num(e.score) }}
+              <img decoding="async" loading="lazy" v-if="metricIcon" :src="metricIcon" alt="" class="w-[1.1em]" />{{ num(e.score) }}
             </span>
           </li>
         </ol>

@@ -236,7 +236,7 @@ async function handleClaim(double: boolean) {
             @dragend="onDropEnd"
             @touchstart.prevent="onTouchStart(container[n - 1]!, $event)"
           >
-            <img :src="container[n - 1]!.src" class="h-full" />
+            <img decoding="async" :src="container[n - 1]!.src" class="h-full" />
 
             <span
               v-if="showMarks && marks && marks[n - 1] === true"
@@ -347,7 +347,7 @@ async function handleClaim(double: boolean) {
         @dragend="onDropEnd"
         @touchstart.prevent="onTouchStart(item, $event)"
       >
-        <img :src="item.src" class="h-full" />
+        <img decoding="async" :src="item.src" class="h-full" />
       </div>
     </div>
 

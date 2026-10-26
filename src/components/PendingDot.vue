@@ -6,7 +6,7 @@ import { AlertImage } from '@/assets/images'
   <!-- a glossy red "!" that bounces and pings: something here still needs the player today -->
   <span class="pending-dot absolute -top-1.5 -right-1 z-10 flex h-[1.6rem] w-[1.3rem] items-center justify-center pointer-events-none" aria-hidden="true">
     <span class="ping absolute left-1/2 top-1/2 size-5 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-[#ff4a3d]" />
-    <img :src="AlertImage" alt="" class="bounce relative h-full w-auto" />
+    <img decoding="async" :src="AlertImage" alt="" class="bounce relative h-full w-auto" />
   </span>
 </template>
 

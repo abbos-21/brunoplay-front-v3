@@ -120,7 +120,7 @@ async function handleClaim(double = false) {
         >
           <h3>{{ $t('Day {n}', { n: day.day }) }}</h3>
           <div class="flex gap-1 items-center">
-            <img :src="CoinImage" alt="coin-image" class="w-5" />
+            <img decoding="async" loading="lazy" :src="CoinImage" alt="coin-image" class="w-5" />
             <span>{{ day.coins }}</span>
           </div>
 
@@ -137,7 +137,7 @@ async function handleClaim(double = false) {
         >
           <h3>Day 1</h3>
           <div class="flex gap-1 items-center">
-            <img :src="CoinImage" alt="coin-image" class="w-5" />
+            <img decoding="async" loading="lazy" :src="CoinImage" alt="coin-image" class="w-5" />
             <span>10</span>
           </div>
 
@@ -152,7 +152,7 @@ async function handleClaim(double = false) {
         >
           <h3>Day 2</h3>
           <div class="flex gap-1 items-center">
-            <img :src="CoinImage" alt="coin-image" class="w-5" />
+            <img decoding="async" loading="lazy" :src="CoinImage" alt="coin-image" class="w-5" />
             <span>10</span>
           </div>
         </div> -->

@@ -138,7 +138,7 @@ const close = useGoBack('/')
       <!-- balance + close -->
       <div class="flex items-center justify-between gap-3">
         <div class="flex-1 min-w-0 flex items-center gap-2 h-[clamp(2.8rem,13vw,3.4rem)] rounded-full border border-[#552a0f] bg-[#cf8741] pl-1.5 pr-5 shadow-[inset_0px_-3px_4px_#935324]">
-          <img :src="CoinImage" :alt="$t('Coins')" class="h-[82%] w-auto aspect-square shrink-0" />
+          <img decoding="async" loading="lazy" :src="CoinImage" :alt="$t('Coins')" class="h-[82%] w-auto aspect-square shrink-0" />
           <AnimatedNumber
             kind="coins"
             plain
@@ -157,10 +157,10 @@ const close = useGoBack('/')
       <div class="rounded-3xl border-2 border-[#cf8741] bg-[#fff4d6] px-3 py-2.5 shadow-[0px_4px_4px_rgba(0,0,0,0.25)]">
         <p class="text-center text-[#8a5a2b] font-bold uppercase tracking-wide text-[length:clamp(0.65rem,3.1vw,0.8rem)]">{{ $t('Coin rate') }}</p>
         <p class="mt-1 flex items-center justify-center gap-2 font-extrabold text-[#552a0f] text-[length:clamp(1rem,5.2vw,1.4rem)]">
-          <img :src="CoinImage" alt="" class="w-[1.4em]" />
+          <img decoding="async" loading="lazy" :src="CoinImage" alt="" class="w-[1.4em]" />
           {{ num(coinsPerTon) }} {{ $t('coins') }}
           <span class="text-[#c17e23]">=</span>
-          <img :src="TonImage" alt="" class="w-[1.4em] rounded-full" />
+          <img decoding="async" loading="lazy" :src="TonImage" alt="" class="w-[1.4em] rounded-full" />
           1 TON
         </p>
       </div>
@@ -217,7 +217,7 @@ const close = useGoBack('/')
         <div class="mt-1.5 flex items-center justify-between text-[#552a0f] font-extrabold text-[length:clamp(1rem,5.2vw,1.4rem)]">
           <span>{{ $t('You will receive') }}</span>
           <span class="flex items-center gap-1.5 tabular-nums">
-            <img :src="TonImage" alt="" class="w-[1.3em] rounded-full" />
+            <img decoding="async" loading="lazy" :src="TonImage" alt="" class="w-[1.3em] rounded-full" />
             {{ ton(receive) }} TON
           </span>
         </div>

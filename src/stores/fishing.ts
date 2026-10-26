@@ -76,8 +76,14 @@ export const useFishingStore = defineStore('fishing', () => {
   function startTicker(): () => void {
     users++;
     if (users === 1) {
-      timer = setInterval(() => (now.value = Date.now()), 250);
-      refreshTimer = setInterval(refresh, 30_000);
+      // nothing on screen moves while the app is hidden or the tank is not filling, so those ticks are skipped
+      timer = setInterval(() => {
+        if (document.visibilityState === 'hidden' || !status.value?.isFishing) return;
+        now.value = Date.now();
+      }, 250);
+      refreshTimer = setInterval(() => {
+        if (document.visibilityState === 'visible') void refresh();
+      }, 30_000);
       document.addEventListener('visibilitychange', onVisible);
     }
     return () => {

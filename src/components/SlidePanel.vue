@@ -109,7 +109,7 @@ const languages: { code: Locale; name: string; flag: string }[] = [
       >
         <div class="flex flex-col items-center">
           <!-- <div class="border border-white w-20 h-20 rounded-full"></div> -->
-          <img
+          <img decoding="async" loading="lazy"
             :src="photoUrl || ProfileImage"
             alt=""
             :class="photoUrl ? 'object-cover' : 'object-contain'"
@@ -135,7 +135,7 @@ const languages: { code: Locale; name: string; flag: string }[] = [
               "
               @click="chooseLanguage(l.code)"
             >
-              <img :src="l.flag" alt="" class="h-6 shrink-0" />
+              <img decoding="async" loading="lazy" :src="l.flag" alt="" class="h-6 shrink-0" />
               <span class="min-w-0 truncate text-[length:clamp(0.85rem,4vw,1rem)]">{{ l.name }}</span>
             </button>
           </div>
@@ -149,7 +149,7 @@ const languages: { code: Locale; name: string; flag: string }[] = [
             "
           >
             <div class="flex min-w-0 items-center gap-3">
-              <img :src="MusicBoxImage" alt="" class="h-10 shrink-0" />
+              <img decoding="async" loading="lazy" :src="MusicBoxImage" alt="" class="h-10 shrink-0" />
               <div class="flex min-w-0 flex-col items-start">
                 <span class="whitespace-nowrap font-bold -mb-1 text-[length:clamp(1rem,4.6vw,1.125rem)]">{{ $t('Music') }} 1</span>
                 <span class="max-w-full truncate font-bold text-[rgba(85,42,15,.7)] -mt-1 text-[length:clamp(0.8rem,3.7vw,1rem)]">{{ $t('Default') }}</span>
@@ -162,7 +162,7 @@ const languages: { code: Locale; name: string; flag: string }[] = [
                 disabled
                 class="w-7 h-7 sm:w-10 sm:h-10 flex justify-center items-center opacity-40"
               >
-                <img :src="MusicPrevImage" alt="" class="w-full" />
+                <img decoding="async" loading="lazy" :src="MusicPrevImage" alt="" class="w-full" />
               </button>
 
               <button
@@ -170,8 +170,8 @@ const languages: { code: Locale; name: string; flag: string }[] = [
                 @click="toggle"
                 class="w-7 h-7 sm:w-10 sm:h-10 flex justify-center items-center cursor-pointer"
               >
-                <img :src="MusicPauseImage" v-if="isPlaying" alt="" class="w-full" />
-                <img :src="MusicPlayImage" v-else alt="" class="w-full" />
+                <img decoding="async" loading="lazy" :src="MusicPauseImage" v-if="isPlaying" alt="" class="w-full" />
+                <img decoding="async" loading="lazy" :src="MusicPlayImage" v-else alt="" class="w-full" />
               </button>
 
               <button
@@ -179,7 +179,7 @@ const languages: { code: Locale; name: string; flag: string }[] = [
                 disabled
                 class="w-7 h-7 sm:w-10 sm:h-10 flex justify-center items-center opacity-40"
               >
-                <img :src="MusicNextImage" alt="" class="w-full" />
+                <img decoding="async" loading="lazy" :src="MusicNextImage" alt="" class="w-full" />
               </button>
             </div>
           </div>
@@ -189,7 +189,7 @@ const languages: { code: Locale; name: string; flag: string }[] = [
             class="relative mt-3 flex w-full items-center gap-3 rounded-2xl border border-[#cf8741] bg-[#fde7b8] py-2 pl-3 pr-4 text-left font-bold text-[#552a0f] shadow-[inset_0px_2px_2px_rgba(255,255,255,0.25),inset_0px_-2px_2px_rgba(0,0,0,0.25)] active:translate-y-px"
             @click="openGifts"
           >
-            <img :src="MyGiftsImage" alt="" class="size-[clamp(2rem,10vw,2.6rem)] shrink-0 object-contain drop-shadow-[0px_2px_2px_rgba(111,60,45,0.35)]" />
+            <img decoding="async" loading="lazy" :src="MyGiftsImage" alt="" class="size-[clamp(2rem,10vw,2.6rem)] shrink-0 object-contain drop-shadow-[0px_2px_2px_rgba(111,60,45,0.35)]" />
             <span class="min-w-0 flex-1 leading-tight text-[length:clamp(0.9rem,4.3vw,1.125rem)]">{{ $t('My gifts') }}</span>
             <Transition name="dot"><PendingDot v-if="giftAlerts.hasNew.value" /></Transition>
             <svg class="w-4 shrink-0 text-[#c17e23]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 5l7 7-7 7" /></svg>
@@ -220,7 +220,7 @@ const languages: { code: Locale; name: string; flag: string }[] = [
             "
             @click="openLink(info?.supportUrl)"
           >
-            <img :src="SupportImage" :alt="$t('Support')" class="h-10" />
+            <img decoding="async" loading="lazy" :src="SupportImage" :alt="$t('Support')" class="h-10" />
             <span class="max-w-full truncate font-bold text-[length:clamp(0.75rem,3.8vw,1.125rem)]">{{ $t('Support') }}</span>
           </button>
 
@@ -238,7 +238,7 @@ const languages: { code: Locale; name: string; flag: string }[] = [
             "
             @click="openLink(info?.newsUrl)"
           >
-            <img :src="NewsImage" :alt="$t('News')" class="h-10" />
+            <img decoding="async" loading="lazy" :src="NewsImage" :alt="$t('News')" class="h-10" />
             <span class="max-w-full truncate font-bold text-[length:clamp(0.75rem,3.8vw,1.125rem)]">{{ $t('News') }}</span>
           </button>
 
@@ -256,7 +256,7 @@ const languages: { code: Locale; name: string; flag: string }[] = [
             "
             @click="openLink(info?.faqUrl)"
           >
-            <img :src="FaqImage" :alt="$t('FAQ')" class="h-10" />
+            <img decoding="async" loading="lazy" :src="FaqImage" :alt="$t('FAQ')" class="h-10" />
             <span class="max-w-full truncate font-bold text-[length:clamp(0.75rem,3.8vw,1.125rem)]">{{ $t('FAQ') }}</span>
           </button>
         </div>

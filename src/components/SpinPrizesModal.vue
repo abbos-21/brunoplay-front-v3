@@ -36,7 +36,7 @@ const items = computed(() => sortForList(resolvePrizes(props.prizes)))
           class="flex flex-col items-center rounded-2xl border border-[#e3b66f] bg-[#fde7b8] px-1 pb-2 pt-2"
         >
           <div class="flex aspect-square w-full items-center justify-center">
-            <img
+            <img decoding="async" loading="lazy"
               :src="it.img"
               :alt="it.name"
               class="block max-h-full max-w-full object-contain drop-shadow-[0_3px_3px_rgba(0,0,0,0.3)]"
@@ -46,7 +46,7 @@ const items = computed(() => sortForList(resolvePrizes(props.prizes)))
           <span
             class="mt-1 flex max-w-full items-center gap-0.5 rounded-full bg-[#195fd8] px-2 py-0.5 font-extrabold leading-tight text-white tabular-nums shadow-[inset_0px_2px_3px_rgba(255,255,255,0.25),inset_0px_-2px_3px_rgba(0,0,0,0.25)] text-[length:clamp(0.62rem,3.1vw,0.9rem)]"
           >
-            <img :src="it.kind === 'coins' ? CoinImage : StarIcon" alt="" class="w-[1.2em]" />
+            <img decoding="async" loading="lazy" :src="it.kind === 'coins' ? CoinImage : StarIcon" alt="" class="w-[1.2em]" />
             {{ it.amount }}
           </span>
         </div>

@@ -67,15 +67,17 @@ onMounted(() => {
   if (audioRef.value) {
     setAudio(audioRef.value)
 
-    // Try autoplay
-    play()
+    // Try autoplay, but only once the first screen has settled: the music file is large and must not compete with it
+    const start = () => void play()
+    const idle = (window as unknown as { requestIdleCallback?: (cb: () => void, o?: { timeout: number }) => void }).requestIdleCallback
+    setTimeout(() => (idle ? idle(start, { timeout: 3000 }) : start()), 2000)
   }
 })
 </script>
 
 <template>
   <div class="w-screen h-screen h-[100dvh] flex justify-start items-center">
-    <audio ref="audioRef" :src="BackgroundMusic" loop preload="auto" />
+    <audio ref="audioRef" :src="BackgroundMusic" loop preload="none" />
 
     <!-- <div v-if="auth.isLoading">Loading...</div>
 

@@ -7,8 +7,8 @@ export default defineConfig({
       'button:not(:disabled),[role="button"],a[href],summary,select,label[for],input[type="checkbox"],input[type="radio"]{cursor:pointer}button:disabled{cursor:not-allowed}',
   }],
   shortcuts: {
-    'bg-home': 'bg-[url("/src/assets/backgrounds/home.png")] bg-cover bg-center bg-no-repeat',
-    'bg-shop': 'bg-[url("/src/assets/backgrounds/shop.png")] bg-cover bg-center bg-no-repeat',
+    'bg-home': 'bg-[url("/src/assets/backgrounds/home.webp")] bg-cover bg-center bg-no-repeat',
+    'bg-shop': 'bg-[url("/src/assets/backgrounds/shop.webp")] bg-cover bg-center bg-no-repeat',
     outlined: [
       'text-white',
       '[text-shadow:-1px_-1px_0_var(--outline),1px_-1px_0_var(--outline),-1px_1px_0_var(--outline),1px_1px_0_var(--outline)]',

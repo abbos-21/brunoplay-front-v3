@@ -96,7 +96,7 @@ async function handleFishing() {
           :aria-label="streakPending ? $t('Daily reward, ready to claim') : $t('Daily reward')"
           @click="isCalendarOpen = true"
         >
-          <img :src="CalendarImage" :alt="$t('Daily reward')" class="w-14 sm:w-20" :class="{ 'daily-nudge': streakPending }" />
+          <img decoding="async" :src="CalendarImage" :alt="$t('Daily reward')" class="w-14 sm:w-20" :class="{ 'daily-nudge': streakPending }" />
           <Transition name="dot"><PendingDot v-if="streakPending" /></Transition>
         </button>
         <button
@@ -105,7 +105,7 @@ async function handleFishing() {
           :aria-label="comboPending ? $t('Daily combo, not played yet') : $t('Daily combo')"
           @click="isPuzzleOpen = true"
         >
-          <img
+          <img decoding="async"
             :src="PuzzleImage"
             :alt="$t('Daily combo')"
             class="w-14 sm:w-20"
