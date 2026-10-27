@@ -93,6 +93,14 @@ const router = createRouter({
   ],
 })
 
+// leaving a game is a natural pause: the one place where an interstitial ad may follow (it only shows when the admin switched it on and the gap since the last ad is over)
+const GAME_ROUTES = new Set(['games-ride', 'games-spin', 'games-roulette'])
+router.afterEach((to, from) => {
+  if (from.name && GAME_ROUTES.has(String(from.name)) && !GAME_ROUTES.has(String(to.name))) {
+    setTimeout(() => void import('@/composables/useInterstitial').then((m) => m.maybeShowInterstitial()), 700)
+  }
+})
+
 /** After the first screen has settled, quietly fetch the screens behind the bottom menu so they open instantly.
  *  Games with a heavy engine (Ride) are left out on purpose: they load when the player opens them. */
 export function prefetchScreens() {

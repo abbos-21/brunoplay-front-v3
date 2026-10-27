@@ -16,6 +16,7 @@ import { AdError } from '@/composables/useAds'
 import { isApiDisabled } from '@/api/client'
 import { StarIcon } from '@/assets/svgs'
 import PageTabs from '@/components/PageTabs.vue'
+import SponsoredTask from '@/components/SponsoredTask.vue'
 import type { Task } from '@/types'
 
 const isMenuOpen = ref(false)
@@ -236,6 +237,9 @@ const progressText = (task: Task) =>
           </div>
         </div>
       </article>
+
+      <!-- Adsgram's Task block: shown after our own tasks, only when the admin switched it on -->
+      <SponsoredTask v-if="tab === 'main'" />
     </div>
 
     <SlidePanel v-model="isMenuOpen" />

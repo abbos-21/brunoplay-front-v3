@@ -3,6 +3,7 @@ import { requestAd, reportAdFailed } from '@/api/ads'
 import { apiCode } from '@/api/client'
 import type { AdPlacement, AdView } from '@/types'
 import { t } from '@/i18n'
+import { markAd } from '@/composables/adClock'
 
 /**
  * Rewarded ads (Adsgram).
@@ -21,8 +22,9 @@ interface AdsgramResult {
 }
 interface AdsgramController {
   show(): Promise<AdsgramResult>
+  addEventListener?(event: string, cb: () => void): void
 }
-interface AdsgramGlobal {
+export interface AdsgramGlobal {
   init(opts: { blockId: string; debug?: boolean }): AdsgramController
 }
 
@@ -41,7 +43,7 @@ export const adBusy = ref(false)
 
 let sdk: Promise<AdsgramGlobal> | null = null
 
-function loadSdk(): Promise<AdsgramGlobal> {
+export function loadSdk(): Promise<AdsgramGlobal> {
   const w = window as unknown as { Adsgram?: AdsgramGlobal }
   if (w.Adsgram) return Promise.resolve(w.Adsgram)
   if (!sdk) {
@@ -99,6 +101,7 @@ export async function showAd(placement: AdPlacement): Promise<string | undefined
     throw new AdError(t('No ad is available right now, try again in a moment'), 'unavailable')
   } finally {
     adBusy.value = false
+    markAd() // an interstitial does not follow right after this ad
   }
 }
 

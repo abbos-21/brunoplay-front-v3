@@ -10,7 +10,7 @@ import svgLoader from 'vite-svg-loader'
 
 // https://vite.dev/config/
 export default defineConfig({
-  plugins: [vue(), vueJsx(), UnoCSS(), svgLoader()],
+  plugins: [vue({ template: { compilerOptions: { isCustomElement: (tag) => tag === 'adsgram-task' } } }), vueJsx(), UnoCSS(), svgLoader()],
   server: {
     // talk to the local v4 backend (brunoplay-back-v4) without CORS; VITE_BACKEND points it somewhere else
     proxy: { '/api': process.env.VITE_BACKEND ?? 'http://localhost:8080' },

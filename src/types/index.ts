@@ -82,6 +82,18 @@ export interface AdView {
   fallback?: boolean
 }
 
+/** GET /ads/config: how to run the interstitial ads, and the sponsored task (Adsgram Task block) */
+export interface AdsConfig {
+  interstitial: { enabled: boolean; blockId: string; intervalSeconds: number; firstAfterSeconds: number }
+  task: { enabled: boolean; blockId: string; coins: number; perDay: number; usedToday: number; left: number }
+}
+
+export interface SponsoredClaim {
+  coins: number
+  newBalance: number
+  left: number
+}
+
 export interface BonusAdStatus {
   coins: number
   perDay: number
