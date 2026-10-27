@@ -63,6 +63,42 @@ export function resolvePrizes(prizes: SpinPrize[]): ResolvedPrize[] {
   })
 }
 
+/** roughly what a prize is worth, to sort gifts, stars and coins together (a coin is a tiny fraction of a star) */
+const worth = (r: ResolvedPrize) => (r.kind === 'coins' ? r.prize.value * 0.0001 : r.prize.value)
+
+/** `n` items spread evenly over a list that is sorted from the best to the worst (the best and the worst are always in). */
+function spread<T>(list: T[], n: number): T[] {
+  if (n <= 0 || !list.length) return []
+  if (list.length <= n) return list
+  return Array.from({ length: n }, (_, i) => list[Math.round((i * (list.length - 1)) / Math.max(1, n - 1))]!)
+}
+
+/**
+ * The 8 places of the wheel. With gifts only, the order is the server's, exactly as it always was (a shorter list repeats).
+ * With coin or star prizes among the gifts, the places are shared out: at least five go to gifts, the rest to coin and star
+ * prizes, each kind spread over its range from big to small, and the two kinds alternate around the wheel.
+ */
+export function wheelSlots(all: ResolvedPrize[]): ResolvedPrize[] {
+  if (!all.length) return []
+  const gifts = all.filter((r) => r.kind === 'gift')
+  const others = all.filter((r) => r.kind !== 'gift')
+  let picked = all
+  if (gifts.length && others.length) {
+    const otherPlaces = Math.min(others.length, 8 - Math.min(gifts.length, 5))
+    const giftPlaces = Math.min(gifts.length, 8 - otherPlaces)
+    const g = spread([...gifts].sort((a, b) => worth(b) - worth(a)), giftPlaces)
+    const o = spread([...others].sort((a, b) => worth(b) - worth(a)), otherPlaces)
+    picked = []
+    for (let i = 0; i < Math.max(g.length, o.length); i++) {
+      if (g[i]) picked.push(g[i]!)
+      if (o[i]) picked.push(o[i]!)
+    }
+  } else if (others.length > 8) {
+    picked = spread([...others].sort((a, b) => worth(b) - worth(a)), 8)
+  }
+  return Array.from({ length: 8 }, (_, i) => picked[i % picked.length]!)
+}
+
 /** Prizes list order from the design: gifts / stars by value (high → low), then coins. */
 export function sortForList(items: ResolvedPrize[]): ResolvedPrize[] {
   const rank = (p: ResolvedPrize) => (p.kind === 'coins' ? 1 : 0)

@@ -19,7 +19,7 @@ import * as gamesApi from '@/api/games'
 import SpinPrizesModal from '@/components/SpinPrizesModal.vue'
 import SpinWinnersModal from '@/components/SpinWinnersModal.vue'
 import SpinWinOverlay from '@/components/SpinWinOverlay.vue'
-import { FALLBACK_PRIZES, resolvePrizes, type ResolvedPrize } from '@/views/spin-prizes'
+import { FALLBACK_PRIZES, resolvePrizes, wheelSlots, type ResolvedPrize } from '@/views/spin-prizes'
 import type { LiveWin, SpinPrize, SpinResult, SpinTierInfo } from '@/types'
 
 const games = useGamesStore()
@@ -56,11 +56,8 @@ const tier = computed(() => tiers.value[Math.min(tierIndex.value, tiers.value.le
 const count = computed(() => COUNTS[countIndex.value]!)
 const totalCost = computed(() => tier.value.costStars * count.value)
 
-// for now the wheel and the prize list show only the real prizes (the 8 gifts): no coin or star prizes
-const shownPrizes = computed(() => {
-  const gifts = tier.value.prizes.filter((p) => p.type === 'gift')
-  return gifts.length ? gifts : tier.value.prizes
-})
+// everything the tier can give: gifts, and the coin and star prizes the owner added to its odds
+const shownPrizes = computed(() => tier.value.prizes)
 // the player can pay for the chosen pack (unknown balance, e.g. API off, counts as enough)
 const enough = computed(() => !auth.user || auth.user.starsBalance >= totalCost.value)
 
@@ -71,10 +68,7 @@ const prizeText = (p: SpinPrize) =>
 // The wheel always has 8 slots, filled from the selected tier's prizes (repeating when there are fewer).
 // When a won prize is not one of those, the landing slot temporarily shows the prize that was won,
 // so the arrow always points at what you actually got.
-const wheelPrizes = computed<ResolvedPrize[]>(() => {
-  const all = resolvePrizes(shownPrizes.value)
-  return Array.from({ length: 8 }, (_, i) => all[i % all.length]!).filter(Boolean)
-})
+const wheelPrizes = computed<ResolvedPrize[]>(() => wheelSlots(resolvePrizes(shownPrizes.value)))
 const overrides = ref<Record<number, ResolvedPrize>>({})
 watch(tierIndex, () => (overrides.value = {}))
 const slots = computed<WheelSlot[]>(() =>
