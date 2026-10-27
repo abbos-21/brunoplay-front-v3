@@ -1,5 +1,5 @@
 import { ref } from 'vue'
-import { getAdsConfig } from '@/api/ads'
+import { getAdsConfig, reportInterstitial } from '@/api/ads'
 import type { AdsConfig } from '@/types'
 import { adBusy, loadSdk } from '@/composables/useAds'
 import { markAd, msSinceLastAd, msSinceOpen } from '@/composables/adClock'
@@ -13,7 +13,7 @@ import { markAd, msSinceLastAd, msSinceOpen } from '@/composables/adClock'
 export const adsConfig = ref<AdsConfig | null>(null)
 let fetchedAt = 0
 let inflight: Promise<AdsConfig | null> | null = null
-const REFRESH_MS = 5 * 60 * 1000
+const REFRESH_MS = 60 * 1000 // a change in the admin panel reaches the players within a minute
 
 /** The ads settings of the server (interstitial block and gap, the sponsored task). Cached for a few minutes. */
 export function fetchAdsConfig(force = false): Promise<AdsConfig | null> {
@@ -42,6 +42,8 @@ export async function maybeShowInterstitial(): Promise<boolean> {
   if (msSinceOpen() < cfg.firstAfterSeconds * 1000 || msSinceLastAd() < cfg.intervalSeconds * 1000) return false
   if (showing || adBusy.value) return false
   showing = true
+  let outcome: 'shown' | 'failed' = 'shown'
+  let detail = ''
   try {
     const sdk = await loadSdk()
     const ctrl = sdk.init({ blockId: cfg.blockId })
@@ -50,12 +52,16 @@ export async function maybeShowInterstitial(): Promise<boolean> {
       silenced.add(cfg.blockId)
       for (const ev of ['onNonStopShow', 'onTooLongSession', 'onBannerNotFound', 'onError']) ctrl.addEventListener?.(ev, () => {})
     }
-    await ctrl.show()
+    const res = await ctrl.show()
+    detail = res?.description ?? ''
     return true
-  } catch {
+  } catch (e) {
+    outcome = 'failed'
+    detail = e instanceof Error ? e.message : JSON.stringify(e)
     return false // no ad, skipped or an error: all the same to the game
   } finally {
     showing = false
     markAd() // the gap starts now, also after a failure, so a missing ad is not asked for again and again
+    void reportInterstitial(outcome, detail) // the owner sees in the server log why an ad did not appear
   }
 }

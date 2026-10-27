@@ -20,6 +20,11 @@ export function claimSponsoredTask() {
   return client.post<SponsoredClaim>('/ads/task/claim', {}).then((r) => r.data);
 }
 
+/** One line in the server log per interstitial attempt ("shown" / "failed" and Adsgram's reason). Never throws. */
+export function reportInterstitial(result: 'shown' | 'failed', detail: string) {
+  return client.post('/ads/interstitial/report', { result, detail }).catch(() => undefined);
+}
+
 export function getBonusAd() {
   return client.get<BonusAdStatus>('/ads/bonus').then((r) => r.data);
 }
