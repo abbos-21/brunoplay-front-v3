@@ -4,6 +4,7 @@ import SponsoredTask from '@/components/SponsoredTask.vue'
 import { markAuthReady } from '@/composables/authReady'
 import { fetchAdsConfig, resetAdsConfig } from '@/composables/useInterstitial'
 import { announceSponsored, resetSponsoredAlert, sponsoredLeft, sponsoredWaiting } from '@/composables/sponsoredAlert'
+import { locale, setLocale } from '@/i18n'
 import { defineFakeElement, installFakeServer, sim, simLog, type Scenario } from './adSim'
 
 /**
@@ -80,6 +81,10 @@ function launch() {
           <label>Reward (coins)<input v-model.number="sim.coins" type="number" min="1" class="ml-1 w-24 rounded border px-1" @change="reload" /></label>
           <label>Per day<input v-model.number="sim.perDay" type="number" min="1" class="ml-1 w-16 rounded border px-1" @change="reload" /></label>
           <label>Already done today<input v-model.number="sim.used" type="number" min="0" class="ml-1 w-16 rounded border px-1" @change="reload" /></label>
+          <label><input v-model="sim.longTitle" type="checkbox" class="mr-1" @change="reload" />Very long title</label>
+          <label>Language
+            <select class="ml-1 rounded border" :value="locale" @change="setLocale(($event.target as HTMLSelectElement).value as 'en' | 'ru', false)"><option value="en">English</option><option value="ru">Русский</option></select>
+          </label>
           <label>"Go" step takes (s)<input v-model.number="sim.goSeconds" type="number" min="0" class="ml-1 w-16 rounded border px-1" /></label>
         </div>
 

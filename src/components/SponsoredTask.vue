@@ -90,7 +90,7 @@ watch(el, async (node) => {
       <span slot="reward" class="reward">{{ $t('{n} coins', { n: task.coins.toLocaleString('en-US') }) }}</span>
       <div slot="button" class="btn">{{ $t('Go') }}</div>
       <div slot="claim" class="btn">{{ $t('Claim') }}</div>
-      <div slot="done" class="btn done">{{ $t('Done ✓') }}</div>
+      <div slot="done" class="btn done">{{ $t('Done') }}</div>
     </adsgram-task>
   </article>
 </template>
@@ -116,7 +116,10 @@ watch(el, async (node) => {
   --adsgram-task-icon-size: 50px;
   --adsgram-task-icon-border-radius: 6px;
   --adsgram-task-icon-title-gap: 6px;
-  --adsgram-task-button-width: 48px;
+  --adsgram-task-button-width: 76px;
+  /* a very long title from Adsgram: at most three lines and the reward line, the rest is cut, the card never grows beyond that */
+  max-height: 80px;
+  overflow: hidden;
 }
 .reward {
   display: block;
@@ -126,24 +129,25 @@ watch(el, async (node) => {
   line-height: 18px;
 }
 .btn {
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  display: block;
   box-sizing: border-box;
   width: fit-content;
-  min-height: 32px;
+  max-width: 100%;
   margin-left: auto;
-  padding: 4px 12px;
+  padding: 4px 8px;
+  text-align: center;
   border-radius: 8px;
   color: rgb(11, 107, 203);
   font-size: 14px;
   font-weight: 600;
-  line-height: 21px;
+  line-height: 24px;
   white-space: nowrap;
+  overflow: hidden; /* a long label (translations) ends with "…" instead of leaving the card */
+  text-overflow: ellipsis;
   cursor: pointer;
 }
 .done {
-  color: rgb(99, 107, 116);
+  color: #16a34a;
   cursor: default;
 }
 </style>

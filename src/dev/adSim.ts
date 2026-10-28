@@ -16,6 +16,7 @@ export const sim = reactive({
   perDay: 3,
   used: 0,
   balance: 10000,
+  longTitle: false, // a very long task title from Adsgram
   goSeconds: 2, // how long the advertiser's step takes after "Go"
   callbackDelay: 1.5, // seconds from "Claim" until Adsgram's call reaches the server
   pending: 0, // completions the server heard about and nobody has claimed yet
@@ -96,7 +97,7 @@ class FakeAdsgramTask extends HTMLElement {
     const slot = this.state === 'task' ? 'button' : this.state === 'claim' ? 'claim' : this.state === 'done' ? 'done' : ''
     root.innerHTML = `<style>${ADSGRAM_TASK_CSS}</style><div class="_task_mvcb7_1">
       <img class="_icon_mvcb7_52" src="${ICON}" alt="logo">
-      <p class="_title_mvcb7_76"><span class="_text_mvcb7_81">${this.state === 'loading' ? 'Loading…' : 'Join the Demo channel'}</span></p>
+      <p class="_title_mvcb7_76"><span class="_text_mvcb7_81">${this.state === 'loading' ? 'Loading…' : sim.longTitle ? 'Join the Demo channel and get a really long title that goes on and on and on for several lines of text' : 'Join the Demo channel'}</span></p>
       <slot name="reward" style="grid-area:reward"></slot>
       <button class="_button_mvcb7_64">${slot ? `<slot name="${slot}"></slot>` : ''}</button></div>`
     root.querySelector('button')?.addEventListener('click', this.click)

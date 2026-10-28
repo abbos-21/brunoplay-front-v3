@@ -172,7 +172,7 @@ const ru: Record<string, string> = {
   Invite: 'Пригласить',
   'Completed ✓': 'Выполнено ✓',
   'Sponsored tasks: {n} left today. Open Tasks to get {coins} coins each.': 'Спонсорские задания: сегодня осталось {n}. Откройте «Задания», чтобы получить по {coins} монет.',
-  'Done ✓': 'Готово ✓',
+  Done: 'Готово',
   Go: 'Перейти',
   'Could not get the reward': 'Не удалось получить награду',
   'Done! You got {n} coins': 'Готово! Вы получили {n} монет',
