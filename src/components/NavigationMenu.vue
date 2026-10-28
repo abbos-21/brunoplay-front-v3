@@ -5,16 +5,22 @@ import { RouterLink, useRoute } from 'vue-router'
 import PendingDot from '@/components/PendingDot.vue'
 import { useTasksStore } from '@/stores/tasks'
 import { useTaskAlerts } from '@/composables/useTaskAlerts'
+import { announceSponsored, sponsoredWaiting } from '@/composables/sponsoredAlert'
+import { fetchAdsConfig } from '@/composables/useInterstitial'
 
 const route = useRoute()
 const tasks = useTasksStore()
 const { hasNew } = useTaskAlerts()
 
 // learn about new tasks on any page: when the app opens, now and then, and when the player comes back to it
-const refresh = () => tasks.fetchTasks().catch(() => {})
+const refresh = () => {
+  void fetchAdsConfig() // sponsored tasks left today (cached for a minute)
+  return tasks.fetchTasks().catch(() => {})
+}
 let timer: ReturnType<typeof setInterval> | undefined
 const onVisible = () => document.visibilityState === 'visible' && refresh()
 onMounted(() => {
+  void announceSponsored()
   refresh()
   timer = setInterval(refresh, 120_000)
   document.addEventListener('visibilitychange', onVisible)
@@ -46,7 +52,7 @@ const navItems = [
         <img decoding="async" :src="item.img" :alt="$t(item.label)" :class="item.imgClass" />
         <h1 class="outlined [--outline:#532B23] -mt-2 sm:-mt-3 font-bold text-xs sm:text-sm">{{ $t(item.label) }}</h1>
         <Transition name="dot">
-          <PendingDot v-if="item.to === '/tasks' && hasNew && route.path !== '/tasks'" />
+          <PendingDot v-if="item.to === '/tasks' && (hasNew || sponsoredWaiting) && route.path !== '/tasks'" />
         </Transition>
       </RouterLink>
     </nav>

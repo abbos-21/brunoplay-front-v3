@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { computed, nextTick, onMounted, ref, watch } from 'vue'
 import { t } from '@/i18n'
-import { CoinImage } from '@/assets/images'
 import { claimSponsoredTask } from '@/api/ads'
 import { apiCode } from '@/api/client'
 import { apiMessage } from '@/composables/apiError'
@@ -9,11 +8,14 @@ import { useToast } from '@/composables/useToast'
 import { useAuthStore } from '@/stores/auth'
 import { loadSdk } from '@/composables/useAds'
 import { adsConfig, fetchAdsConfig } from '@/composables/useInterstitial'
+import { markSponsoredSeen, markSponsoredUnavailable } from '@/composables/sponsoredAlert'
 
 /**
  * The sponsored task (Adsgram Task block): Adsgram's own element shows a task ("join this channel", "open this app").
  * When the player finishes it, Adsgram calls our server; the reward is claimed only after that call has arrived, so the
  * "reward" event of the element alone proves nothing. The coins and the daily limit come from the admin panel (ads.task.*).
+ * The look copies Adsgram's own example banner of the Task block (partner.adsgram.ai, dark theme): a 340px card, 6px padding, a 50px
+ * icon, the title (14px / 500), the reward line (12px / 500, grey) and a text button "Go" (14px / 600, light blue) on the right.
  */
 const toast = useToast()
 const auth = useAuthStore()
@@ -66,7 +68,11 @@ async function onReward() {
 
 const hide = () => {
   hidden.value = true
+  markSponsoredUnavailable() // no task from Adsgram now: nothing to announce on the Tasks tab
 }
+
+// seeing the card puts the badge on the Tasks tab away until the next launch
+watch(visible, (yes) => yes && markSponsoredSeen(), { immediate: true })
 
 watch(el, async (node) => {
   if (!node) return
@@ -79,63 +85,65 @@ watch(el, async (node) => {
 <template>
   <!-- the slot="..." attributes below are the web component's own slots (Adsgram), not Vue 2 slots -->
   <!-- eslint-disable vue/no-deprecated-slot-attribute -->
-  <article
-    v-if="visible && task"
-    class="shrink-0 rounded-3xl border-2 border-[#cf8741] bg-[#fff4d6] p-3 shadow-[0px_4px_4px_rgba(0,0,0,0.25)]"
-  >
-    <p class="mb-1 font-extrabold uppercase leading-none tracking-wide text-[#8a5a2b] text-[0.65rem]">{{ $t('Sponsored') }}</p>
+  <article v-if="visible && task" class="card">
     <adsgram-task :data-block-id="task.blockId" ref="el" class="sponsored">
-      <span slot="reward" class="reward">
-        <img :src="CoinImage" alt="" class="size-[1.4em] object-contain" />+{{ task.coins.toLocaleString('en-US') }}
-      </span>
-      <div slot="button" class="btn go">{{ $t('Go') }}</div>
-      <div slot="claim" class="btn claim">{{ $t('Claim') }}</div>
-      <div slot="done" class="btn done">{{ $t('Completed ✓') }}</div>
+      <span slot="reward" class="reward">{{ $t('{n} coins', { n: task.coins.toLocaleString('en-US') }) }}</span>
+      <div slot="button" class="btn">{{ $t('Go') }}</div>
+      <div slot="claim" class="btn">{{ $t('Claim') }}</div>
+      <div slot="done" class="btn done">{{ $t('Done ✓') }}</div>
     </adsgram-task>
   </article>
 </template>
 
 <style scoped>
+/* values read from the example banner on partner.adsgram.ai (dark theme) */
+.card {
+  box-sizing: border-box;
+  flex-shrink: 0;
+  padding: 6px;
+  background: rgb(11, 13, 14);
+  border: 0.8px solid rgb(50, 56, 62);
+  border-radius: 10px;
+  color: rgb(240, 244, 248);
+  font-family: Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+}
 .sponsored {
   display: block;
-  color: #552a0f;
-  font-weight: 700;
-  --adsgram-task-font-size: clamp(0.9rem, 4.4vw, 1.15rem);
-  --adsgram-task-icon-size: clamp(3rem, 15vw, 4rem);
-  --adsgram-task-icon-border-radius: 1rem;
-  --adsgram-task-button-width: auto;
+  color: rgb(240, 244, 248);
+  font-weight: 500;
+  line-height: 20px;
+  --adsgram-task-font-size: 14px;
+  --adsgram-task-icon-size: 50px;
+  --adsgram-task-icon-border-radius: 6px;
+  --adsgram-task-icon-title-gap: 6px;
+  --adsgram-task-button-width: 48px;
 }
 .reward {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.25rem;
-  border-radius: 9999px;
-  border: 1px solid #e3b66f;
-  background: #fde7b8;
-  padding: 0.1rem 0.6rem 0.1rem 0.25rem;
-  font-weight: 800;
-  font-variant-numeric: tabular-nums;
+  display: block;
+  color: rgb(159, 166, 173);
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 18px;
 }
 .btn {
-  border-radius: 9999px;
-  padding: 0.25rem 0.9rem;
-  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  width: fit-content;
+  min-height: 32px;
+  margin-left: auto;
+  padding: 4px 12px;
+  border-radius: 8px;
+  color: rgb(151, 195, 240);
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 21px;
   white-space: nowrap;
-  color: #fff;
-  text-align: center;
-  font-size: clamp(0.82rem, 4.1vw, 1.15rem);
-}
-.go {
-  border: 1px solid #0a6ea8;
-  background: #0e89d4;
-}
-.claim {
-  border: 1px solid #15861b;
-  background: #1fb826;
+  cursor: pointer;
 }
 .done {
-  background: transparent;
-  color: #1f6a05;
-  font-weight: 800;
+  color: rgb(159, 166, 173);
+  cursor: default;
 }
 </style>

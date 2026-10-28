@@ -164,6 +164,9 @@ const progressText = (task: Task) =>
         </button>
       </article>
 
+      <!-- Adsgram's Task block: first in the list, only when the admin switched it on -->
+      <SponsoredTask v-if="tab === 'main'" />
+
       <p v-if="!list.length" class="text-center font-bold text-[#552a0f] mt-8">{{ $t('No tasks here yet') }}</p>
 
       <article
@@ -237,9 +240,6 @@ const progressText = (task: Task) =>
           </div>
         </div>
       </article>
-
-      <!-- Adsgram's Task block: shown after our own tasks, only when the admin switched it on -->
-      <SponsoredTask v-if="tab === 'main'" />
     </div>
 
     <SlidePanel v-model="isMenuOpen" />
