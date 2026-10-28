@@ -18,6 +18,7 @@ const { toasts } = useToast()
 .toast-container {
   width: 100%;
   position: absolute;
+  z-index: 100; /* above every screen and overlay: a toast is the answer to something the player just did */
   /* below the balance row, so the coin and star counters stay visible while they animate */
   top: 5.5rem;
   right: 0;

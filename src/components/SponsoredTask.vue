@@ -14,7 +14,7 @@ import { markSponsoredSeen, markSponsoredUnavailable } from '@/composables/spons
  * The sponsored task (Adsgram Task block): Adsgram's own element shows a task ("join this channel", "open this app").
  * When the player finishes it, Adsgram calls our server; the reward is claimed only after that call has arrived, so the
  * "reward" event of the element alone proves nothing. The coins and the daily limit come from the admin panel (ads.task.*).
- * The look copies Adsgram's own example banner of the Task block (partner.adsgram.ai, dark theme): a 340px card, 6px padding, a 50px
+ * The look copies Adsgram's own example banner of the Task block (partner.adsgram.ai, light theme): a 340px card, 6px padding, a 50px
  * icon, the title (14px / 500), the reward line (12px / 500, grey) and a text button "Go" (14px / 600, light blue) on the right.
  */
 const toast = useToast()
@@ -96,20 +96,20 @@ watch(el, async (node) => {
 </template>
 
 <style scoped>
-/* values read from the example banner on partner.adsgram.ai (dark theme) */
+/* values read from the example banner on partner.adsgram.ai (light theme) */
 .card {
   box-sizing: border-box;
   flex-shrink: 0;
   padding: 6px;
-  background: rgb(11, 13, 14);
-  border: 0.8px solid rgb(50, 56, 62);
+  background: rgb(251, 252, 254);
+  border: 0.8px solid rgb(205, 215, 225);
   border-radius: 10px;
-  color: rgb(240, 244, 248);
+  color: rgb(23, 26, 28);
   font-family: Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
 }
 .sponsored {
   display: block;
-  color: rgb(240, 244, 248);
+  color: rgb(23, 26, 28);
   font-weight: 500;
   line-height: 20px;
   --adsgram-task-font-size: 14px;
@@ -120,7 +120,7 @@ watch(el, async (node) => {
 }
 .reward {
   display: block;
-  color: rgb(159, 166, 173);
+  color: rgb(99, 107, 116);
   font-size: 12px;
   font-weight: 500;
   line-height: 18px;
@@ -135,7 +135,7 @@ watch(el, async (node) => {
   margin-left: auto;
   padding: 4px 12px;
   border-radius: 8px;
-  color: rgb(151, 195, 240);
+  color: rgb(11, 107, 203);
   font-size: 14px;
   font-weight: 600;
   line-height: 21px;
@@ -143,7 +143,7 @@ watch(el, async (node) => {
   cursor: pointer;
 }
 .done {
-  color: rgb(159, 166, 173);
+  color: rgb(99, 107, 116);
   cursor: default;
 }
 </style>

@@ -99,7 +99,7 @@ onMounted(() => {
       <ToastContainer />
       <LevelUpOverlay />
       <GateScreen />
-      <StartError />
+      <StartError v-if="route.name !== 'dev-ad-sim'" />
     </div>
   </div>
 </template>

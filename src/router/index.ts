@@ -93,6 +93,11 @@ const router = createRouter({
   ],
 })
 
+// the simulator of the sponsored task: only in `npm run dev`, the production build does not contain it
+if (import.meta.env.DEV) {
+  router.addRoute({ path: '/dev/ad-sim', name: 'dev-ad-sim', component: () => import('@/dev/AdSimView.vue'), meta: { hideNav: true } })
+}
+
 // natural pauses, the only places where an interstitial ad may follow: leaving a game, and moving between the screens of the bottom menu.
 // It only shows when the admin switched it on and the gap since the last ad is over (see useInterstitial).
 const GAME_ROUTES = new Set(['games-ride', 'games-spin', 'games-roulette'])

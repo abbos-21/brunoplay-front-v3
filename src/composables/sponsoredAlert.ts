@@ -28,6 +28,13 @@ export const markSponsoredUnavailable = () => {
 
 let announced = false
 
+/** For the simulator: forget what was announced, as at a fresh launch of the app. */
+export function resetSponsoredAlert() {
+  looked.value = false
+  unavailable.value = false
+  announced = false
+}
+
 /** At the start of the app: ask the server, and say once if sponsored tasks are waiting. */
 export async function announceSponsored(): Promise<void> {
   const cfg = await fetchAdsConfig(true)

@@ -31,6 +31,13 @@ export function fetchAdsConfig(force = false): Promise<AdsConfig | null> {
   return inflight
 }
 
+/** For the simulator: forget the cached settings and any request still on its way. */
+export function resetAdsConfig() {
+  adsConfig.value = null
+  fetchedAt = 0
+  inflight = null
+}
+
 let showing = false
 const silenced = new Set<string>()
 
