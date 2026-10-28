@@ -114,6 +114,7 @@ export async function showAd(placement: AdPlacement): Promise<string | undefined
   if (!view.required) return undefined // ads are switched off on the server: the action needs no proof
   if (view.skip) return view.adViewId // ads are off for this player: the proof is ready, no ad is shown
   adBusy.value = true
+  const reasons: string[] = [] // why each provider had no ad (only sent to the server log)
   try {
     let lastError: unknown = new Error('No ad provider')
     for (const ref of providerList(view)) {
@@ -125,6 +126,7 @@ export async function showAd(placement: AdPlacement): Promise<string | undefined
       } catch (e) {
         if (e instanceof AdError && e.kind === 'skipped') throw e // the player closed it: do not show another ad
         lastError = e
+        reasons.push(`${ref.id}: ${e instanceof Error ? e.message : JSON.stringify(e)}`)
       }
     }
     throw lastError
@@ -132,7 +134,7 @@ export async function showAd(placement: AdPlacement): Promise<string | undefined
     if (e instanceof AdError && e.kind === 'skipped') throw e
     // the SDK could not load or show an ad: tell the server (it may allow the action after a few failures in a row)
     try {
-      const r = await reportAdFailed(placement)
+      const r = await reportAdFailed(placement, reasons.join('; '))
       if (r.fallback && r.ad) return r.ad.adViewId
     } catch {
       // fall through to the error below

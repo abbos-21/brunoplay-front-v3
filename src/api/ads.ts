@@ -7,8 +7,8 @@ export function requestAd(placement: AdPlacement) {
 }
 
 /** The ad could not be shown. After several failures in a row the server lets fishing go ahead (fallback). */
-export function reportAdFailed(placement: AdPlacement) {
-  return client.post<{ fallback: boolean; ad: AdView | null }>('/ads/failed', { placement }).then((r) => r.data);
+export function reportAdFailed(placement: AdPlacement, reason = '') {
+  return client.post<{ fallback: boolean; ad: AdView | null }>('/ads/failed', { placement, reason: reason.slice(0, 300) }).then((r) => r.data);
 }
 
 export function getAdsConfig() {
