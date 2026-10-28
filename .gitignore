@@ -37,3 +37,8 @@ __screenshots__/
 
 # Vite
 *.timestamp-*-*.mjs
+
+# browser test output
+.playwright-cli/
+*.png.tmp
+/sim*.png

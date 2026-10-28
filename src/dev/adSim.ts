@@ -68,7 +68,7 @@ class FakeAdsgramTask extends HTMLElement {
     this.render()
   }
 
-  private click = () => {
+  private press = () => {
     if (this.state === 'task') {
       simLog('player pressed Go: the advertiser page opens')
       this.set('doing')
@@ -100,7 +100,7 @@ class FakeAdsgramTask extends HTMLElement {
       <p class="_title_mvcb7_76"><span class="_text_mvcb7_81">${this.state === 'loading' ? 'Loading…' : sim.longTitle ? 'Join the Demo channel and get a really long title that goes on and on and on for several lines of text' : 'Join the Demo channel'}</span></p>
       <slot name="reward" style="grid-area:reward"></slot>
       <button class="_button_mvcb7_64">${slot ? `<slot name="${slot}"></slot>` : ''}</button></div>`
-    root.querySelector('button')?.addEventListener('click', this.click)
+    root.querySelector('button')?.addEventListener('click', this.press)
   }
 }
 
