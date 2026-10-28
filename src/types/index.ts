@@ -79,6 +79,8 @@ export interface AdProviderRef {
   blockId?: string // Adsgram
   widgetId?: string // TADS
   debug?: boolean
+  /** the provider reports an ad when it starts: wait this long (the server also refuses the action before it) */
+  waitSeconds?: number
 }
 
 export interface AdView {

@@ -89,6 +89,8 @@ const players: Record<string, (ref: AdProviderRef) => Promise<void>> = {
   tads: async (ref) => {
     try {
       await playTads(ref)
+      // TADS reports the ad when it STARTS, so the reward comes at once: the ad is over only after the wait from the admin panel
+      if (ref.waitSeconds) await wait(ref.waitSeconds * 1000)
     } catch (e) {
       if (e instanceof TadsSkipped) throw new AdError(t('Watch the ad to the end to continue'), 'skipped')
       throw e
