@@ -6,8 +6,18 @@ import { adsConfig } from '@/composables/useInterstitial'
  * carries one). Opening the Tasks screen puts the one on the tab away until the next launch. After a paid task both go away and
  * come back when the interval set in the admin panel (ads.task.interval_minutes) is over.
  */
+const NONE_KEY = 'sponsored-none-until'
+const NONE_FOR_MS = 30 * 60 * 1000 // after "no task" the next launches do not announce one for this long
+function noneStillValid(): boolean {
+  try {
+    return Number(localStorage.getItem(NONE_KEY) ?? 0) > Date.now()
+  } catch {
+    return false
+  }
+}
+
 const looked = ref(false) // the player has seen the sponsored card in this launch
-const unavailable = ref(false) // Adsgram has no task for this player right now: nothing to announce
+const unavailable = ref(noneStillValid()) // Adsgram has no task for this player right now: nothing to announce
 
 /** the player may do a sponsored task now (the interval since the last paid one is over) */
 export const sponsoredAvailable = computed(() => {
@@ -27,10 +37,29 @@ export const markSponsoredPaid = () => {
 }
 export const markSponsoredUnavailable = () => {
   unavailable.value = true
+  try {
+    localStorage.setItem(NONE_KEY, String(Date.now() + NONE_FOR_MS))
+  } catch {
+    // storage blocked: the answer is only kept for this launch
+  }
+}
+/** Adsgram really showed a task: it is worth announcing again */
+export const markSponsoredReal = () => {
+  unavailable.value = false
+  try {
+    localStorage.removeItem(NONE_KEY)
+  } catch {
+    // ignore
+  }
 }
 
 /** For the simulator: forget what the player has seen, as at a fresh launch of the app. */
 export function resetSponsoredAlert() {
   looked.value = false
   unavailable.value = false
+  try {
+    localStorage.removeItem(NONE_KEY)
+  } catch {
+    // ignore
+  }
 }

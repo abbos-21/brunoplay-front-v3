@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, nextTick, onMounted, ref, watch } from 'vue'
+import { computed, onMounted, ref, watch } from 'vue'
 import { t } from '@/i18n'
 import { claimSponsoredTask } from '@/api/ads'
 import { apiCode } from '@/api/client'
@@ -9,7 +9,7 @@ import { useAuthStore } from '@/stores/auth'
 import { loadSdk } from '@/composables/useAds'
 import { adsConfig, fetchAdsConfig } from '@/composables/useInterstitial'
 import PendingDot from '@/components/PendingDot.vue'
-import { markSponsoredPaid, markSponsoredSeen, markSponsoredUnavailable } from '@/composables/sponsoredAlert'
+import { markSponsoredPaid, markSponsoredReal, markSponsoredSeen, markSponsoredUnavailable } from '@/composables/sponsoredAlert'
 
 /**
  * The sponsored task (Adsgram Task block): Adsgram's own element shows a task ("join this channel", "open this app").
@@ -20,7 +20,9 @@ import { markSponsoredPaid, markSponsoredSeen, markSponsoredUnavailable } from '
  */
 const toast = useToast()
 const auth = useAuthStore()
-const el = ref<HTMLElement | null>(null)
+const host = ref<HTMLElement | null>(null)
+const confirmed = ref(false) // the card has stayed up for a moment without a "no task" signal: a real task is showing
+const CONFIRM_MS = 2500
 const ready = ref(false) // the Adsgram script (which defines the element) is loaded
 const hidden = ref(false) // Adsgram has no task for this player now, or failed
 const task = computed(() => adsConfig.value?.task)
@@ -70,31 +72,55 @@ async function onReward() {
 
 const hide = () => {
   hidden.value = true
+  confirmed.value = false
   markSponsoredUnavailable() // no task from Adsgram now: nothing to announce on the Tasks tab
 }
 
 // seeing the card puts the badge on the Tasks tab away until the next launch
 watch(visible, (yes) => yes && markSponsoredSeen(), { immediate: true })
 
-watch(el, async (node) => {
-  if (!node) return
-  await nextTick()
+/** a piece of the card that Adsgram's element places in one of its slots (reward, button, claim, done) */
+function slotPart(tag: string, cls: string, slot: string, text: string): HTMLElement {
+  const part = document.createElement(tag)
+  part.setAttribute('slot', slot)
+  part.className = cls
+  part.textContent = text
+  return part
+}
+
+/**
+ * The <adsgram-task> element is built here, not in the template: Adsgram sends "no banner" (onBannerNotFound) the moment it starts when it
+ * has no task, and a listener added after the element is on the page misses it (the card then stayed an empty placeholder with its "!").
+ * So every listener is attached BEFORE the element is put on the page.
+ */
+watch(host, (h) => {
+  const tk = task.value
+  if (!h || !tk) return
+  const node = document.createElement('adsgram-task')
+  node.setAttribute('data-block-id', tk.blockId)
+  node.className = 'sponsored'
+  node.append(
+    slotPart('span', 'reward', 'reward', t('{n} coins', { n: tk.coins.toLocaleString('en-US') })),
+    slotPart('div', 'btn', 'button', t('Go')),
+    slotPart('div', 'btn', 'claim', t('Claim')),
+    slotPart('div', 'btn done', 'done', t('Done')),
+  )
   node.addEventListener('reward', onReward)
   for (const ev of ['onBannerNotFound', 'onError', 'onTooLongSession']) node.addEventListener(ev, hide)
+  h.replaceChildren(node)
+  confirmed.value = false
+  window.setTimeout(() => {
+    if (hidden.value || host.value !== h) return
+    confirmed.value = true
+    markSponsoredReal()
+  }, CONFIRM_MS)
 })
 </script>
 
 <template>
-  <!-- the slot="..." attributes below are the web component's own slots (Adsgram), not Vue 2 slots -->
-  <!-- eslint-disable vue/no-deprecated-slot-attribute -->
   <article v-if="visible && task" class="card">
-    <PendingDot />
-    <adsgram-task :data-block-id="task.blockId" ref="el" class="sponsored">
-      <span slot="reward" class="reward">{{ $t('{n} coins', { n: task.coins.toLocaleString('en-US') }) }}</span>
-      <div slot="button" class="btn">{{ $t('Go') }}</div>
-      <div slot="claim" class="btn">{{ $t('Claim') }}</div>
-      <div slot="done" class="btn done">{{ $t('Done') }}</div>
-    </adsgram-task>
+    <PendingDot v-if="confirmed" />
+    <div ref="host" />
   </article>
 </template>
 
@@ -111,7 +137,7 @@ watch(el, async (node) => {
   color: rgb(23, 26, 28);
   font-family: Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
 }
-.sponsored {
+.card :deep(.sponsored) {
   display: block;
   color: rgb(23, 26, 28);
   font-weight: 500;
@@ -125,14 +151,14 @@ watch(el, async (node) => {
   max-height: 80px;
   overflow: hidden;
 }
-.reward {
+.card :deep(.reward) {
   display: block;
   color: rgb(99, 107, 116);
   font-size: 12px;
   font-weight: 500;
   line-height: 18px;
 }
-.btn {
+.card :deep(.btn) {
   display: block;
   box-sizing: border-box;
   width: fit-content;
@@ -150,7 +176,7 @@ watch(el, async (node) => {
   text-overflow: ellipsis;
   cursor: pointer;
 }
-.done {
+.card :deep(.done) {
   color: #16a34a;
   cursor: default;
 }
