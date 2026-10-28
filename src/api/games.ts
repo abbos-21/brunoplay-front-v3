@@ -51,6 +51,11 @@ export function getGifts() {
   return client.get<{ gifts: PlayerGift[] | null }>('/gifts').then((r) => r.data.gifts ?? []);
 }
 
+/** Gifts that have a picture uploaded in the admin panel: [{ key, imageV }]. The picture is at `/gift-images/{key}?v={imageV}`. */
+export function getGiftArt() {
+  return client.get<{ gifts: { key: string; imageV: number }[] | null }>('/gifts/art').then((r) => r.data.gifts ?? []);
+}
+
 export function sellGift(id: number) {
   return client.post<{ stars: number; newBalance: number }>(`/gifts/${id}/sell`).then((r) => r.data);
 }

@@ -8,6 +8,9 @@ import {
   PrizeCap,
   PrizeFrog,
 } from '@/assets/images/spin'
+import { reactive } from 'vue'
+import client from '@/api/client'
+import { getGiftArt } from '@/api/games'
 import { CoinImage } from '@/assets/images'
 import { StarIcon } from '@/assets/svgs'
 import type { SpinPrize } from '@/types'
@@ -23,6 +26,30 @@ const GIFTS = [
   { key: 'cap', img: PrizeCap },
   { key: 'frog', img: PrizeFrog },
 ]
+
+/**
+ * Pictures uploaded in the admin panel, by gift key (the value changes with every upload, so a new picture is not hidden by the cache).
+ * A gift that is not here keeps the artwork bundled above. Reactive: screens that already drew a gift redraw when this arrives.
+ */
+const uploadedArt = reactive<Record<string, number>>({})
+let artTriedAt = 0
+
+function loadGiftArt() {
+  const now = Date.now()
+  if (now - artTriedAt < 60_000) return // asked a moment ago (or it failed a moment ago): do not ask again at once
+  artTriedAt = now
+  getGiftArt()
+    .then((list) => {
+      for (const k of Object.keys(uploadedArt)) delete uploadedArt[k]
+      for (const g of list) uploadedArt[g.key] = g.imageV
+    })
+    .catch(() => {})
+}
+
+const uploadedImg = (key: string | undefined): string | undefined => {
+  const v = key ? uploadedArt[key] : undefined
+  return key && v ? `${client.defaults.baseURL ?? '/api'}/gift-images/${encodeURIComponent(key)}?v=${v}` : undefined
+}
 
 export type PrizeKind = 'gift' | 'coins' | 'stars'
 
@@ -41,6 +68,7 @@ const num = (n: number) => n.toLocaleString('en-US')
 /** Attach artwork / labels to a list of API prizes. Gifts are matched by their key or label, else by position. */
 export function resolvePrizes(prizes: SpinPrize[]): ResolvedPrize[] {
   let giftIndex = 0
+  loadGiftArt()
   return prizes.map((prize): ResolvedPrize => {
     if (prize.type === 'coins') {
       return { prize, kind: 'coins', img: CoinImage, amount: num(prize.value), name: 'Coins' }
@@ -56,7 +84,7 @@ export function resolvePrizes(prizes: SpinPrize[]): ResolvedPrize[] {
     return {
       prize,
       kind: 'gift',
-      img: art.img,
+      img: uploadedImg(prize.gift) ?? art.img,
       amount: num(prize.value),
       name: prize.label || art.key,
     }
