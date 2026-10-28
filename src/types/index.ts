@@ -73,10 +73,20 @@ export type AdPlacement =
   | 'TASK_ADS'
   | 'BONUS_COINS'
 
+/** one ad provider the server wants the app to try (the list is in priority order) */
+export interface AdProviderRef {
+  id: string
+  blockId?: string // Adsgram
+  widgetId?: string // TADS
+  debug?: boolean
+}
+
 export interface AdView {
   adViewId: string
   placement: AdPlacement
   blockId: string
+  /** providers to try, first = highest priority; the app moves on to the next one when a provider has no ad */
+  providers?: AdProviderRef[]
   expiresAt: string
   required: boolean
   fallback?: boolean

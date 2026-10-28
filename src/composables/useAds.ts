@@ -1,15 +1,16 @@
 import { ref } from 'vue'
 import { requestAd, reportAdFailed } from '@/api/ads'
 import { apiCode } from '@/api/client'
-import type { AdPlacement, AdView } from '@/types'
+import type { AdPlacement, AdProviderRef, AdView } from '@/types'
 import { t } from '@/i18n'
 import { markAd } from '@/composables/adClock'
+import { playTads, TadsSkipped } from '@/composables/tadsPlayer'
 
 /**
- * Rewarded ads (Adsgram).
+ * Rewarded ads (Adsgram, TADS, ...: the admin panel decides which providers are on and in which order they are asked).
  *
- * The server hands out a proof (adViewId) for one action. The player watches the ad in the Adsgram SDK, Adsgram tells our
- * server it was watched (a server-to-server callback), and only then the server accepts the proof. The action is therefore
+ * The server hands out a proof (adViewId) for one action. The player watches the ad in the provider's SDK, the provider tells
+ * our server it was watched (a server-to-server callback), and only then the server accepts the proof. The action is therefore
  * sent with the adViewId, and retried for a few seconds while the callback is still on its way.
  */
 
@@ -79,8 +80,32 @@ async function playAd(blockId: string): Promise<void> {
 }
 
 /**
- * Gets a usable proof for a placement: asks the server for one, shows the ad, and falls back to the server's
- * "ads are not loading" rule (only for fishing start/collect). Returns undefined when ads are not required at all.
+ * The players of the ad providers, by the id the server sends. A new provider is one more line here (plus its player file).
+ * A player resolves when the ad was watched to the end, throws AdError('skipped') when the player closed it, and any other
+ * error when it had no ad to show (the next provider in the list is then tried).
+ */
+const players: Record<string, (ref: AdProviderRef) => Promise<void>> = {
+  adsgram: (ref) => playAd(ref.blockId ?? ''),
+  tads: async (ref) => {
+    try {
+      await playTads(ref)
+    } catch (e) {
+      if (e instanceof TadsSkipped) throw new AdError(t('Watch the ad to the end to continue'), 'skipped')
+      throw e
+    }
+  },
+}
+
+/** the providers to try for a proof: the server's priority list (an older server only sends the Adsgram block) */
+function providerList(view: AdView): AdProviderRef[] {
+  if (view.providers) return view.providers
+  return view.blockId ? [{ id: 'adsgram', blockId: view.blockId }] : []
+}
+
+/**
+ * Gets a usable proof for a placement: asks the server for one, shows the ad of the first provider that has one (in the
+ * server's priority order), and falls back to the server's "ads are not loading" rule (only for fishing start/collect) when
+ * none had. Returns undefined when ads are not required at all.
  */
 export async function showAd(placement: AdPlacement): Promise<string | undefined> {
   const view: AdView = await requestAd(placement)
@@ -88,8 +113,19 @@ export async function showAd(placement: AdPlacement): Promise<string | undefined
   if (view.skip) return view.adViewId // ads are off for this player: the proof is ready, no ad is shown
   adBusy.value = true
   try {
-    await playAd(view.blockId)
-    return view.adViewId
+    let lastError: unknown = new Error('No ad provider')
+    for (const ref of providerList(view)) {
+      const play = players[ref.id]
+      if (!play) continue // a provider this app version does not know
+      try {
+        await play(ref)
+        return view.adViewId
+      } catch (e) {
+        if (e instanceof AdError && e.kind === 'skipped') throw e // the player closed it: do not show another ad
+        lastError = e
+      }
+    }
+    throw lastError
   } catch (e) {
     if (e instanceof AdError && e.kind === 'skipped') throw e
     // the SDK could not load or show an ad: tell the server (it may allow the action after a few failures in a row)
