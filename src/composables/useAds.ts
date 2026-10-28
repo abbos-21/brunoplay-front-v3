@@ -85,6 +85,7 @@ async function playAd(blockId: string): Promise<void> {
 export async function showAd(placement: AdPlacement): Promise<string | undefined> {
   const view: AdView = await requestAd(placement)
   if (!view.required) return undefined // ads are switched off on the server: the action needs no proof
+  if (view.skip) return view.adViewId // ads are off for this player: the proof is ready, no ad is shown
   adBusy.value = true
   try {
     await playAd(view.blockId)

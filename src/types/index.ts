@@ -80,6 +80,8 @@ export interface AdView {
   expiresAt: string
   required: boolean
   fallback?: boolean
+  /** this player has ads switched off (admin panel): the proof is already completed, show no ad and just use it */
+  skip?: boolean
 }
 
 /** GET /ads/config: how to run the interstitial ads, and the sponsored task (Adsgram Task block) */
