@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue'
+import { computed, nextTick, onMounted, ref } from 'vue'
 import { reportInterstitial } from '@/api/ads'
 import { adsConfig, fetchAdsConfig } from '@/composables/useInterstitial'
 import { loadTadsSdk } from '@/composables/tadsPlayer'
@@ -23,6 +23,9 @@ onMounted(async () => {
   }
   try {
     const g = await loadTadsSdk()
+    await nextTick() // the container <div> is drawn only now (the config has just arrived)
+    const box = document.getElementById(`tads-container-${b.widgetId}`)
+    if (!box) return miss('container missing')
     const ctrl = g.init({
       widgetId: Number(b.widgetId),
       type: 'static',
@@ -32,7 +35,9 @@ onMounted(async () => {
     })
     await ctrl.loadAd()
     await ctrl.showAd()
-    reportInterstitial('shown', `tads-tgb ${b.widgetId}`)
+    // TADS says nothing when it drew nothing, so look: no children in the container = no cards
+    if (!box.childElementCount) return miss('shown, but the container is empty')
+    reportInterstitial('shown', `tads-tgb ${b.widgetId}: ${box.childElementCount} element(s), debug=${b.debug}`)
   } catch (e) {
     miss(e instanceof Error ? e.message : String(e))
   }
