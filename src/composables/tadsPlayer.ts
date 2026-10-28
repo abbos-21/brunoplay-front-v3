@@ -14,13 +14,15 @@ const REWARD_WAIT_MS = 60_000
 
 interface TadsController {
   showAd(): Promise<unknown>
+  loadAd(): Promise<unknown>
 }
-interface TadsGlobal {
+export interface TadsGlobal {
   init(opts: {
     widgetId: number
-    type: 'fullscreen'
+    type: 'fullscreen' | 'static'
     debug: boolean
-    onShowReward: (adId?: unknown) => void
+    onShowReward?: (adId?: unknown) => void
+    onClickReward?: (adId?: unknown) => void
     onAdsNotFound: () => void
   }): TadsController
 }
@@ -30,7 +32,7 @@ export class TadsSkipped extends Error {}
 
 let sdk: Promise<TadsGlobal> | null = null
 
-function loadSdk(): Promise<TadsGlobal> {
+export function loadTadsSdk(): Promise<TadsGlobal> {
   const w = window as unknown as { tads?: TadsGlobal }
   if (w.tads) return Promise.resolve(w.tads)
   if (!sdk) {
@@ -72,7 +74,7 @@ function controller(g: TadsGlobal, ref: AdProviderRef): TadsController {
 /** Shows one TADS ad. Resolves when it was watched to the end; throws TadsSkipped if the player left, any other error if there was no ad. */
 export async function playTads(ref: AdProviderRef): Promise<void> {
   if (!ref.widgetId) throw new Error('TADS widget id missing')
-  const g = await loadSdk()
+  const g = await loadTadsSdk()
   const c = controller(g, ref)
   await new Promise<void>((resolve, reject) => {
     const timer = setTimeout(() => {

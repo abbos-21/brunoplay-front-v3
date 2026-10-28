@@ -101,6 +101,8 @@ export interface AdsConfig {
   interstitial: { enabled: boolean; blockId: string; intervalSeconds: number; firstAfterSeconds: number }
   /** `available`: the player may do a sponsored task now; else `nextInSeconds` tells when (the admin sets the interval) */
   task: { enabled: boolean; blockId: string; coins: number; intervalMinutes: number; available: boolean; nextInSeconds: number }
+  /** a block of ad cards inside a screen (TADS TGB widget); nothing is paid for it */
+  banner: { enabled: boolean; provider: string; widgetId: string; debug: boolean }
 }
 
 export interface SponsoredClaim {
