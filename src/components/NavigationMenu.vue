@@ -5,7 +5,7 @@ import { RouterLink, useRoute } from 'vue-router'
 import PendingDot from '@/components/PendingDot.vue'
 import { useTasksStore } from '@/stores/tasks'
 import { useTaskAlerts } from '@/composables/useTaskAlerts'
-import { announceSponsored, sponsoredWaiting } from '@/composables/sponsoredAlert'
+import { sponsoredWaiting } from '@/composables/sponsoredAlert'
 import { fetchAdsConfig } from '@/composables/useInterstitial'
 
 const route = useRoute()
@@ -20,7 +20,6 @@ const refresh = () => {
 let timer: ReturnType<typeof setInterval> | undefined
 const onVisible = () => document.visibilityState === 'visible' && refresh()
 onMounted(() => {
-  void announceSponsored()
   refresh()
   timer = setInterval(refresh, 120_000)
   document.addEventListener('visibilitychange', onVisible)

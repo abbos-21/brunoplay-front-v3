@@ -3,7 +3,7 @@ import { onBeforeUnmount, ref } from 'vue'
 import SponsoredTask from '@/components/SponsoredTask.vue'
 import { markAuthReady } from '@/composables/authReady'
 import { fetchAdsConfig, resetAdsConfig } from '@/composables/useInterstitial'
-import { announceSponsored, resetSponsoredAlert, sponsoredLeft, sponsoredWaiting } from '@/composables/sponsoredAlert'
+import { resetSponsoredAlert, sponsoredLeft, sponsoredWaiting } from '@/composables/sponsoredAlert'
 import { locale, setLocale } from '@/i18n'
 import { defineFakeElement, installFakeServer, sim, simLog, type Scenario } from './adSim'
 
@@ -45,8 +45,8 @@ function newDay() {
 }
 function launch() {
   resetSponsoredAlert()
-  simLog('app launch: the toast and the badge are checked')
-  void announceSponsored()
+  simLog('app launch: the red "!" on the Tasks tab is checked')
+  void fetchAdsConfig(true)
 }
 </script>
 
@@ -91,13 +91,13 @@ function launch() {
         <div class="mb-3 flex flex-wrap gap-2">
           <button class="rounded border bg-gray-100 px-3 py-1" @click="reload">Reload the card</button>
           <button class="rounded border bg-gray-100 px-3 py-1" @click="newDay">New game day</button>
-          <button class="rounded border bg-gray-100 px-3 py-1" @click="launch">Simulate app launch (toast + badge)</button>
+          <button class="rounded border bg-gray-100 px-3 py-1" @click="launch">Simulate app launch (the "!" on the Tasks tab)</button>
         </div>
 
         <p class="mb-3 rounded bg-gray-100 p-2">
           Balance: <b>{{ sim.balance.toLocaleString('en-US') }}</b> coins ·
           left today: <b>{{ sponsoredLeft }}</b> ·
-          badge on the Tasks tab: <b>{{ sponsoredWaiting ? 'YES (red dot)' : 'no' }}</b> ·
+          "!" on the Tasks tab: <b>{{ sponsoredWaiting ? 'YES' : 'no' }}</b> ·
           completions waiting for a claim on the server: <b>{{ sim.pending }}</b>
         </p>
 

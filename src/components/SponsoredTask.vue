@@ -8,6 +8,7 @@ import { useToast } from '@/composables/useToast'
 import { useAuthStore } from '@/stores/auth'
 import { loadSdk } from '@/composables/useAds'
 import { adsConfig, fetchAdsConfig } from '@/composables/useInterstitial'
+import PendingDot from '@/components/PendingDot.vue'
 import { markSponsoredSeen, markSponsoredUnavailable } from '@/composables/sponsoredAlert'
 
 /**
@@ -86,6 +87,7 @@ watch(el, async (node) => {
   <!-- the slot="..." attributes below are the web component's own slots (Adsgram), not Vue 2 slots -->
   <!-- eslint-disable vue/no-deprecated-slot-attribute -->
   <article v-if="visible && task" class="card">
+    <PendingDot />
     <adsgram-task :data-block-id="task.blockId" ref="el" class="sponsored">
       <span slot="reward" class="reward">{{ $t('{n} coins', { n: task.coins.toLocaleString('en-US') }) }}</span>
       <div slot="button" class="btn">{{ $t('Go') }}</div>
@@ -98,6 +100,7 @@ watch(el, async (node) => {
 <style scoped>
 /* values read from the example banner on partner.adsgram.ai (light theme) */
 .card {
+  position: relative; /* the red "!" sits on its corner */
   box-sizing: border-box;
   flex-shrink: 0;
   padding: 6px;
