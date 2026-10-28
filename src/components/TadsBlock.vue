@@ -10,6 +10,7 @@ import { loadTadsSdk } from '@/composables/tadsPlayer'
  */
 const banner = computed(() => adsConfig.value?.banner)
 const failed = ref(false)
+const drawn = ref(false) // TADS has put its cards into the container: only then the card frame is shown
 const DRAW_WAIT_MS = 6000
 const shown = computed(() => !!banner.value?.enabled && !failed.value)
 const containerId = computed(() => `tads-container-${banner.value?.widgetId ?? ''}`)
@@ -40,6 +41,7 @@ onMounted(async () => {
     // container must stay on the page meanwhile, TADS draws into it), and only then judge.
     for (let waited = 0; waited < DRAW_WAIT_MS; waited += 300) {
       if (box.childElementCount) {
+        drawn.value = true
         reportInterstitial('shown', `tads-tgb ${b.widgetId}: ${box.childElementCount} card(s), debug=${b.debug}`)
         return
       }
@@ -53,15 +55,51 @@ onMounted(async () => {
 </script>
 
 <template>
-  <div v-if="shown" class="tads-block">
+  <div v-if="shown" class="tads-block" :class="{ drawn }">
     <div :id="containerId" />
   </div>
 </template>
 
 <style scoped>
+/* the Tasks list squeezes its children, so the block must keep its own height (the Adsgram card does the same) */
 .tads-block {
+  flex-shrink: 0;
+  box-sizing: border-box;
+}
+/* the frame follows the Adsgram card: light card, thin border; TADS's own colours are for dark apps (white title) */
+.tads-block.drawn {
   margin: 0 0 12px;
+  padding: 6px;
+  background: rgb(251, 252, 254);
+  border: 0.8px solid rgb(205, 215, 225);
   border-radius: 10px;
-  overflow: hidden;
+  font-family: Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+}
+.tads-block :deep(div[id*='tads-container-']) {
+  gap: 6px;
+}
+.tads-block :deep(.tads) {
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+}
+.tads-block :deep(.tads-image) {
+  flex-shrink: 0;
+  width: 50px;
+  height: 50px;
+  border-radius: 6px;
+  object-fit: cover;
+}
+.tads-block :deep(.tads-title) {
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 20px;
+  color: rgb(23, 26, 28);
+}
+.tads-block :deep(.tads-text) {
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 16px;
+  color: rgb(99, 107, 116);
 }
 </style>
