@@ -10,6 +10,7 @@ import { loadTadsSdk } from '@/composables/tadsPlayer'
  */
 const banner = computed(() => adsConfig.value?.banner)
 const failed = ref(false)
+const DRAW_WAIT_MS = 6000
 const shown = computed(() => !!banner.value?.enabled && !failed.value)
 const containerId = computed(() => `tads-container-${banner.value?.widgetId ?? ''}`)
 
@@ -35,9 +36,16 @@ onMounted(async () => {
     })
     await ctrl.loadAd()
     await ctrl.showAd()
-    // TADS says nothing when it drew nothing, so look: no children in the container = no cards
-    if (!box.childElementCount) return miss('shown, but the container is empty')
-    reportInterstitial('shown', `tads-tgb ${b.widgetId}: ${box.childElementCount} element(s), debug=${b.debug}`)
+    // showAd() answers at once; TADS draws the cards a moment later, when its template has arrived. So wait for them (the
+    // container must stay on the page meanwhile, TADS draws into it), and only then judge.
+    for (let waited = 0; waited < DRAW_WAIT_MS; waited += 300) {
+      if (box.childElementCount) {
+        reportInterstitial('shown', `tads-tgb ${b.widgetId}: ${box.childElementCount} card(s), debug=${b.debug}`)
+        return
+      }
+      await new Promise((r) => setTimeout(r, 300))
+    }
+    miss(`nothing was drawn within ${DRAW_WAIT_MS / 1000} s`)
   } catch (e) {
     miss(e instanceof Error ? e.message : String(e))
   }
