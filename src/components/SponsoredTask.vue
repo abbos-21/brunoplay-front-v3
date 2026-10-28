@@ -9,7 +9,7 @@ import { useAuthStore } from '@/stores/auth'
 import { loadSdk } from '@/composables/useAds'
 import { adsConfig, fetchAdsConfig } from '@/composables/useInterstitial'
 import PendingDot from '@/components/PendingDot.vue'
-import { markSponsoredSeen, markSponsoredUnavailable } from '@/composables/sponsoredAlert'
+import { markSponsoredPaid, markSponsoredSeen, markSponsoredUnavailable } from '@/composables/sponsoredAlert'
 
 /**
  * The sponsored task (Adsgram Task block): Adsgram's own element shows a task ("join this channel", "open this app").
@@ -24,7 +24,7 @@ const el = ref<HTMLElement | null>(null)
 const ready = ref(false) // the Adsgram script (which defines the element) is loaded
 const hidden = ref(false) // Adsgram has no task for this player now, or failed
 const task = computed(() => adsConfig.value?.task)
-const visible = computed(() => ready.value && !hidden.value && !!task.value?.enabled && (task.value?.left ?? 0) > 0)
+const visible = computed(() => ready.value && !hidden.value && !!task.value?.enabled && !!task.value?.available)
 
 onMounted(async () => {
   const cfg = await fetchAdsConfig(true)
@@ -48,6 +48,7 @@ async function onReward() {
       try {
         const r = await claimSponsoredTask()
         auth.updateUser({ coins: r.newBalance })
+        markSponsoredPaid()
         toast.show(t('Done! You got {text}', { text: t('{n} coins', { n: r.coins }) }), 'success')
         return
       } catch (e) {

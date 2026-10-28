@@ -22,6 +22,7 @@ export function fetchAdsConfig(force = false): Promise<AdsConfig | null> {
     .then((c) => {
       adsConfig.value = c
       fetchedAt = Date.now()
+      scheduleTaskReturn(c)
       return c
     })
     .catch(() => adsConfig.value)
@@ -31,11 +32,21 @@ export function fetchAdsConfig(force = false): Promise<AdsConfig | null> {
   return inflight
 }
 
+let returnTimer: ReturnType<typeof setTimeout> | undefined
+
+/** While the interval between sponsored tasks runs, ask the server again the moment it ends: the card and the "!" come back by themselves. */
+function scheduleTaskReturn(c: AdsConfig) {
+  clearTimeout(returnTimer)
+  if (!c.task.enabled || c.task.available || c.task.nextInSeconds <= 0) return
+  returnTimer = setTimeout(() => void fetchAdsConfig(true), Math.min(c.task.nextInSeconds * 1000 + 1000, 2 ** 31 - 1))
+}
+
 /** For the simulator: forget the cached settings and any request still on its way. */
 export function resetAdsConfig() {
   adsConfig.value = null
   fetchedAt = 0
   inflight = null
+  clearTimeout(returnTimer)
 }
 
 let showing = false

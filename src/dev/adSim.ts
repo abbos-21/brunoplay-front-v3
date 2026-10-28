@@ -13,8 +13,8 @@ export type Scenario = 'normal' | 'slow' | 'never' | 'nobanner' | 'error'
 export const sim = reactive({
   scenario: 'normal' as Scenario,
   coins: 2000,
-  perDay: 3,
-  used: 0,
+  intervalMinutes: 480, // minutes between two paid tasks (can be a fraction: 0.2 = 12 s, to watch the card come back)
+  lastPaidAt: null as number | null, // when the last task was paid (ms), null = never
   balance: 10000,
   longTitle: false, // a very long task title from Adsgram
   goSeconds: 2, // how long the advertiser's step takes after "Go"
@@ -120,26 +120,27 @@ export function installFakeServer(): () => void {
     const fail = (code: string, message: string): never => {
       throw new AxiosError(message, code, config, {}, { data: { error: { code, message } }, status: 409, statusText: 'Conflict', headers: {}, config } as AxiosResponse)
     }
+    const waitMs = () => (sim.lastPaidAt === null ? 0 : Math.max(sim.lastPaidAt + sim.intervalMinutes * 60_000 - Date.now(), 0))
     if (url === '/ads/config') {
       return ok({
         interstitial: { enabled: false, blockId: '', intervalSeconds: 180, firstAfterSeconds: 120 },
-        task: { enabled: true, blockId: 'task-sim', coins: sim.coins, perDay: sim.perDay, usedToday: sim.used, left: Math.max(sim.perDay - sim.used, 0) },
+        task: { enabled: true, blockId: 'task-sim', coins: sim.coins, intervalMinutes: sim.intervalMinutes, available: waitMs() === 0, nextInSeconds: Math.ceil(waitMs() / 1000) },
       })
     }
     if (url === '/ads/task/claim') {
-      if (sim.used >= sim.perDay) {
-        simLog('server: claim refused, AD_LIMIT_REACHED')
-        return fail('AD_LIMIT_REACHED', 'Daily limit reached, come back tomorrow')
+      if (waitMs() > 0) {
+        simLog('server: claim refused, AD_TASK_NOT_READY (the interval is not over)')
+        return fail('AD_TASK_NOT_READY', 'The next sponsored task is not available yet')
       }
       if (sim.pending <= 0) {
         simLog('server: claim refused, AD_NOT_COMPLETED (Adsgram has not called yet)')
         return fail('AD_NOT_COMPLETED', 'Watch the ad to continue')
       }
       sim.pending--
-      sim.used++
+      sim.lastPaidAt = Date.now()
       sim.balance += sim.coins
-      simLog(`server: claim paid +${sim.coins} coins (${sim.perDay - sim.used} left today)`)
-      return ok({ coins: sim.coins, newBalance: sim.balance, left: sim.perDay - sim.used })
+      simLog(`server: claim paid +${sim.coins} coins; the next task is allowed in ${sim.intervalMinutes} min`)
+      return ok({ coins: sim.coins, newBalance: sim.balance, nextInSeconds: Math.round(sim.intervalMinutes * 60) })
     }
     return fail('NOT_FOUND', `not simulated: ${url}`)
   }

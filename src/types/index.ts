@@ -85,13 +85,14 @@ export interface AdView {
 /** GET /ads/config: how to run the interstitial ads, and the sponsored task (Adsgram Task block) */
 export interface AdsConfig {
   interstitial: { enabled: boolean; blockId: string; intervalSeconds: number; firstAfterSeconds: number }
-  task: { enabled: boolean; blockId: string; coins: number; perDay: number; usedToday: number; left: number }
+  /** `available`: the player may do a sponsored task now; else `nextInSeconds` tells when (the admin sets the interval) */
+  task: { enabled: boolean; blockId: string; coins: number; intervalMinutes: number; available: boolean; nextInSeconds: number }
 }
 
 export interface SponsoredClaim {
   coins: number
   newBalance: number
-  left: number
+  nextInSeconds: number
 }
 
 export interface BonusAdStatus {

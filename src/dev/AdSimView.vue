@@ -3,7 +3,7 @@ import { onBeforeUnmount, ref } from 'vue'
 import SponsoredTask from '@/components/SponsoredTask.vue'
 import { markAuthReady } from '@/composables/authReady'
 import { fetchAdsConfig, resetAdsConfig } from '@/composables/useInterstitial'
-import { resetSponsoredAlert, sponsoredLeft, sponsoredWaiting } from '@/composables/sponsoredAlert'
+import { resetSponsoredAlert, sponsoredAvailable, sponsoredWaiting } from '@/composables/sponsoredAlert'
 import { locale, setLocale } from '@/i18n'
 import { defineFakeElement, installFakeServer, sim, simLog, type Scenario } from './adSim'
 
@@ -37,10 +37,10 @@ async function reload() {
   cardKey.value++
   simLog('card reloaded (like opening the Tasks screen again)')
 }
-function newDay() {
-  sim.used = 0
+function skipWait() {
+  sim.lastPaidAt = null
   sim.pending = 0
-  simLog('new game day: the counters are reset')
+  simLog('the wait is skipped (as if the interval had passed)')
   void reload()
 }
 function launch() {
@@ -79,8 +79,7 @@ function launch() {
 
         <div class="mb-3 grid grid-cols-2 gap-2">
           <label>Reward (coins)<input v-model.number="sim.coins" type="number" min="1" class="ml-1 w-24 rounded border px-1" @change="reload" /></label>
-          <label>Per day<input v-model.number="sim.perDay" type="number" min="1" class="ml-1 w-16 rounded border px-1" @change="reload" /></label>
-          <label>Already done today<input v-model.number="sim.used" type="number" min="0" class="ml-1 w-16 rounded border px-1" @change="reload" /></label>
+          <label>Interval (minutes)<input v-model.number="sim.intervalMinutes" type="number" min="0.1" step="0.1" class="ml-1 w-20 rounded border px-1" @change="reload" /></label>
           <label><input v-model="sim.longTitle" type="checkbox" class="mr-1" @change="reload" />Very long title</label>
           <label>Language
             <select class="ml-1 rounded border" :value="locale" @change="setLocale(($event.target as HTMLSelectElement).value as 'en' | 'ru', false)"><option value="en">English</option><option value="ru">Русский</option></select>
@@ -90,13 +89,13 @@ function launch() {
 
         <div class="mb-3 flex flex-wrap gap-2">
           <button class="rounded border bg-gray-100 px-3 py-1" @click="reload">Reload the card</button>
-          <button class="rounded border bg-gray-100 px-3 py-1" @click="newDay">New game day</button>
+          <button class="rounded border bg-gray-100 px-3 py-1" @click="skipWait">Skip the wait</button>
           <button class="rounded border bg-gray-100 px-3 py-1" @click="launch">Simulate app launch (the "!" on the Tasks tab)</button>
         </div>
 
         <p class="mb-3 rounded bg-gray-100 p-2">
           Balance: <b>{{ sim.balance.toLocaleString('en-US') }}</b> coins ·
-          left today: <b>{{ sponsoredLeft }}</b> ·
+          task available: <b>{{ sponsoredAvailable ? 'yes' : 'no (waiting for the interval)' }}</b> ·
           "!" on the Tasks tab: <b>{{ sponsoredWaiting ? 'YES' : 'no' }}</b> ·
           completions waiting for a claim on the server: <b>{{ sim.pending }}</b>
         </p>

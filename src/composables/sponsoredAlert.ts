@@ -2,23 +2,28 @@ import { computed, ref } from 'vue'
 import { adsConfig } from '@/composables/useInterstitial'
 
 /**
- * "Sponsored tasks are waiting": while the player has sponsored tasks left today, the Tasks tab shows the red "!" (and the card itself
- * carries one). Opening the Tasks screen puts the one on the tab away until the next launch.
+ * "Sponsored tasks are waiting": while the player may do a sponsored task, the Tasks tab shows the red "!" (and the card itself
+ * carries one). Opening the Tasks screen puts the one on the tab away until the next launch. After a paid task both go away and
+ * come back when the interval set in the admin panel (ads.task.interval_minutes) is over.
  */
 const looked = ref(false) // the player has seen the sponsored card in this launch
 const unavailable = ref(false) // Adsgram has no task for this player right now: nothing to announce
 
-/** how many sponsored tasks the player can still complete today */
-export const sponsoredLeft = computed(() => {
+/** the player may do a sponsored task now (the interval since the last paid one is over) */
+export const sponsoredAvailable = computed(() => {
   const task = adsConfig.value?.task
-  return task?.enabled && !unavailable.value ? task.left : 0
+  return !!task?.enabled && task.available && !unavailable.value
 })
 
-/** the badge on the Tasks tab */
-export const sponsoredWaiting = computed(() => sponsoredLeft.value > 0 && !looked.value)
+/** the "!" on the Tasks tab */
+export const sponsoredWaiting = computed(() => sponsoredAvailable.value && !looked.value)
 
 export const markSponsoredSeen = () => {
   looked.value = true
+}
+/** a sponsored task was paid: when the interval is over the "!" comes back, even if the player has looked before */
+export const markSponsoredPaid = () => {
+  looked.value = false
 }
 export const markSponsoredUnavailable = () => {
   unavailable.value = true
