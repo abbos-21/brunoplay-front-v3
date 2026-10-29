@@ -76,8 +76,8 @@ function shareLink() {
           <img decoding="async" loading="lazy" :src="CoinImage" alt="" class="w-[1.3em]" />
           {{ formatNumber(friends.stats?.referralEarnings ?? 0) }}
         </p>
-        <p v-if="friends.topupPercent > 0 || (friends.stats?.topupStars ?? 0) > 0" class="mt-0.5 flex items-center gap-1.5 font-extrabold text-[#552a0f] tabular-nums text-[length:clamp(0.9rem,4.6vw,1.25rem)]">
-          <img decoding="async" loading="lazy" :src="StarIcon" alt="" class="w-[1.2em]" />
+        <p v-if="friends.topupPercent > 0 || (friends.stats?.topupStars ?? 0) > 0" class="mt-1 flex items-center gap-1.5 font-extrabold text-[#552a0f] tabular-nums text-[length:clamp(1.1rem,5.8vw,1.6rem)]">
+          <img decoding="async" loading="lazy" :src="StarIcon" alt="" class="w-[1.3em]" />
           {{ formatNumber(friends.stats?.topupStars ?? 0) }}
         </p>
       </div>
@@ -146,7 +146,7 @@ function shareLink() {
           v-if="ref.stars > 0"
           class="shrink-0 flex items-center gap-1 rounded-full bg-[#fde7b8] border border-[#e3b66f] pl-1 pr-3 py-0.5 font-extrabold text-[#552a0f] tabular-nums text-[length:clamp(0.9rem,4.5vw,1.2rem)]"
         >
-          <img decoding="async" loading="lazy" :src="StarIcon" alt="" class="w-[1.2em]" />
+          <img decoding="async" loading="lazy" :src="StarIcon" alt="" class="w-[1.4em]" />
           +{{ formatNumber(ref.stars) }}
         </span>
         <span v-if="ref.reward > 0 || ref.stars === 0" class="shrink-0 flex items-center gap-1 rounded-full bg-[#fde7b8] border border-[#e3b66f] pl-1 pr-3 py-0.5 font-extrabold text-[#552a0f] tabular-nums text-[length:clamp(0.9rem,4.5vw,1.2rem)]">
