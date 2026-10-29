@@ -1,4 +1,5 @@
 import type { AdProviderRef } from '@/types'
+import { reportInterstitial } from '@/api/ads'
 
 /**
  * Monetag rewarded interstitial (Telegram Mini App SDK).
@@ -12,7 +13,8 @@ import type { AdProviderRef } from '@/types'
 const SDK_URL = 'https://libtl.com/sdk.js'
 /** the SDK script, the preload and the show can each hang when there is no ad: the next provider must not wait for minutes */
 const LOAD_TIMEOUT_MS = 15_000
-const PRELOAD_TIMEOUT_MS = 15_000
+const PRELOAD_TIMEOUT_MS = 8_000
+const PRELOAD_TRIES = 2 // the first call after the SDK loads sometimes gets no answer
 const SHOW_TIMEOUT_MS = 120_000 // includes the time the player watches the ad
 
 interface MonetagResult {
@@ -64,13 +66,27 @@ function within<T>(p: Promise<T>, ms: number, what: string): Promise<T> {
 /** Shows one Monetag ad for the proof `ymid`. Resolves when it was shown and paid; throws when there was no ad. */
 export async function playMonetag(ref: AdProviderRef, ymid: string): Promise<void> {
   if (!ref.zoneId) throw new Error('Monetag zone id missing')
+  const t0 = Date.now()
+  // one line per step in the server log: it tells where an ad that never appears gets stuck
+  const note = (what: string) => void reportInterstitial('shown', `monetag ${what} (+${Date.now() - t0}ms)`)
   let stage = 'load'
   try {
     const show = await within(loadMonetag(ref.zoneId), LOAD_TIMEOUT_MS, 'load')
+    note('sdk ready')
     stage = 'preload'
-    await within(show({ type: 'preload', ymid }), PRELOAD_TIMEOUT_MS, 'preload') // the same ymid for the preload and the show
+    for (let attempt = 1; ; attempt++) {
+      try {
+        await within(show({ type: 'preload', ymid }), PRELOAD_TIMEOUT_MS, 'preload') // the same ymid for the preload and the show
+        note(`preload ok, try ${attempt}`)
+        break
+      } catch (e) {
+        note(`preload failed, try ${attempt}: ${errText(e)}`)
+        if (attempt >= PRELOAD_TRIES) throw e
+      }
+    }
     stage = 'show'
     const res = await within(show({ ymid, requestVar: 'reward' }), SHOW_TIMEOUT_MS, 'show')
+    note(`show closed, ${res && res.reward_event_type ? res.reward_event_type : 'no result'}`)
     // a resolved promise is not yet a paid view
     if (res && res.reward_event_type && res.reward_event_type !== 'valued') throw new Error('not a paid view')
   } catch (e) {
