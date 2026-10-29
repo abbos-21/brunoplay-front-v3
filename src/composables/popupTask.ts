@@ -33,6 +33,7 @@ export interface PopupHandlers {
 
 let handlers: PopupHandlers | null = null
 let run = 0 // only the newest claim loop goes on
+let deadline = 0 // when the claim loop gives up
 let ticker: ReturnType<typeof setInterval> | undefined
 
 const wait = (ms: number) => new Promise((r) => setTimeout(r, ms))
@@ -57,6 +58,12 @@ export function popupStarted(waitSeconds: number) {
   ticker = setInterval(() => (popupTask.now = Date.now()), 250)
 }
 
+/** Monetag reported a problem with the open (an error, or an unpaid event): only a late postback can still save it, so give up soon. */
+export function popupSoon(ms: number) {
+  // never before the countdown is over: the postback may have arrived long ago and the coins only wait for the admin's wait
+  deadline = Math.min(deadline, Math.max(Date.now(), popupTask.tapAt + popupTask.totalMs) + ms)
+}
+
 /** The popup could not be opened (not from a tap): stop everything. */
 export function popupAborted() {
   run++
@@ -68,7 +75,7 @@ export function popupAborted() {
 export async function claimPopup(id: string, forMs: number, h: PopupHandlers) {
   handlers = h
   const mine = ++run
-  const until = Date.now() + forMs
+  deadline = Date.now() + forMs
   try {
     while (mine === run) {
       try {
@@ -78,7 +85,7 @@ export async function claimPopup(id: string, forMs: number, h: PopupHandlers) {
         return
       } catch (e) {
         if (apiCode(e) !== 'AD_NOT_COMPLETED') throw e
-        if (Date.now() > until) {
+        if (Date.now() > deadline) {
           h.timedOut()
           return
         }

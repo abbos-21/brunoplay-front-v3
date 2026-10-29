@@ -7,7 +7,7 @@ import { useToast } from '@/composables/useToast'
 import { useAuthStore } from '@/stores/auth'
 import { adsConfig, fetchAdsConfig } from '@/composables/useInterstitial'
 import { loadMonetag, notFromTap, openMonetagPopup } from '@/composables/monetagPlayer'
-import { claimAfterTap, claimConfirmed, popupAborted, popupLeftMs, popupProgress, popupStarted, popupTask, type PopupHandlers } from '@/composables/popupTask'
+import { claimAfterTap, claimConfirmed, popupAborted, popupLeftMs, popupProgress, popupSoon, popupStarted, popupTask, type PopupHandlers } from '@/composables/popupTask'
 
 /**
  * The popup task (Monetag Rewarded Popup): a card "open a partner offer". The tap opens the advertiser's page outside the game.
@@ -17,6 +17,7 @@ import { claimAfterTap, claimConfirmed, popupAborted, popupLeftMs, popupProgress
  * goes on even if the player opens another section (the state is in composables/popupTask.ts). The coins and the interval come
  * from the admin panel.
  */
+const SOON_MS = 8000 // how long a late postback is still awaited after Monetag reported a problem
 const toast = useToast()
 const auth = useAuthStore()
 const task = computed(() => adsConfig.value?.popupTask)
@@ -35,7 +36,7 @@ const handlers: PopupHandlers = {
     void fetchAdsConfig(true)
   },
   timedOut() {
-    toast.show(t('We could not confirm the offer yet. Try again later'), 'error')
+    toast.show(t('The offer was not confirmed. Tap Go to try again'), 'error')
   },
 }
 
@@ -45,19 +46,25 @@ function onTap() {
   const id = popupTask.proof
   if (popupTask.busy || !fn || !id) return
   popupStarted(task.value?.waitSeconds ?? 0)
-  let opened: Promise<void>
+  let opened: Promise<string | undefined>
   try {
     opened = openMonetagPopup(fn, id)
   } catch (e) {
     opened = Promise.reject(e)
   }
-  opened.catch((e) => {
-    // "not from a tap" is final; "failed to verify" can still be followed by the postback, so the claim loop goes on
-    if (notFromTap(e)) {
-      popupAborted()
-      toast.show(t('Could not open the offer, try again'), 'error')
-    }
-  })
+  opened.then(
+    (kind) => {
+      if (kind && kind !== 'valued') popupSoon(SOON_MS) // an unpaid open: nothing is coming
+    },
+    (e) => {
+      // "not from a tap" is final. Any other error means the offer did not open (or Monetag could not confirm it): only a postback
+      // that is already on its way can still pay, so the card gives up soon instead of keeping the player waiting
+      if (notFromTap(e)) {
+        popupAborted()
+        toast.show(t('Could not open the offer, try again'), 'error')
+      } else popupSoon(SOON_MS)
+    },
+  )
   void claimAfterTap(id, handlers)
 }
 

@@ -135,10 +135,26 @@ export async function playMonetag(ref: AdProviderRef, adViewId?: string): Promis
 /**
  * Opens a Monetag Rewarded Popup (a partner offer outside the game). The browser only allows it inside a tap, so this must be called
  * synchronously from the click handler with an SDK function that is already loaded. The returned promise settles after Monetag has
- * confirmed (or not) the open; the reward is decided by the server's postback, never by this result.
+ * confirmed (or not) the open and gives the `reward_event_type` ('valued' or 'non_valued'); the reward itself is decided by the
+ * server's postback, never by this result. What Monetag answers is written to the server log (it is the only way to see why a popup
+ * did not open).
  */
-export function openMonetagPopup(show: MonetagShow, ymid: string): Promise<void> {
-  return show({ type: 'pop', ymid, requestVar: 'task' }).then(() => undefined)
+export function openMonetagPopup(show: MonetagShow, ymid: string): Promise<string | undefined> {
+  const t0 = Date.now()
+  const note = (what: string) => void reportInterstitial('shown', `monetag pop ${what} (+${Date.now() - t0}ms)`)
+  const p = show({ type: 'pop', ymid, requestVar: 'task' }) // first: it has to be called inside the tap
+  note('called')
+  return p.then(
+    (res) => {
+      const kind = res && res.reward_event_type ? res.reward_event_type : undefined
+      note(`result ${kind ?? 'none'}`)
+      return kind
+    },
+    (e: unknown) => {
+      note(`error ${errText(e)}`)
+      throw e
+    },
+  )
 }
 
 /** true when the popup was refused because the call did not come from a tap */
