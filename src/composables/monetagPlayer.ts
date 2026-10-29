@@ -91,8 +91,11 @@ function watchPage(onFirst: (tags: string) => void) {
   }
 }
 
-/** Shows one Monetag ad for the proof `ymid`. Resolves when it was shown and paid; throws when there was no ad. */
-export async function playMonetag(ref: AdProviderRef, adViewId: string): Promise<void> {
+/**
+ * Shows one Monetag ad. With a proof id (`adViewId`, sent to Monetag as ymid) it is a rewarded ad: resolves when it was shown and
+ * paid. Without one it is an interstitial (nothing is paid, nothing to prove): resolves when the player closed it. Throws when there was no ad.
+ */
+export async function playMonetag(ref: AdProviderRef, adViewId?: string): Promise<void> {
   if (!ref.zoneId) throw new Error('Monetag zone id missing')
   let ymid = adViewId
   const t0 = Date.now()
@@ -111,19 +114,19 @@ export async function playMonetag(ref: AdProviderRef, adViewId: string): Promise
       const drawn = watchPage((tags) => note(`page got ${tags}`))
       note(`show called, try ${attempt}`)
       try {
-        res = await within(Promise.race([show({ ymid, requestVar: 'reward' }), drawn.noneIn(NOTHING_DRAWN_MS)]), SHOW_TIMEOUT_MS, 'show')
+        res = await within(Promise.race([show({ ymid, requestVar: adViewId ? 'reward' : 'interstitial' }), drawn.noneIn(NOTHING_DRAWN_MS)]), SHOW_TIMEOUT_MS, 'show')
         break
       } catch (e) {
         if (!(e instanceof NothingDrawn) || attempt >= SHOW_TRIES) throw e
         note('nothing drawn, trying again')
-        ymid = `${adViewId}_${attempt + 1}`
+        ymid = adViewId && `${adViewId}_${attempt + 1}`
       } finally {
         drawn.stop()
       }
     }
     note(`show closed, ${res && res.reward_event_type ? res.reward_event_type : 'no result'}`)
     // a resolved promise is not yet a paid view
-    if (res && res.reward_event_type && res.reward_event_type !== 'valued') throw new Error('not a paid view')
+    if (adViewId && res && res.reward_event_type && res.reward_event_type !== 'valued') throw new Error('not a paid view')
   } catch (e) {
     throw new Error(`Monetag ${stage}: ${errText(e)}`)
   }

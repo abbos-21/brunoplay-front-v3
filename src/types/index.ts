@@ -99,7 +99,8 @@ export interface AdView {
 
 /** GET /ads/config: how to run the interstitial ads, and the sponsored task (Adsgram Task block) */
 export interface AdsConfig {
-  interstitial: { enabled: boolean; blockId: string; intervalSeconds: number; firstAfterSeconds: number }
+  /** `providers`: who shows it, in priority order (an older server only sends the Adsgram `blockId`) */
+  interstitial: { enabled: boolean; blockId: string; providers?: AdProviderRef[]; intervalSeconds: number; firstAfterSeconds: number }
   /** `available`: the player may do a sponsored task now; else `nextInSeconds` tells when (the admin sets the interval) */
   task: { enabled: boolean; blockId: string; coins: number; intervalMinutes: number; available: boolean; nextInSeconds: number }
   /** a block of ad cards inside a screen (TADS TGB widget); nothing is paid for it */

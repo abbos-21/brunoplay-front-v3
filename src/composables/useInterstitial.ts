@@ -1,11 +1,12 @@
 import { ref } from 'vue'
 import { getAdsConfig, reportInterstitial } from '@/api/ads'
-import type { AdsConfig } from '@/types'
+import type { AdProviderRef, AdsConfig } from '@/types'
 import { adBusy, loadSdk } from '@/composables/useAds'
 import { markAd, msSinceLastAd, msSinceOpen } from '@/composables/adClock'
+import { playMonetag } from '@/composables/monetagPlayer'
 
 /**
- * Interstitial ads (Adsgram): a full-screen ad the player may close, shown in a natural pause (leaving a game).
+ * Interstitial ads (Adsgram, Monetag: the admin panel's provider list decides who is asked first): a full-screen ad the player may close, shown in a natural pause (leaving a game).
  * Nothing is paid and the server keeps no state: the admin panel sets the block, the switch and the gap between ads
  * (ads.interstitial.*), and this file only asks "may I show one now?". Anything that goes wrong is silent, the game never waits for it.
  */
@@ -52,34 +53,59 @@ export function resetAdsConfig() {
 let showing = false
 const silenced = new Set<string>()
 
+/** The Adsgram interstitial. Resolves when it was shown (also when the player closed it); throws when there was no ad. */
+async function showAdsgram(blockId: string): Promise<string> {
+  const sdk = await loadSdk()
+  const ctrl = sdk.init({ blockId })
+  if (!silenced.has(blockId)) {
+    // Adsgram would pop up its own alert for "too many ads in a row", "session too long" and "no ad"; with a listener it stays quiet
+    silenced.add(blockId)
+    for (const ev of ['onNonStopShow', 'onTooLongSession', 'onBannerNotFound', 'onError']) ctrl.addEventListener?.(ev, () => {})
+  }
+  try {
+    const res = await ctrl.show()
+    return res?.description ?? ''
+  } catch (e) {
+    // Adsgram rejects with a result object when the player closed the ad (error: false): that ad was shown, no second one follows
+    if ((e as { error?: boolean } | null)?.error === false) return 'closed by the player'
+    throw e
+  }
+}
+
+/** The interstitial providers to try (an older server only sends the Adsgram block). */
+function providerList(cfg: NonNullable<AdsConfig['interstitial']>): AdProviderRef[] {
+  if (cfg.providers) return cfg.providers
+  return cfg.blockId ? [{ id: 'adsgram', blockId: cfg.blockId }] : []
+}
+
 /** Shows an interstitial when it is switched on, the first minutes have passed and the gap since the last ad is over. */
 export async function maybeShowInterstitial(): Promise<boolean> {
   if (showing || adBusy.value || document.hidden) return false
   const cfg = (await fetchAdsConfig())?.interstitial
-  if (!cfg?.enabled || !cfg.blockId) return false
+  const list = cfg?.enabled ? providerList(cfg) : []
+  if (!cfg || !list.length) return false
   if (msSinceOpen() < cfg.firstAfterSeconds * 1000 || msSinceLastAd() < cfg.intervalSeconds * 1000) return false
   if (showing || adBusy.value) return false
   showing = true
-  let outcome: 'shown' | 'failed' = 'shown'
-  let detail = ''
+  let outcome: 'shown' | 'failed' = 'failed'
+  const details: string[] = []
   try {
-    const sdk = await loadSdk()
-    const ctrl = sdk.init({ blockId: cfg.blockId })
-    if (!silenced.has(cfg.blockId)) {
-      // Adsgram would pop up its own alert for "too many ads in a row", "session too long" and "no ad"; with a listener it stays quiet
-      silenced.add(cfg.blockId)
-      for (const ev of ['onNonStopShow', 'onTooLongSession', 'onBannerNotFound', 'onError']) ctrl.addEventListener?.(ev, () => {})
+    // the first provider that has an ad wins; one that has none (or fails) hands over to the next
+    for (const ref of list) {
+      try {
+        if (ref.id === 'adsgram' && ref.blockId) details.push(await showAdsgram(ref.blockId))
+        else if (ref.id === 'monetag') await playMonetag(ref)
+        else continue // a provider this app version does not know
+        outcome = 'shown'
+        return true
+      } catch (e) {
+        details.push(`${ref.id}: ${e instanceof Error ? e.message : JSON.stringify(e)}`)
+      }
     }
-    const res = await ctrl.show()
-    detail = res?.description ?? ''
-    return true
-  } catch (e) {
-    outcome = 'failed'
-    detail = e instanceof Error ? e.message : JSON.stringify(e)
     return false // no ad, skipped or an error: all the same to the game
   } finally {
     showing = false
     markAd() // the gap starts now, also after a failure, so a missing ad is not asked for again and again
-    void reportInterstitial(outcome, detail) // the owner sees in the server log why an ad did not appear
+    void reportInterstitial(outcome, details.filter(Boolean).join('; ')) // the owner sees in the server log why an ad did not appear
   }
 }
