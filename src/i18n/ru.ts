@@ -307,6 +307,8 @@ const ru: Record<string, string> = {
   '{n} coins': '{n} монет',
   'Open a partner offer': 'Откройте предложение партнёра',
   'Checking…': 'Проверяем…',
+  '{n} s left, the coins arrive by themselves': 'Осталось {n} с, монеты придут сами',
+  'Confirming with the partner…': 'Подтверждаем у партнёра…',
   'Could not open the offer, try again': 'Не удалось открыть предложение, попробуйте ещё раз',
   'We could not confirm the offer yet. Try again later': 'Пока не удалось подтвердить предложение. Попробуйте позже',
   '{n} correct! Best today: {best}': '{n} верно! Лучший результат: {best}',

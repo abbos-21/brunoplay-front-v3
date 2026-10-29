@@ -154,7 +154,7 @@ export function installFakeServer(): () => void {
     const popupWaitMs = () => (sim.popupLastPaidAt === null ? 0 : Math.max(sim.popupLastPaidAt + sim.intervalMinutes * 60_000 - Date.now(), 0))
     if (url === '/ads/config') {
       return ok({
-        popupTask: { enabled: sim.popupOn, provider: 'monetag', zoneId: '12144526', coins: sim.popupCoins, intervalMinutes: sim.intervalMinutes, available: popupWaitMs() === 0, nextInSeconds: Math.ceil(popupWaitMs() / 1000) },
+        popupTask: { enabled: sim.popupOn, provider: 'monetag', zoneId: '12144526', coins: sim.popupCoins, intervalMinutes: sim.intervalMinutes, waitSeconds: sim.popupWait, available: popupWaitMs() === 0, nextInSeconds: Math.ceil(popupWaitMs() / 1000) },
         interstitial: { enabled: false, blockId: '', intervalSeconds: 180, firstAfterSeconds: 120 },
         task: { enabled: true, blockId: 'task-sim', coins: sim.coins, intervalMinutes: sim.intervalMinutes, available: waitMs() === 0, nextInSeconds: Math.ceil(waitMs() / 1000) },
       })

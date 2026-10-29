@@ -1,70 +1,50 @@
 <script setup lang="ts">
-import { computed, onBeforeUnmount, onMounted, ref, shallowRef } from 'vue'
+import { computed, onMounted } from 'vue'
 import { t } from '@/i18n'
-import { claimPopupTask, preparePopupTask } from '@/api/ads'
-import { apiCode } from '@/api/client'
+import { preparePopupTask } from '@/api/ads'
 import { apiMessage } from '@/composables/apiError'
 import { useToast } from '@/composables/useToast'
 import { useAuthStore } from '@/stores/auth'
 import { adsConfig, fetchAdsConfig } from '@/composables/useInterstitial'
-import { loadMonetag, notFromTap, openMonetagPopup, type MonetagShow } from '@/composables/monetagPlayer'
+import { loadMonetag, notFromTap, openMonetagPopup } from '@/composables/monetagPlayer'
+import { claimAfterTap, claimConfirmed, popupAborted, popupLeftMs, popupProgress, popupStarted, popupTask, type PopupHandlers } from '@/composables/popupTask'
 
 /**
  * The popup task (Monetag Rewarded Popup): a card "open a partner offer". The tap opens the advertiser's page outside the game.
  * The browser only allows that inside a tap, so the SDK and the proof (asked from our server) are ready BEFORE the tap and the tap
  * calls Monetag at once. Monetag then calls our server (postback); the coins are claimed only after that call has arrived (and the
- * wait set in the admin panel is over), so a tap alone proves nothing. The coins and the interval come from the admin panel.
+ * wait set in the admin panel is over), so a tap alone proves nothing. While it is confirmed the card counts down, and the check
+ * goes on even if the player opens another section (the state is in composables/popupTask.ts). The coins and the interval come
+ * from the admin panel.
  */
 const toast = useToast()
 const auth = useAuthStore()
-const show = shallowRef<MonetagShow | null>(null) // Monetag's function for the zone, loaded ahead of the tap
-const proof = ref('') // the proof this tap will use
-const busy = ref(false) // the offer was opened: waiting for Monetag's postback and claiming
 const task = computed(() => adsConfig.value?.popupTask)
-const visible = computed(() => !!task.value?.enabled && !!task.value.available && !!show.value && !!proof.value)
+const visible = computed(() => !!task.value?.enabled && (popupTask.busy || !!task.value.available) && !!popupTask.show && !!popupTask.proof)
+const secondsLeft = computed(() => Math.ceil(popupLeftMs() / 1000))
+const progress = computed(() => `${Math.round(popupProgress() * 100)}%`)
 
-const CLAIM_EVERY_MS = 3000
-const CLAIM_FOR_MS = 90_000 // after the tap
-const CLAIM_BACK_MS = 45_000 // after the player came back to the game
-const wait = (ms: number) => new Promise((r) => setTimeout(r, ms))
-let claimRun = 0 // only the newest claim loop goes on
-
-/** Asks for the coins until Monetag's postback has arrived (AD_NOT_COMPLETED), for at most `forMs`. */
-async function claim(id: string, forMs: number) {
-  const run = ++claimRun
-  const until = Date.now() + forMs
-  try {
-    while (run === claimRun) {
-      try {
-        const r = await claimPopupTask(id)
-        auth.updateUser({ coins: r.newBalance })
-        toast.show(t('Done! You got {text}', { text: t('{n} coins', { n: r.coins }) }), 'success')
-        proof.value = ''
-        void fetchAdsConfig(true) // the card goes away until the next interval
-        return
-      } catch (e) {
-        if (apiCode(e) !== 'AD_NOT_COMPLETED') throw e
-        if (Date.now() > until) {
-          toast.show(t('We could not confirm the offer yet. Try again later'), 'error')
-          return
-        }
-        await wait(CLAIM_EVERY_MS)
-      }
-    }
-  } catch (e) {
+const handlers: PopupHandlers = {
+  paid(r) {
+    auth.updateUser({ coins: r.newBalance })
+    toast.show(t('Done! You got {text}', { text: t('{n} coins', { n: r.coins }) }), 'success')
+    void fetchAdsConfig(true) // the card goes away until the next interval
+  },
+  failed(e) {
     toast.show(apiMessage(e, 'Could not get the reward'), 'error')
     void fetchAdsConfig(true)
-  } finally {
-    if (run === claimRun) busy.value = false
-  }
+  },
+  timedOut() {
+    toast.show(t('We could not confirm the offer yet. Try again later'), 'error')
+  },
 }
 
 /** the tap: everything the browser needs for the popup is called right here, before any await */
 function onTap() {
-  const fn = show.value
-  const id = proof.value
-  if (busy.value || !fn || !id) return
-  busy.value = true
+  const fn = popupTask.show
+  const id = popupTask.proof
+  if (popupTask.busy || !fn || !id) return
+  popupStarted(task.value?.waitSeconds ?? 0)
   let opened: Promise<void>
   try {
     opened = openMonetagPopup(fn, id)
@@ -74,39 +54,30 @@ function onTap() {
   opened.catch((e) => {
     // "not from a tap" is final; "failed to verify" can still be followed by the postback, so the claim loop goes on
     if (notFromTap(e)) {
-      claimRun++ // stops the claim loop
-      busy.value = false
+      popupAborted()
       toast.show(t('Could not open the offer, try again'), 'error')
     }
   })
-  void claim(id, CLAIM_FOR_MS)
-}
-
-// the player comes back from the offer page: look for the coins again for a while
-function onVisible() {
-  if (document.visibilityState === 'visible' && busy.value && proof.value) void claim(proof.value, CLAIM_BACK_MS)
+  void claimAfterTap(id, handlers)
 }
 
 onMounted(async () => {
-  document.addEventListener('visibilitychange', onVisible)
   const cfg = await fetchAdsConfig(true)
   const pt = cfg?.popupTask
+  if (popupTask.busy) return // the offer is being confirmed (the player left this screen and came back): just show it
   if (!pt?.enabled || !pt.available || !pt.zoneId) return
   try {
-    show.value = await loadMonetag(pt.zoneId)
+    popupTask.show = await loadMonetag(pt.zoneId)
     const p = await preparePopupTask()
-    proof.value = p.adViewId
+    popupTask.proof = p.adViewId
     if (p.completed) {
-      busy.value = true // Monetag already confirmed it: only the claim is left
-      void claim(p.adViewId, CLAIM_BACK_MS)
+      // Monetag already confirmed it (the page was reloaded or left): only the claim is left
+      popupStarted(0)
+      void claimConfirmed(p.adViewId, handlers)
     }
   } catch {
     // no SDK or no proof: the card simply stays away
   }
-})
-onBeforeUnmount(() => {
-  claimRun++
-  document.removeEventListener('visibilitychange', onVisible)
 })
 </script>
 
@@ -115,21 +86,27 @@ onBeforeUnmount(() => {
     <div class="icon" aria-hidden="true">🎁</div>
     <div class="text">
       <div class="title">{{ t('Open a partner offer') }}</div>
-      <div class="reward">{{ t('{n} coins', { n: task.coins.toLocaleString('en-US') }) }}</div>
+      <div v-if="!popupTask.busy" class="reward">{{ t('{n} coins', { n: task.coins.toLocaleString('en-US') }) }}</div>
+      <div v-else class="reward busy">
+        {{ secondsLeft > 0 ? t('{n} s left, the coins arrive by themselves', { n: secondsLeft }) : t('Confirming with the partner…') }}
+      </div>
     </div>
-    <button type="button" class="btn" :disabled="busy" @click="onTap">{{ busy ? t('Checking…') : t('Go') }}</button>
+    <button type="button" class="btn" :disabled="popupTask.busy" @click="onTap">{{ popupTask.busy ? t('Checking…') : t('Go') }}</button>
+    <div v-if="popupTask.busy" class="bar" aria-hidden="true"><span :style="{ width: progress }" /></div>
   </article>
 </template>
 
 <style scoped>
 /* the same card as the sponsored task: 6px padding, light background, a 50px icon, the title (14px / 500), the reward line (12px / grey) */
 .card {
+  position: relative; /* the progress bar sits on the bottom edge */
   display: flex;
   align-items: center;
   gap: 6px;
   box-sizing: border-box;
   flex-shrink: 0;
   padding: 6px;
+  overflow: hidden;
   background: rgb(251, 252, 254);
   border: 0.8px solid rgb(205, 215, 225);
   border-radius: 10px;
@@ -162,6 +139,9 @@ onBeforeUnmount(() => {
   font-weight: 500;
   line-height: 18px;
 }
+.reward.busy {
+  color: rgb(11, 107, 203);
+}
 .btn {
   flex: none;
   max-width: 40%;
@@ -181,5 +161,19 @@ onBeforeUnmount(() => {
 .btn:disabled {
   color: rgb(99, 107, 116);
   cursor: default;
+}
+.bar {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 3px;
+  background: rgb(222, 229, 238);
+}
+.bar span {
+  display: block;
+  height: 100%;
+  background: rgb(11, 107, 203);
+  transition: width 0.3s linear;
 }
 </style>
