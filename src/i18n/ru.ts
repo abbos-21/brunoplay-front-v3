@@ -194,6 +194,7 @@ const ru: Record<string, string> = {
   // ── friends
   'Earned from friends': 'Заработано с друзей',
   'Friends invited': 'Приглашено друзей',
+  'You also get {n}% in stars of every Stars top-up your friends make': 'Вы также получаете {n}% звёздами с каждого пополнения звёзд вашими друзьями',
   'Your friends': 'Ваши друзья',
   'You get coins when a friend levels up': 'Вы получаете монеты, когда друг повышает уровень',
   'Friend reaches level {n}': 'Друг достигает уровня {n}',

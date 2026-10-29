@@ -421,6 +421,8 @@ export interface FriendsStats {
   totalReferrals: number
   pendingReferrals: number
   referralEarnings: number
+  /** stars earned from the friends' Telegram Stars top-ups (refunds taken off) */
+  topupStars: number
 }
 
 export interface ReferralInfo {
@@ -430,6 +432,8 @@ export interface ReferralInfo {
   level: number
   counted: boolean
   createdAt: string
+  /** stars this friend's top-ups earned you */
+  topupStars: number
 }
 
 export interface RewardTier {
@@ -443,6 +447,8 @@ export interface FriendsData {
   total: number
   page: number
   rewards: RewardTier[]
+  /** percent of a friend's Stars top-up that the inviter gets in stars (0 = off) */
+  topupPercent: number
   links: { inviteLink: string; botLink: string }
 }
 

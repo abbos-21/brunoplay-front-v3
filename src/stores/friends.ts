@@ -13,6 +13,7 @@ export const useFriendsStore = defineStore('friends', () => {
   const rewardTiers = ref<RewardTier[]>([]);
   const friendsPage = ref(1);
   const total = ref(0);
+  const topupPercent = ref(0);
   const friendsTotalPages = computed(() => Math.max(1, Math.ceil(total.value / PAGE_SIZE)));
 
   /** One call fills the whole page (numbers, the list of the page, reward tiers and the invite links). */
@@ -21,6 +22,7 @@ export const useFriendsStore = defineStore('friends', () => {
     stats.value = data.stats;
     friends.value = data.friends ?? [];
     rewardTiers.value = data.rewards ?? [];
+    topupPercent.value = data.topupPercent ?? 0;
     inviteLink.value = data.links?.inviteLink ?? '';
     botLink.value = data.links?.botLink ?? '';
     friendsPage.value = data.page;
@@ -31,5 +33,5 @@ export const useFriendsStore = defineStore('friends', () => {
     await fetchFriends(1);
   }
 
-  return { inviteLink, botLink, stats, friends, rewardTiers, friendsPage, friendsTotalPages, fetchFriends, init };
+  return { inviteLink, botLink, stats, friends, rewardTiers, topupPercent, friendsPage, friendsTotalPages, fetchFriends, init };
 });

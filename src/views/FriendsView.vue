@@ -6,6 +6,7 @@ import StarBalance from '@/components/StarBalance.vue'
 import HamburgerButton from '@/components/HamburgerButton.vue'
 import SlidePanel from '@/components/SlidePanel.vue'
 import { CoinImage, TelegramImage, ReferralsImage } from '@/assets/images'
+import { StarIcon } from '@/assets/svgs'
 import { useFriendsStore } from '@/stores/friends'
 import { useToast } from '@/composables/useToast'
 import { useFormatters } from '@/composables/useFormatters'
@@ -33,6 +34,7 @@ const referrals = computed(() =>
       initial: name.charAt(0).toUpperCase(),
       color: avatarColors[f.id % avatarColors.length],
       reward: f.counted ? (friends.rewardTiers.find((t) => t.level === f.level)?.reward ?? 0) : 0,
+      stars: f.topupStars ?? 0,
     }
   }),
 )
@@ -74,6 +76,10 @@ function shareLink() {
           <img decoding="async" loading="lazy" :src="CoinImage" alt="" class="w-[1.3em]" />
           {{ formatNumber(friends.stats?.referralEarnings ?? 0) }}
         </p>
+        <p v-if="friends.topupPercent > 0 || (friends.stats?.topupStars ?? 0) > 0" class="mt-0.5 flex items-center gap-1.5 font-extrabold text-[#552a0f] tabular-nums text-[length:clamp(0.9rem,4.6vw,1.25rem)]">
+          <img decoding="async" loading="lazy" :src="StarIcon" alt="" class="w-[1.2em]" />
+          {{ formatNumber(friends.stats?.topupStars ?? 0) }}
+        </p>
       </div>
       <div class="rounded-3xl border-2 border-[#cf8741] bg-[#fff4d6] px-3 py-2.5 shadow-[0px_4px_4px_rgba(0,0,0,0.25)]">
         <p class="text-[#8a5a2b] font-bold uppercase tracking-wide text-[length:clamp(0.62rem,3vw,0.78rem)]">{{ $t('Friends invited') }}</p>
@@ -99,6 +105,9 @@ function shareLink() {
     <div class="flex flex-col gap-2.5 px-1 pb-2 overflow-y-scroll flex-1 min-h-0 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
       <!-- what a friend of each level pays -->
       <div v-if="showDetails" class="shrink-0 rounded-3xl border-2 border-[#cf8741] bg-[#fff4d6] p-3 shadow-[0px_4px_4px_rgba(0,0,0,0.25)]">
+        <p v-if="friends.topupPercent > 0" class="mb-2 rounded-xl bg-[#fde7b8] px-3 py-1.5 font-bold text-[#552a0f] text-[length:clamp(0.8rem,4vw,1.05rem)]">
+          {{ $t('You also get {n}% in stars of every Stars top-up your friends make', { n: friends.topupPercent }) }}
+        </p>
         <p class="font-bold text-[#552a0f] text-[length:clamp(0.95rem,4.8vw,1.25rem)]">{{ $t('You get coins when a friend levels up') }}</p>
         <div class="mt-2 flex flex-col gap-1">
           <div
@@ -133,7 +142,14 @@ function shareLink() {
           <p v-if="ref.username" class="text-[#8a5a2b] truncate text-[length:clamp(0.7rem,3.4vw,0.9rem)]">@{{ ref.username.replace(/^@/, '') }}</p>
         </div>
 
-        <span class="shrink-0 flex items-center gap-1 rounded-full bg-[#fde7b8] border border-[#e3b66f] pl-1 pr-3 py-0.5 font-extrabold text-[#552a0f] tabular-nums text-[length:clamp(0.9rem,4.5vw,1.2rem)]">
+        <span
+          v-if="ref.stars > 0"
+          class="shrink-0 flex items-center gap-1 rounded-full bg-[#fde7b8] border border-[#e3b66f] pl-1 pr-3 py-0.5 font-extrabold text-[#552a0f] tabular-nums text-[length:clamp(0.9rem,4.5vw,1.2rem)]"
+        >
+          <img decoding="async" loading="lazy" :src="StarIcon" alt="" class="w-[1.2em]" />
+          +{{ formatNumber(ref.stars) }}
+        </span>
+        <span v-if="ref.reward > 0 || ref.stars === 0" class="shrink-0 flex items-center gap-1 rounded-full bg-[#fde7b8] border border-[#e3b66f] pl-1 pr-3 py-0.5 font-extrabold text-[#552a0f] tabular-nums text-[length:clamp(0.9rem,4.5vw,1.2rem)]">
           <img decoding="async" loading="lazy" :src="CoinImage" alt="" class="w-[1.4em]" />
           +{{ formatNumber(ref.reward) }}
         </span>
