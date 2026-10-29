@@ -10,8 +10,10 @@ import type { AdProviderRef } from '@/types'
  */
 
 const SDK_URL = 'https://libtl.com/sdk.js'
-/** the promise of a show can hang when the ad never loads */
-const SHOW_TIMEOUT_MS = 120_000
+/** the SDK script, the preload and the show can each hang when there is no ad: the next provider must not wait for minutes */
+const LOAD_TIMEOUT_MS = 15_000
+const PRELOAD_TIMEOUT_MS = 15_000
+const SHOW_TIMEOUT_MS = 120_000 // includes the time the player watches the ad
 
 interface MonetagResult {
   reward_event_type?: string
@@ -50,25 +52,28 @@ function loadMonetag(zone: string): Promise<MonetagShow> {
 
 const errText = (e: unknown) => (e instanceof Error ? e.message : typeof e === 'string' ? e : JSON.stringify(e))
 
+/** rejects with "<what> timeout" when the promise has not settled in time (the reason shows in the server log) */
+function within<T>(p: Promise<T>, ms: number, what: string): Promise<T> {
+  let timer: ReturnType<typeof setTimeout> | undefined
+  const late = new Promise<never>((_, reject) => {
+    timer = setTimeout(() => reject(new Error(`${what} timeout`)), ms)
+  })
+  return Promise.race([p, late]).finally(() => clearTimeout(timer))
+}
+
 /** Shows one Monetag ad for the proof `ymid`. Resolves when it was shown and paid; throws when there was no ad. */
 export async function playMonetag(ref: AdProviderRef, ymid: string): Promise<void> {
   if (!ref.zoneId) throw new Error('Monetag zone id missing')
-  const show = await loadMonetag(ref.zoneId)
-  let timer: ReturnType<typeof setTimeout> | undefined
-  const timeout = new Promise<never>((_, reject) => {
-    timer = setTimeout(() => reject(new Error('Monetag timeout')), SHOW_TIMEOUT_MS)
-  })
+  let stage = 'load'
   try {
-    const run = async () => {
-      await show({ type: 'preload', ymid }) // the same ymid for the preload and the show
-      return show({ ymid, requestVar: 'reward' })
-    }
-    const res = await Promise.race([run(), timeout])
+    const show = await within(loadMonetag(ref.zoneId), LOAD_TIMEOUT_MS, 'load')
+    stage = 'preload'
+    await within(show({ type: 'preload', ymid }), PRELOAD_TIMEOUT_MS, 'preload') // the same ymid for the preload and the show
+    stage = 'show'
+    const res = await within(show({ ymid, requestVar: 'reward' }), SHOW_TIMEOUT_MS, 'show')
     // a resolved promise is not yet a paid view
-    if (res && res.reward_event_type && res.reward_event_type !== 'valued') throw new Error('Monetag: not a paid view')
+    if (res && res.reward_event_type && res.reward_event_type !== 'valued') throw new Error('not a paid view')
   } catch (e) {
-    throw new Error(`Monetag: ${errText(e)}`)
-  } finally {
-    clearTimeout(timer)
+    throw new Error(`Monetag ${stage}: ${errText(e)}`)
   }
 }
