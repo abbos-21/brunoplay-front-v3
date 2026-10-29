@@ -11,18 +11,16 @@ import { reportInterstitial } from '@/api/ads'
  */
 
 const SDK_URL = 'https://libtl.com/sdk.js'
-/** the SDK script, the preload and the show can each hang when there is no ad: the next provider must not wait for minutes */
+/** the SDK script and the show can each hang when there is no ad: the next provider must not wait for minutes */
 const LOAD_TIMEOUT_MS = 15_000
-const PRELOAD_TIMEOUT_MS = 8_000
-const PRELOAD_TRIES = 2 // the first call after the SDK loads sometimes gets no answer
 const SHOW_TIMEOUT_MS = 120_000 // includes the time the player watches the ad
 const NOTHING_DRAWN_MS = 4_000
-const SHOW_TRIES = 2
+const SHOW_TRIES = 3
 
 interface MonetagResult {
   reward_event_type?: string
 }
-type MonetagShow = (opts?: { ymid?: string; type?: 'preload' | 'pop'; requestVar?: string }) => Promise<MonetagResult | void>
+type MonetagShow = (opts?: { ymid?: string; requestVar?: string }) => Promise<MonetagResult | void>
 
 const loaded = new Map<string, Promise<MonetagShow>>()
 
@@ -104,20 +102,10 @@ export async function playMonetag(ref: AdProviderRef, adViewId: string): Promise
   try {
     const show = await within(loadMonetag(ref.zoneId), LOAD_TIMEOUT_MS, 'load')
     note('sdk ready')
-    stage = 'preload'
-    for (let attempt = 1; ; attempt++) {
-      try {
-        await within(show({ type: 'preload', ymid }), PRELOAD_TIMEOUT_MS, 'preload') // the same ymid for the preload and the show
-        note(`preload ok, try ${attempt}`)
-        break
-      } catch (e) {
-        note(`preload failed, try ${attempt}: ${errText(e)}`)
-        if (attempt >= PRELOAD_TRIES) throw e
-      }
-    }
+    // No preload: on the phones the preload ended quickly and the show() after it then drew nothing, while a direct show() draws
+    // its wrapper at once (the preload is optional in Monetag's docs). When nothing appears soon the show is repeated, with its own
+    // ymid (the server reads the part before the underscore), so a silent show() does not hold the player for minutes.
     stage = 'show'
-    // the SDK draws the ad into the page. The first show() after a cold start sometimes draws nothing and a repeat works at once,
-    // so when nothing appears soon the ad is preloaded and shown again (and the player is not held for minutes by a silent show())
     let res: MonetagResult | void
     for (let attempt = 1; ; attempt++) {
       const drawn = watchPage((tags) => note(`page got ${tags}`))
@@ -128,11 +116,7 @@ export async function playMonetag(ref: AdProviderRef, adViewId: string): Promise
       } catch (e) {
         if (!(e instanceof NothingDrawn) || attempt >= SHOW_TRIES) throw e
         note('nothing drawn, trying again')
-        // the stuck show() keeps its ymid busy: the repeat gets its own (the server reads the part before the underscore)
         ymid = `${adViewId}_${attempt + 1}`
-        stage = 'preload'
-        await within(show({ type: 'preload', ymid }), PRELOAD_TIMEOUT_MS, 'preload')
-        stage = 'show'
       } finally {
         drawn.stop()
       }
