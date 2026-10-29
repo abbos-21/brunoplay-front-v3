@@ -6,7 +6,7 @@ import { markAd, msSinceLastAd, msSinceOpen } from '@/composables/adClock'
 import { playMonetag } from '@/composables/monetagPlayer'
 
 /**
- * Interstitial ads (Adsgram, Monetag: the admin panel's provider list decides who is asked first): a full-screen ad the player may close, shown in a natural pause (leaving a game).
+ * Interstitial ads (Adsgram, Monetag: every provider switched on in the admin panel shows one, in the panel's priority order): a full-screen ad the player may close, shown in a natural pause (leaving a game).
  * Nothing is paid and the server keeps no state: the admin panel sets the block, the switch and the gap between ads
  * (ads.interstitial.*), and this file only asks "may I show one now?". Anything that goes wrong is silent, the game never waits for it.
  */
@@ -87,25 +87,24 @@ export async function maybeShowInterstitial(): Promise<boolean> {
   if (msSinceOpen() < cfg.firstAfterSeconds * 1000 || msSinceLastAd() < cfg.intervalSeconds * 1000) return false
   if (showing || adBusy.value) return false
   showing = true
-  let outcome: 'shown' | 'failed' = 'failed'
+  let shown = 0
   const details: string[] = []
   try {
-    // the first provider that has an ad wins; one that has none (or fails) hands over to the next
+    // every provider that is switched on shows its ad, one after the other in the admin's priority order; one that has no ad is skipped
     for (const ref of list) {
       try {
         if (ref.id === 'adsgram' && ref.blockId) details.push(await showAdsgram(ref.blockId))
         else if (ref.id === 'monetag') await playMonetag(ref)
         else continue // a provider this app version does not know
-        outcome = 'shown'
-        return true
+        shown++
       } catch (e) {
         details.push(`${ref.id}: ${e instanceof Error ? e.message : JSON.stringify(e)}`)
       }
     }
-    return false // no ad, skipped or an error: all the same to the game
+    return shown > 0 // no ad, skipped or an error: all the same to the game
   } finally {
     showing = false
     markAd() // the gap starts now, also after a failure, so a missing ad is not asked for again and again
-    void reportInterstitial(outcome, details.filter(Boolean).join('; ')) // the owner sees in the server log why an ad did not appear
+    void reportInterstitial(shown > 0 ? 'shown' : 'failed', details.filter(Boolean).join('; ')) // the owner sees in the server log why an ad did not appear
   }
 }
