@@ -16,6 +16,7 @@ const LOAD_TIMEOUT_MS = 15_000
 const PRELOAD_TIMEOUT_MS = 8_000
 const PRELOAD_TRIES = 2 // the first call after the SDK loads sometimes gets no answer
 const SHOW_TIMEOUT_MS = 120_000 // includes the time the player watches the ad
+const NOTHING_DRAWN_MS = 12_000
 
 interface MonetagResult {
   reward_event_type?: string
@@ -63,6 +64,31 @@ function within<T>(p: Promise<T>, ms: number, what: string): Promise<T> {
   return Promise.race([p, late]).finally(() => clearTimeout(timer))
 }
 
+/** Watches the page for elements added by the SDK after show(). `noneIn(ms)` rejects when nothing was added in that time. */
+function watchPage(onFirst: (tags: string) => void) {
+  let seen = false
+  let timer: ReturnType<typeof setTimeout> | undefined
+  const obs = new MutationObserver((list) => {
+    const tags = list.flatMap((m) => [...m.addedNodes]).filter((n): n is Element => n.nodeType === 1).map((n) => n.tagName.toLowerCase())
+    if (!tags.length || seen) return
+    seen = true
+    onFirst([...new Set(tags)].slice(0, 6).join(','))
+  })
+  obs.observe(document.documentElement, { childList: true, subtree: true })
+  return {
+    noneIn: (ms: number) =>
+      new Promise<never>((_, reject) => {
+        timer = setTimeout(() => {
+          if (!seen) reject(new Error('nothing was drawn'))
+        }, ms)
+      }),
+    stop: () => {
+      obs.disconnect()
+      clearTimeout(timer)
+    },
+  }
+}
+
 /** Shows one Monetag ad for the proof `ymid`. Resolves when it was shown and paid; throws when there was no ad. */
 export async function playMonetag(ref: AdProviderRef, ymid: string): Promise<void> {
   if (!ref.zoneId) throw new Error('Monetag zone id missing')
@@ -85,7 +111,19 @@ export async function playMonetag(ref: AdProviderRef, ymid: string): Promise<voi
       }
     }
     stage = 'show'
-    const res = await within(show({ ymid, requestVar: 'reward' }), SHOW_TIMEOUT_MS, 'show')
+    // the SDK draws the ad into the page: if nothing appears soon, it is not coming (a silent show() would hold the player for minutes)
+    const drawn = watchPage((tags) => note(`page got ${tags}`))
+    note('show called')
+    let res: MonetagResult | void
+    try {
+      res = await within(
+        Promise.race([show({ ymid, requestVar: 'reward' }), drawn.noneIn(NOTHING_DRAWN_MS)]),
+        SHOW_TIMEOUT_MS,
+        'show',
+      )
+    } finally {
+      drawn.stop()
+    }
     note(`show closed, ${res && res.reward_event_type ? res.reward_event_type : 'no result'}`)
     // a resolved promise is not yet a paid view
     if (res && res.reward_event_type && res.reward_event_type !== 'valued') throw new Error('not a paid view')
