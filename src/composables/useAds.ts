@@ -5,6 +5,7 @@ import type { AdPlacement, AdProviderRef, AdView } from '@/types'
 import { t } from '@/i18n'
 import { markAd } from '@/composables/adClock'
 import { playTads, TadsSkipped } from '@/composables/tadsPlayer'
+import { playMonetag } from '@/composables/monetagPlayer'
 
 /**
  * Rewarded ads (Adsgram, TADS, ...: the admin panel decides which providers are on and in which order they are asked).
@@ -84,7 +85,7 @@ async function playAd(blockId: string): Promise<void> {
  * A player resolves when the ad was watched to the end, throws AdError('skipped') when the player closed it, and any other
  * error when it had no ad to show (the next provider in the list is then tried).
  */
-const players: Record<string, (ref: AdProviderRef) => Promise<void>> = {
+const players: Record<string, (ref: AdProviderRef, adViewId: string) => Promise<void>> = {
   adsgram: (ref) => playAd(ref.blockId ?? ''),
   tads: async (ref) => {
     try {
@@ -95,6 +96,13 @@ const players: Record<string, (ref: AdProviderRef) => Promise<void>> = {
       if (e instanceof TadsSkipped) throw new AdError(t('Watch the ad to the end to continue'), 'skipped')
       throw e
     }
+  },
+  monetag: async (ref, adViewId) => {
+    const started = Date.now()
+    await playMonetag(ref, adViewId)
+    // Monetag reports the ad when it STARTS and the server accepts the proof after the admin's wait; the ad itself already took
+    // part of that time (the promise resolves when it is closed), so only the rest is waited
+    if (ref.waitSeconds) await wait(Math.max(0, ref.waitSeconds * 1000 - (Date.now() - started)))
   },
 }
 
@@ -121,7 +129,7 @@ export async function showAd(placement: AdPlacement): Promise<string | undefined
       const play = players[ref.id]
       if (!play) continue // a provider this app version does not know
       try {
-        await play(ref)
+        await play(ref, view.adViewId)
         return view.adViewId
       } catch (e) {
         if (e instanceof AdError && e.kind === 'skipped') throw e // the player closed it: do not show another ad

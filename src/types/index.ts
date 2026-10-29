@@ -78,6 +78,7 @@ export interface AdProviderRef {
   id: string
   blockId?: string // Adsgram
   widgetId?: string // TADS
+  zoneId?: string // Monetag (the proof id is passed to it as ymid)
   debug?: boolean
   /** the provider reports an ad when it starts: wait this long (the server also refuses the action before it) */
   waitSeconds?: number
