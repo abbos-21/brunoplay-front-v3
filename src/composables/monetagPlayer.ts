@@ -16,7 +16,8 @@ const LOAD_TIMEOUT_MS = 15_000
 const PRELOAD_TIMEOUT_MS = 8_000
 const PRELOAD_TRIES = 2 // the first call after the SDK loads sometimes gets no answer
 const SHOW_TIMEOUT_MS = 120_000 // includes the time the player watches the ad
-const NOTHING_DRAWN_MS = 12_000
+const NOTHING_DRAWN_MS = 4_000
+const SHOW_TRIES = 2
 
 interface MonetagResult {
   reward_event_type?: string
@@ -64,6 +65,9 @@ function within<T>(p: Promise<T>, ms: number, what: string): Promise<T> {
   return Promise.race([p, late]).finally(() => clearTimeout(timer))
 }
 
+/** show() drew nothing on the page in time */
+class NothingDrawn extends Error {}
+
 /** Watches the page for elements added by the SDK after show(). `noneIn(ms)` rejects when nothing was added in that time. */
 function watchPage(onFirst: (tags: string) => void) {
   let seen = false
@@ -79,7 +83,7 @@ function watchPage(onFirst: (tags: string) => void) {
     noneIn: (ms: number) =>
       new Promise<never>((_, reject) => {
         timer = setTimeout(() => {
-          if (!seen) reject(new Error('nothing was drawn'))
+          if (!seen) reject(new NothingDrawn('nothing was drawn'))
         }, ms)
       }),
     stop: () => {
@@ -111,18 +115,24 @@ export async function playMonetag(ref: AdProviderRef, ymid: string): Promise<voi
       }
     }
     stage = 'show'
-    // the SDK draws the ad into the page: if nothing appears soon, it is not coming (a silent show() would hold the player for minutes)
-    const drawn = watchPage((tags) => note(`page got ${tags}`))
-    note('show called')
+    // the SDK draws the ad into the page. The first show() after a cold start sometimes draws nothing and a repeat works at once,
+    // so when nothing appears soon the ad is preloaded and shown again (and the player is not held for minutes by a silent show())
     let res: MonetagResult | void
-    try {
-      res = await within(
-        Promise.race([show({ ymid, requestVar: 'reward' }), drawn.noneIn(NOTHING_DRAWN_MS)]),
-        SHOW_TIMEOUT_MS,
-        'show',
-      )
-    } finally {
-      drawn.stop()
+    for (let attempt = 1; ; attempt++) {
+      const drawn = watchPage((tags) => note(`page got ${tags}`))
+      note(`show called, try ${attempt}`)
+      try {
+        res = await within(Promise.race([show({ ymid, requestVar: 'reward' }), drawn.noneIn(NOTHING_DRAWN_MS)]), SHOW_TIMEOUT_MS, 'show')
+        break
+      } catch (e) {
+        if (!(e instanceof NothingDrawn) || attempt >= SHOW_TRIES) throw e
+        note('nothing drawn, trying again')
+        stage = 'preload'
+        await within(show({ type: 'preload', ymid }), PRELOAD_TIMEOUT_MS, 'preload')
+        stage = 'show'
+      } finally {
+        drawn.stop()
+      }
     }
     note(`show closed, ${res && res.reward_event_type ? res.reward_event_type : 'no result'}`)
     // a resolved promise is not yet a paid view
