@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, onMounted } from 'vue'
 import { t } from '@/i18n'
+import { MyGiftsImage } from '@/assets/images'
 import { preparePopupTask } from '@/api/ads'
 import { apiMessage } from '@/composables/apiError'
 import { useToast } from '@/composables/useToast'
@@ -90,7 +91,7 @@ onMounted(async () => {
 
 <template>
   <article v-if="visible && task" class="card">
-    <div class="icon" aria-hidden="true">🎁</div>
+    <div class="icon" aria-hidden="true"><img decoding="async" :src="MyGiftsImage" alt="" /></div>
     <div class="text">
       <div class="title">{{ t('Open a partner offer') }}</div>
       <div v-if="!popupTask.busy" class="reward">{{ t('{n} coins', { n: task.coins.toLocaleString('en-US') }) }}</div>
@@ -129,7 +130,12 @@ onMounted(async () => {
   height: 50px;
   border-radius: 6px;
   background: rgb(232, 240, 250);
-  font-size: 28px;
+}
+.icon img {
+  width: 38px;
+  height: 38px;
+  object-fit: contain;
+  filter: drop-shadow(0 2px 2px rgba(111, 60, 45, 0.35)); /* as in the menu */
 }
 .text {
   flex: 1;
