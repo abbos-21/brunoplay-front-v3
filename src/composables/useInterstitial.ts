@@ -72,6 +72,16 @@ async function showAdsgram(blockId: string): Promise<string> {
   }
 }
 
+/**
+ * The interstitial players of the ad providers, by the id the server sends. A new platform is one more line here (plus its player
+ * file, and its entry on the server). A player resolves when its ad was shown (also when the player closed it) and throws when it
+ * had no ad; the provider is then skipped and the next one still shows its ad.
+ */
+const interstitialPlayers: Record<string, (ref: AdProviderRef) => Promise<string | void>> = {
+  adsgram: (ref) => showAdsgram(ref.blockId ?? ''),
+  monetag: (ref) => playMonetag(ref),
+}
+
 /** The interstitial providers to try (an older server only sends the Adsgram block). */
 function providerList(cfg: NonNullable<AdsConfig['interstitial']>): AdProviderRef[] {
   if (cfg.providers) return cfg.providers
@@ -93,9 +103,9 @@ export async function maybeShowInterstitial(): Promise<boolean> {
     // every provider that is switched on shows its ad, one after the other in the admin's priority order; one that has no ad is skipped
     for (const ref of list) {
       try {
-        if (ref.id === 'adsgram' && ref.blockId) details.push(await showAdsgram(ref.blockId))
-        else if (ref.id === 'monetag') await playMonetag(ref)
-        else continue // a provider this app version does not know
+        const play = interstitialPlayers[ref.id]
+        if (!play) continue // a provider this app version does not know
+        details.push((await play(ref)) ?? '')
         shown++
       } catch (e) {
         details.push(`${ref.id}: ${e instanceof Error ? e.message : JSON.stringify(e)}`)
