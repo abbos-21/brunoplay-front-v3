@@ -106,7 +106,7 @@ function shareLink() {
       <!-- what a friend of each level pays -->
       <div v-if="showDetails" class="shrink-0 rounded-3xl border-2 border-[#cf8741] bg-[#fff4d6] p-3 shadow-[0px_4px_4px_rgba(0,0,0,0.25)]">
         <p v-if="friends.topupPercent > 0" class="mb-2 rounded-xl bg-[#fde7b8] px-3 py-1.5 font-bold text-[#552a0f] text-[length:clamp(0.8rem,4vw,1.05rem)]">
-          {{ $t('You also get {n}% in stars of every Stars top-up your friends make', { n: friends.topupPercent }) }}
+          {{ $t('You also get {n}% in stars of every top-up your friends make', { n: friends.topupPercent }) }}
         </p>
         <p class="font-bold text-[#552a0f] text-[length:clamp(0.95rem,4.8vw,1.25rem)]">{{ $t('You get coins when a friend levels up') }}</p>
         <div class="mt-2 flex flex-col gap-1">
