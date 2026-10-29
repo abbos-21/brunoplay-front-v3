@@ -105,6 +105,15 @@ export interface AdsConfig {
   task: { enabled: boolean; blockId: string; coins: number; intervalMinutes: number; available: boolean; nextInSeconds: number }
   /** a block of ad cards inside a screen (TADS TGB widget); nothing is paid for it */
   banner: { enabled: boolean; provider: string; widgetId: string; debug: boolean }
+  /** Monetag's Rewarded Popup as a task card: the tap opens a partner offer outside the game */
+  popupTask: { enabled: boolean; provider: string; zoneId: string; coins: number; intervalMinutes: number; available: boolean; nextInSeconds: number }
+}
+
+/** POST /ads/popup-task/prepare: the proof to hold until the tap (`completed`: Monetag already confirmed it, only the claim is left) */
+export interface PopupProof {
+  adViewId: string
+  expiresAt: string
+  completed: boolean
 }
 
 export interface SponsoredClaim {

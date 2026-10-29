@@ -17,6 +17,7 @@ import { isApiDisabled } from '@/api/client'
 import { StarIcon } from '@/assets/svgs'
 import PageTabs from '@/components/PageTabs.vue'
 import SponsoredTask from '@/components/SponsoredTask.vue'
+import MonetagTask from '@/components/MonetagTask.vue'
 import TadsBlock from '@/components/TadsBlock.vue'
 import type { Task } from '@/types'
 
@@ -167,6 +168,8 @@ const progressText = (task: Task) =>
 
       <!-- Adsgram's Task block: first in the list, only when the admin switched it on -->
       <SponsoredTask v-if="tab === 'main'" />
+      <!-- Monetag's popup task: a partner offer that opens outside the game, only when the admin switched it on -->
+      <MonetagTask v-if="tab === 'main'" />
       <!-- TADS ad cards (a test while TADS has no rewarded ads): only when the admin set a TGB widget id -->
       <TadsBlock v-if="tab === 'main'" />
 

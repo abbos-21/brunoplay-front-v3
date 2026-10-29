@@ -1,11 +1,12 @@
 <script setup lang="ts">
 import { onBeforeUnmount, ref } from 'vue'
 import SponsoredTask from '@/components/SponsoredTask.vue'
+import MonetagTask from '@/components/MonetagTask.vue'
 import { markAuthReady } from '@/composables/authReady'
 import { fetchAdsConfig, resetAdsConfig } from '@/composables/useInterstitial'
 import { resetSponsoredAlert, sponsoredAvailable, sponsoredWaiting } from '@/composables/sponsoredAlert'
 import { locale, setLocale } from '@/i18n'
-import { defineFakeElement, installFakeServer, sim, simLog, type Scenario } from './adSim'
+import { defineFakeElement, defineFakeMonetag, installFakeServer, sim, simLog, type Scenario } from './adSim'
 
 /**
  * DEVELOPMENT ONLY (/dev/ad-sim, not in the production build). The real sponsored task card, with a pretend Adsgram element
@@ -17,9 +18,11 @@ if (!hadSdk) w.Adsgram = { init: () => ({ show: () => Promise.resolve({}) }) } /
 defineFakeElement()
 markAuthReady()
 const restore = installFakeServer()
+const restoreMonetag = defineFakeMonetag()
 resetAdsConfig() // a request made before the pretend server was in place must not answer for it
 onBeforeUnmount(() => {
   restore()
+  restoreMonetag()
   if (!hadSdk) delete w.Adsgram
 })
 
@@ -39,6 +42,7 @@ async function reload() {
 }
 function skipWait() {
   sim.lastPaidAt = null
+  sim.popupLastPaidAt = null
   sim.pending = 0
   simLog('the wait is skipped (as if the interval had passed)')
   void reload()
@@ -60,6 +64,7 @@ function launch() {
         <p class="mb-2 text-center font-bold text-[#552a0f]">Tasks · Main</p>
         <div class="flex flex-col gap-4">
           <SponsoredTask :key="cardKey" />
+          <MonetagTask :key="'m' + cardKey" />
           <article class="shrink-0 rounded-3xl border-2 border-[#cf8741] bg-[#fff4d6] p-3 shadow-[0px_4px_4px_rgba(0,0,0,0.25)]">
             <h2 class="font-bold leading-tight text-[#552a0f]">Join the BrunoPlay channel (one of our own tasks)</h2>
             <p class="mt-0.5 text-[#8a5a2b]">The sponsored card is above it.</p>
@@ -81,6 +86,7 @@ function launch() {
           <label>Reward (coins)<input v-model.number="sim.coins" type="number" min="1" class="ml-1 w-24 rounded border px-1" @change="reload" /></label>
           <label>Interval (minutes)<input v-model.number="sim.intervalMinutes" type="number" min="0.1" step="0.1" class="ml-1 w-20 rounded border px-1" @change="reload" /></label>
           <label><input v-model="sim.longTitle" type="checkbox" class="mr-1" @change="reload" />Very long title</label>
+          <label><input v-model="sim.popupOn" type="checkbox" class="mr-1" @change="reload" />Monetag popup task on</label>
           <label>Language
             <select class="ml-1 rounded border" :value="locale" @change="setLocale(($event.target as HTMLSelectElement).value as 'en' | 'ru', false)"><option value="en">English</option><option value="ru">Русский</option></select>
           </label>

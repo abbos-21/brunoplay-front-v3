@@ -20,11 +20,11 @@ const SHOW_TRIES = 3
 interface MonetagResult {
   reward_event_type?: string
 }
-type MonetagShow = (opts?: { ymid?: string; requestVar?: string }) => Promise<MonetagResult | void>
+export type MonetagShow = (opts?: { ymid?: string; requestVar?: string; type?: 'pop' }) => Promise<MonetagResult | void>
 
 const loaded = new Map<string, Promise<MonetagShow>>()
 
-function loadMonetag(zone: string): Promise<MonetagShow> {
+export function loadMonetag(zone: string): Promise<MonetagShow> {
   const name = `show_${zone}`
   const w = window as unknown as Record<string, MonetagShow | undefined>
   const ready = w[name]
@@ -131,3 +131,15 @@ export async function playMonetag(ref: AdProviderRef, adViewId?: string): Promis
     throw new Error(`Monetag ${stage}: ${errText(e)}`)
   }
 }
+
+/**
+ * Opens a Monetag Rewarded Popup (a partner offer outside the game). The browser only allows it inside a tap, so this must be called
+ * synchronously from the click handler with an SDK function that is already loaded. The returned promise settles after Monetag has
+ * confirmed (or not) the open; the reward is decided by the server's postback, never by this result.
+ */
+export function openMonetagPopup(show: MonetagShow, ymid: string): Promise<void> {
+  return show({ type: 'pop', ymid, requestVar: 'task' }).then(() => undefined)
+}
+
+/** true when the popup was refused because the call did not come from a tap */
+export const notFromTap = (e: unknown) => /user's click/i.test(errText(e))
