@@ -94,8 +94,9 @@ function watchPage(onFirst: (tags: string) => void) {
 }
 
 /** Shows one Monetag ad for the proof `ymid`. Resolves when it was shown and paid; throws when there was no ad. */
-export async function playMonetag(ref: AdProviderRef, ymid: string): Promise<void> {
+export async function playMonetag(ref: AdProviderRef, adViewId: string): Promise<void> {
   if (!ref.zoneId) throw new Error('Monetag zone id missing')
+  let ymid = adViewId
   const t0 = Date.now()
   // one line per step in the server log: it tells where an ad that never appears gets stuck
   const note = (what: string) => void reportInterstitial('shown', `monetag ${what} (+${Date.now() - t0}ms)`)
@@ -127,6 +128,8 @@ export async function playMonetag(ref: AdProviderRef, ymid: string): Promise<voi
       } catch (e) {
         if (!(e instanceof NothingDrawn) || attempt >= SHOW_TRIES) throw e
         note('nothing drawn, trying again')
+        // the stuck show() keeps its ymid busy: the repeat gets its own (the server reads the part before the underscore)
+        ymid = `${adViewId}_${attempt + 1}`
         stage = 'preload'
         await within(show({ type: 'preload', ymid }), PRELOAD_TIMEOUT_MS, 'preload')
         stage = 'show'
