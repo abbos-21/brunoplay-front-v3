@@ -127,7 +127,7 @@ const sparks = Array.from({ length: 16 }, (_, i) => ({
       <p class="sub mt-2 font-bold text-white text-[length:clamp(1.05rem,5.4vw,1.5rem)]">
         {{ $t('Level {n}', { n: active.to }) }}, <span :style="{ color: glow }">{{ $t(look.name) }}</span>
       </p>
-      <p v-if="reward" class="sub mt-3 font-extrabold text-[#fbe166] text-[length:clamp(1rem,5vw,1.35rem)] [text-shadow:0_2px_0_rgba(0,0,0,0.35)]">
+      <p v-if="reward" class="sub mt-3 text-balance font-extrabold text-[#fbe166] text-[length:clamp(1rem,5vw,1.35rem)] [text-shadow:0_2px_0_rgba(0,0,0,0.35)]">
         {{ $t('Reward') }}:
         <template v-if="reward.coins">+{{ reward.coins.toLocaleString('en-US') }} {{ $t('coins') }}</template>
         <template v-if="reward.coins && reward.stars">, </template>
