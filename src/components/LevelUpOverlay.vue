@@ -4,6 +4,7 @@ import LevelBadge from '@/components/LevelBadge.vue'
 import { levelStyle } from '@/composables/levelStyles'
 import { playSfx } from '@/composables/useSfx'
 import { useLevelUp } from '@/composables/useLevelUp'
+import { t } from '@/i18n'
 
 /**
  * Plays when the player's level goes up: the old badge charges up and turns away, the new one spins in
@@ -64,6 +65,8 @@ onBeforeUnmount(() => {
   hold.value = null
 })
 
+// a long title (Russian "НОВЫЙ УРОВЕНЬ!") gets a smaller size and may wrap onto two lines, so it never leaves the screen
+const longTitle = computed(() => t('LEVEL UP!').length > 11)
 const look = computed(() => levelStyle(active.value?.to ?? 1))
 // the light colour follows the new badge
 const glow = computed(() => look.value.inner[1])
@@ -91,7 +94,7 @@ const sparks = Array.from({ length: 16 }, (_, i) => ({
     <!-- slowly turning rays -->
     <div class="lvl-rays absolute left-1/2 top-[42%] size-[34rem] -translate-x-1/2 -translate-y-1/2 pointer-events-none" />
 
-    <div class="relative flex flex-col items-center">
+    <div class="relative flex w-full flex-col items-center px-4 text-center">
       <!-- the badge stage -->
       <div class="stage relative w-[17rem] h-[9.6rem]">
         <div class="ring absolute inset-0 m-auto size-40 rounded-full" />
@@ -115,7 +118,8 @@ const sparks = Array.from({ length: 16 }, (_, i) => ({
       </div>
 
       <h2
-        class="title mt-5 font-extrabold tracking-wide text-white text-[length:clamp(2.2rem,12vw,3.2rem)] leading-none"
+        class="title mt-5 max-w-full text-balance break-words font-extrabold tracking-wide text-white leading-[1.05]"
+        :class="longTitle ? 'text-[length:clamp(1.7rem,8.6vw,2.6rem)]' : 'text-[length:clamp(2.2rem,12vw,3.2rem)]'"
         :style="{ textShadow: `0 3px 0 ${look.stroke}, 0 0 18px ${glow}, 0 0 4px ${look.stroke}` }"
       >
         {{ $t('LEVEL UP!') }}
