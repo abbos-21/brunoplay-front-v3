@@ -51,7 +51,14 @@ const uploadedImg = (key: string | undefined): string | undefined => {
   return key && v ? `${client.defaults.baseURL ?? '/api'}/gift-images/${encodeURIComponent(key)}?v=${v}` : undefined
 }
 
-export type PrizeKind = 'gift' | 'coins' | 'stars'
+export type PrizeKind = 'gift' | 'coins' | 'stars' | 'empty'
+
+/** the picture of an empty slot / an empty chest: a grey token with a cross */
+export const EmptyImage =
+  'data:image/svg+xml;utf8,' +
+  encodeURIComponent(
+    '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="50" cy="50" r="44" fill="#aab6cf" stroke="#6f7fa3" stroke-width="5"/><circle cx="50" cy="50" r="34" fill="none" stroke="#e6ecf8" stroke-width="3" stroke-dasharray="6 6"/><path d="M35 35 L65 65 M65 35 L35 65" stroke="#fff" stroke-width="9" stroke-linecap="round"/></svg>',
+  )
 
 export interface ResolvedPrize {
   prize: SpinPrize
@@ -70,6 +77,9 @@ export function resolvePrizes(prizes: SpinPrize[]): ResolvedPrize[] {
   let giftIndex = 0
   loadGiftArt()
   return prizes.map((prize): ResolvedPrize => {
+    if (prize.type === 'empty') {
+      return { prize, kind: 'empty', img: EmptyImage, amount: '', name: prize.label || 'Empty' }
+    }
     if (prize.type === 'coins') {
       return { prize, kind: 'coins', img: CoinImage, amount: num(prize.value), name: 'Coins' }
     }
@@ -108,12 +118,17 @@ function spread<T>(list: T[], n: number): T[] {
  */
 export function wheelSlots(all: ResolvedPrize[]): ResolvedPrize[] {
   if (!all.length) return []
-  const gifts = all.filter((r) => r.kind === 'gift')
-  const others = all.filter((r) => r.kind !== 'gift')
-  let picked = all
+  // an empty slot (when the tier has one) always gets a place of its own; the prizes share the other seven
+  const empty = all.find((r) => r.kind === 'empty')
+  const real = all.filter((r) => r.kind !== 'empty')
+  if (!real.length) return Array.from({ length: 8 }, () => empty!)
+  const n = empty ? 7 : 8
+  const gifts = real.filter((r) => r.kind === 'gift')
+  const others = real.filter((r) => r.kind !== 'gift')
+  let picked = real
   if (gifts.length && others.length) {
-    const otherPlaces = Math.min(others.length, 8 - Math.min(gifts.length, 5))
-    const giftPlaces = Math.min(gifts.length, 8 - otherPlaces)
+    const otherPlaces = Math.min(others.length, n - Math.min(gifts.length, 5))
+    const giftPlaces = Math.min(gifts.length, n - otherPlaces)
     const g = spread([...gifts].sort((a, b) => worth(b) - worth(a)), giftPlaces)
     const o = spread([...others].sort((a, b) => worth(b) - worth(a)), otherPlaces)
     picked = []
@@ -121,10 +136,12 @@ export function wheelSlots(all: ResolvedPrize[]): ResolvedPrize[] {
       if (g[i]) picked.push(g[i]!)
       if (o[i]) picked.push(o[i]!)
     }
-  } else if (others.length > 8) {
-    picked = spread([...others].sort((a, b) => worth(b) - worth(a)), 8)
+  } else if (others.length > n) {
+    picked = spread([...others].sort((a, b) => worth(b) - worth(a)), n)
   }
-  return Array.from({ length: 8 }, (_, i) => picked[i % picked.length]!)
+  const slots = Array.from({ length: n }, (_, i) => picked[i % picked.length]!)
+  if (empty) slots.splice(3, 0, empty)
+  return slots
 }
 
 /** Prizes list order from the design: gifts / stars by value (high → low), then coins. */

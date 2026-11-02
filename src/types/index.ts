@@ -197,7 +197,8 @@ export interface BoosterInfo {
 export type SpinTier = string
 
 export interface SpinPrize {
-  type: 'coins' | 'stars' | 'gift'
+  /** 'empty' = a draw that wins nothing (an empty slot of the wheel, an empty chest) */
+  type: 'coins' | 'stars' | 'gift' | 'empty'
   value: number
   weight: number
   label?: string
@@ -253,7 +254,7 @@ export interface PlayerGift {
 
 // === Chest ===
 export interface ChestPrize {
-  type: 'coins' | 'stars' | 'gift'
+  type: 'coins' | 'stars' | 'gift' | 'empty'
   value: number
   gift?: string
   label: string

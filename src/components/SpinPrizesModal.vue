@@ -8,7 +8,8 @@ import type { SpinPrize } from '@/types'
 const props = defineProps<{ prizes: SpinPrize[] }>()
 const emit = defineEmits<{ (e: 'close'): void }>()
 
-const items = computed(() => sortForList(resolvePrizes(props.prizes)))
+// the empty slot is not a prize: it is not listed under "What you can win"
+const items = computed(() => sortForList(resolvePrizes(props.prizes.filter((p) => p.type !== 'empty'))))
 </script>
 
 <template>

@@ -77,7 +77,7 @@ const slots = computed<WheelSlot[]>(() =>
     return {
       img: shown.img,
       alt: prizeText(shown.prize),
-      chip: shown.kind === 'gift' ? undefined : `+${shown.prize.value.toLocaleString('en-US')}`,
+      chip: shown.kind === 'gift' || shown.kind === 'empty' ? undefined : `+${shown.prize.value.toLocaleString('en-US')}`,
     }
   }),
 )
@@ -201,7 +201,14 @@ async function spin() {
       }
     }
 
-    result.value = res
+    // an empty draw is not a win: the "You won!" screen shows only the real prizes, and a spin with nothing in it just says so
+    const won = res.results.filter((p) => p.type !== 'empty')
+    const empties = res.results.length - won.length
+    if (!won.length) toast.show(t('Empty this time. Try again!'), 'info')
+    else {
+      if (empties) toast.show(t('{n} of your spins were empty', { n: empties }), 'info')
+      result.value = { ...res, results: won }
+    }
     games.fetchSpinLiveWins().catch(() => {})
   } catch (e) {
     toast.show(apiMessage(e, 'Spin failed, please try again'), 'error')

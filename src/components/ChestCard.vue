@@ -19,7 +19,7 @@ const props = defineProps<{
   /** small label under the prize, e.g. "500" */
   label?: string
   /** the number gets its icon, like on the final screen: coins the coin, stars and gifts (worth stars) the star */
-  kind?: 'coins' | 'stars' | 'gift'
+  kind?: 'coins' | 'stars' | 'gift' | 'empty'
   disabled?: boolean
   /** unique number, only used to desynchronise the idle bobbing */
   seed?: number

@@ -6,6 +6,7 @@ import SpinWinOverlay from '@/components/SpinWinOverlay.vue'
 import { sparkles, FRAME } from '@/views/spin-sparkles'
 import { useGamesStore } from '@/stores/games'
 import { useToast } from '@/composables/useToast'
+import { t } from '@/i18n'
 import { apiMessage } from '@/composables/apiError'
 import { apiCode, isApiDisabled } from '@/api/client'
 import { StarIcon } from '@/assets/svgs'
@@ -163,7 +164,12 @@ async function finish(done: { results: SpinPrize[]; coins: number; stars: number
   for (const s of slots.value.filter((x) => x.state === 'closed')) s.state = 'ghost'
   await new Promise((r) => setTimeout(r, 900))
 
-  const results = done?.results.length ? done.results : [...won.value]
+  // an empty chest is not a win: the "You won!" screen lists only real prizes, and a round of empty chests just says so
+  const results = (done?.results.length ? done.results : [...won.value]).filter((p) => p.type !== 'empty')
+  if (!results.length) {
+    toast.show(t('Empty this time. Try again!'), 'info')
+    return
+  }
   result.value = {
     results,
     totalCoinsWon: done ? done.coins : results.filter((p) => p.type === 'coins').reduce((s, p) => s + p.value, 0),
