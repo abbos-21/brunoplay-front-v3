@@ -8,7 +8,6 @@ import { useTopUp } from '@/composables/useTopUp'
 import { sparkles, FRAME } from '@/views/spin-sparkles'
 import { ArrowLeftSVG, StarIcon } from '@/assets/svgs'
 import { CoinImage, TrophyImage, GiftBoxImage } from '@/assets/images'
-import { Win1, Win2, Win3, Win4, Win5 } from '@/assets/images/spin'
 import { useGamesStore } from '@/stores/games'
 import { useAuthStore } from '@/stores/auth'
 import { useToast } from '@/composables/useToast'
@@ -19,7 +18,7 @@ import * as gamesApi from '@/api/games'
 import SpinPrizesModal from '@/components/SpinPrizesModal.vue'
 import SpinWinnersModal from '@/components/SpinWinnersModal.vue'
 import SpinWinOverlay from '@/components/SpinWinOverlay.vue'
-import { FALLBACK_PRIZES, resolvePrizes, wheelSlots, type ResolvedPrize } from '@/views/spin-prizes'
+import { FALLBACK_PRIZES, resolvePrizes, wheelSlots, winImage, type ResolvedPrize } from '@/views/spin-prizes'
 import type { LiveWin, SpinPrize, SpinResult, SpinTierInfo } from '@/types'
 
 const games = useGamesStore()
@@ -38,7 +37,6 @@ function back() {
 const shortCost = (n: number) =>
   n >= 1_000_000 ? `${Number((n / 1_000_000).toFixed(1))}M` : n >= 1000 ? `${Number((n / 1000).toFixed(1))}K` : String(n)
 const COUNTS = [1, 3, 5, 10]
-const WIN_TILES = [Win1, Win2, Win3, Win4, Win5]
 
 // Used when the API has not returned tiers yet (or is disabled in dev mode).
 const fallbackTiers: SpinTierInfo[] = [500, 1000, 2500, 5000, 10000].map((cost, i) => ({
@@ -84,19 +82,11 @@ const slots = computed<WheelSlot[]>(() =>
 const knownPrizes = computed(() => tiers.value.flatMap((t) => t.prizes))
 
 type LiveItem = { key: number; img: string; title: string; name: string; amount: string; stars: boolean }
-const placeholderTiles: LiveItem[] = [Win1, Win2, Win3, Win4, Win5, Win2, Win4].map((img, i) => ({
-  key: -i - 1,
-  img,
-  title: '',
-  name: '',
-  amount: '',
-  stars: false,
-}))
+// the real latest wins, each with the picture of the prize that was really won
 const tiles = computed<LiveItem[]>(() => {
-  if (!games.spinLiveWins.length) return placeholderTiles
-  return games.spinLiveWins.map((w, i) => ({
+  return games.spinLiveWins.map((w) => ({
     key: w.id,
-    img: WIN_TILES[(w.id + i) % WIN_TILES.length]!,
+    img: winImage(w, knownPrizes.value),
     title: `${w.username}: ${w.prizeValue.toLocaleString('en-US')} ${w.prizeType}`,
     name: w.username,
     amount: shortCost(w.prizeValue),
@@ -306,11 +296,12 @@ function openWinners() {
           <span class="shrink-0 flex items-center gap-1 rounded-full bg-[#e5261b] px-2.5 py-0.5 font-extrabold uppercase tracking-wide text-white text-[0.68rem]">
             <span class="size-1.5 rounded-full bg-white animate-pulse" />{{ $t('Live') }}
           </span>
-          <div class="ticker min-w-0 flex-1 overflow-hidden">
+          <p v-if="!tiles.length" class="min-w-0 flex-1 truncate px-1 font-bold text-white/70 text-[0.78rem]">{{ $t('No winners yet') }}</p>
+          <div v-else class="ticker min-w-0 flex-1 overflow-hidden">
             <div class="live-track flex items-center w-max" :style="{ '--dur': `${Math.max(20, tiles.length * 5)}s` }">
               <div v-for="copy in 2" :key="copy" class="flex items-center shrink-0 gap-3 pr-3" :aria-hidden="copy === 2">
                 <div v-for="t in tiles" :key="`${copy}-${t.key}`" class="flex items-center gap-1.5 shrink-0" :title="t.title">
-                  <img decoding="async" :src="t.img" :alt="copy === 1 ? t.title : ''" class="size-8 rounded-lg object-cover" />
+                  <img decoding="async" :src="t.img" :alt="copy === 1 ? t.title : ''" class="size-8 object-contain drop-shadow-[0_2px_2px_rgba(0,0,0,0.35)]" />
                   <span v-if="t.name" class="flex items-center gap-1 font-bold text-white/90 text-[0.78rem] whitespace-nowrap">
                     {{ t.name }}
                     <img decoding="async" :src="t.stars ? StarIcon : CoinImage" alt="" class="w-[1.1em]" />

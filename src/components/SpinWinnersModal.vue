@@ -2,8 +2,7 @@
 import { t } from '@/i18n'
 import { computed } from 'vue'
 import { StarIcon } from '@/assets/svgs'
-import { CoinImage } from '@/assets/images'
-import { resolvePrizes } from '@/views/spin-prizes'
+import { winImage } from '@/views/spin-prizes'
 import type { LiveWin, SpinPrize } from '@/types'
 
 const props = defineProps<{
@@ -14,17 +13,10 @@ const props = defineProps<{
 }>()
 const emit = defineEmits<{ (e: 'close'): void; (e: 'more'): void }>()
 
-const resolved = computed(() => resolvePrizes(props.knownPrizes))
 const colors = ['#2f9bff', '#ff3d77', '#ffa530', '#22b615', '#8a5cff']
 const pad = (n: number) => String(n).padStart(2, '0')
 
-function pictureFor(w: LiveWin) {
-  const match = resolved.value.find((r) => r.prize.type === w.prizeType && r.prize.value === w.prizeValue)
-  if (match) return match.img
-  if (w.prizeType === 'coins') return CoinImage
-  if (w.prizeType === 'stars') return StarIcon
-  return resolved.value[0]?.img ?? StarIcon
-}
+const pictureFor = (w: LiveWin) => winImage(w, props.knownPrizes)
 
 const rows = computed(() =>
   props.winners.map((w) => {

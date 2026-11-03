@@ -101,6 +101,26 @@ export function resolvePrizes(prizes: SpinPrize[]): ResolvedPrize[] {
   })
 }
 
+/**
+ * The picture of a win from the live list: coins and stars have their own, a gift is found by its catalogue key
+ * (the picture uploaded in the admin panel, else the bundled artwork), and only then by its value.
+ */
+export function winImage(w: { prizeType: string; prizeValue: number; gift?: string }, known: SpinPrize[]): string {
+  if (w.prizeType === 'coins') return CoinImage
+  if (w.prizeType === 'stars') return StarIcon
+  const resolved = resolvePrizes(known)
+  const gifts = resolved.filter((r) => r.kind === 'gift')
+  const byKey = w.gift ? gifts.find((r) => r.prize.gift === w.gift) : undefined
+  if (byKey) return byKey.img
+  if (w.gift) {
+    const uploaded = uploadedImg(w.gift)
+    if (uploaded) return uploaded
+    const bundled = GIFTS.find((g) => w.gift!.toLowerCase().includes(g.key))
+    if (bundled) return bundled.img
+  }
+  return gifts.find((r) => r.prize.value === w.prizeValue)?.img ?? GIFTS[0]!.img
+}
+
 /** roughly what a prize is worth, to sort gifts, stars and coins together (a coin is a tiny fraction of a star) */
 const worth = (r: ResolvedPrize) => (r.kind === 'coins' ? r.prize.value * 0.0001 : r.prize.value)
 
