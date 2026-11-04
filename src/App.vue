@@ -4,7 +4,7 @@ import { hasChosen, locale, setLocale } from '@/i18n'
 import { RouterView, useRoute } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import { useFishingStore } from '@/stores/fishing'
-import { useMusic } from '@/composables/useMusic'
+import { useMusic, musicWanted } from '@/composables/useMusic'
 import NavigationMenu from '@/components/NavigationMenu.vue'
 import TopUpPanel from '@/components/TopUpPanel.vue'
 import { useTopUp } from '@/composables/useTopUp'
@@ -68,7 +68,10 @@ onMounted(() => {
     setAudio(audioRef.value)
 
     // Try autoplay, but only once the first screen has settled: the music file is large and must not compete with it
-    const start = () => void play()
+    // (not when the player paused the music last time)
+    const start = () => {
+      if (musicWanted()) void play()
+    }
     const idle = (window as unknown as { requestIdleCallback?: (cb: () => void, o?: { timeout: number }) => void }).requestIdleCallback
     setTimeout(() => (idle ? idle(start, { timeout: 3000 }) : start()), 2000)
   }
