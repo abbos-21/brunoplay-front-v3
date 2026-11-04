@@ -44,6 +44,12 @@ const router = createRouter({
       meta: { hideNav: true },
     },
     {
+      path: '/withdraw/stars',
+      name: 'withdraw-stars',
+      component: () => import('@/views/StarWithdrawView.vue'),
+      meta: { hideNav: true },
+    },
+    {
       path: '/withdraw/history',
       name: 'withdraw-history',
       component: () => import('@/views/WithdrawalHistoryView.vue'),

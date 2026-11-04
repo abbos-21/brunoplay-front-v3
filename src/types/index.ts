@@ -602,3 +602,22 @@ export interface ExchangeResult {
   starsBalance: number
   coinsBalance: number
 }
+
+/** taking game stars out as real Telegram Stars: an admin sends them by hand */
+export interface StarWdInfo {
+  minStars: number
+  balance: number
+  notice: string
+  canWithdraw: boolean
+  blockedReason?: string
+  minLevel: number
+}
+
+export interface StarWithdrawal {
+  id: number
+  stars: number
+  status: 'PENDING' | 'DELIVERED' | 'CANCELLED'
+  rejectReason?: string
+  createdAt: string
+  processedAt: string | null
+}

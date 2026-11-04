@@ -239,6 +239,14 @@ const close = useGoBack('/')
       </button>
 
       <RouterLink
+        to="/withdraw/stars"
+        class="self-center flex items-center gap-2 rounded-full border border-[#b9722a] bg-[#fff4d6] px-5 py-1.5 font-bold text-[#552a0f] text-[length:clamp(0.85rem,4.2vw,1.1rem)] shadow-[0px_3px_3px_rgba(0,0,0,0.2)] active:translate-y-px"
+      >
+        <img decoding="async" loading="lazy" :src="StarIcon" alt="" class="w-[1.3em]" />
+        {{ $t('Withdraw stars') }}
+      </RouterLink>
+
+      <RouterLink
         to="/exchange"
         class="self-center flex items-center gap-2 rounded-full border border-[#b9722a] bg-[#fff4d6] px-5 py-1.5 font-bold text-[#552a0f] text-[length:clamp(0.85rem,4.2vw,1.1rem)] shadow-[0px_3px_3px_rgba(0,0,0,0.2)] active:translate-y-px"
       >

@@ -3,7 +3,7 @@ import type {
   SpinTierInfo, SpinResult, LiveWin,
   ChestState, ChestPickResult,
   RideInfo, RideRun, RideFinishResult,
-  PlayerGift, PaginatedResponse, ExchangeInfo, ExchangeResult,
+  PlayerGift, PaginatedResponse, ExchangeInfo, ExchangeResult, StarWdInfo, StarWithdrawal,
 } from '@/types';
 
 // === Spin ===
@@ -63,6 +63,19 @@ export function getExchange() {
 
 export function exchangeStars(stars: number) {
   return client.post<ExchangeResult>('/exchange', { stars }).then((r) => r.data);
+}
+
+// === Star withdrawals (real Telegram Stars, sent by an admin) ===
+export function getStarWithdrawalInfo() {
+  return client.get<StarWdInfo>('/star-withdrawals/info').then((r) => r.data);
+}
+
+export function getStarWithdrawals() {
+  return client.get<{ data: StarWithdrawal[] | null }>('/star-withdrawals').then((r) => r.data.data ?? []);
+}
+
+export function createStarWithdrawal(stars: number) {
+  return client.post<{ withdrawal: StarWithdrawal; newBalance: number }>('/star-withdrawals', { stars }).then((r) => r.data);
 }
 
 export function sellGift(id: number) {

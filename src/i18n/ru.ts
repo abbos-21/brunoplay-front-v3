@@ -231,6 +231,11 @@ const ru: Record<string, string> = {
   'Withdrawal requested': 'Заявка на вывод создана',
   'Withdrawal failed, please try again': 'Не удалось вывести, попробуйте ещё раз',
 
+  // ── star withdrawal
+  'Withdraw stars': 'Вывод звёзд',
+  'You get real Telegram Stars on your Telegram account.': 'Вы получите настоящие звёзды Telegram на свой аккаунт.',
+  'Minimum withdrawal is {n} stars': 'Минимальный вывод — {n} звёзд',
+
   // ── exchange (coins → stars)
   Exchange: 'Обмен',
   'Exchange coins for stars': 'Обменять монеты на звёзды',
