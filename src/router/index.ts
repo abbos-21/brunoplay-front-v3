@@ -113,12 +113,14 @@ if (import.meta.env.DEV) {
 // natural pauses, the only places where an interstitial ad may follow: leaving a game, and moving between the screens of the bottom menu.
 // It only shows when the admin switched it on and the gap since the last ad is over (see useInterstitial).
 const GAME_ROUTES = new Set(['games-ride', 'games-spin', 'games-roulette'])
+// Bruno's Ride has the rewarded ad only (to start a run when the stars ran out): no interstitial when leaving it either
+const NO_LEAVE_AD = new Set(['games-ride'])
 const MENU_ROUTES = new Set(['home', 'shop', 'games', 'tasks', 'friends'])
 router.afterEach((to, from) => {
   const left = String(from.name ?? '')
   const next = String(to.name ?? '')
   if (!left || left === next) return
-  const leftGame = GAME_ROUTES.has(left) && !GAME_ROUTES.has(next)
+  const leftGame = GAME_ROUTES.has(left) && !NO_LEAVE_AD.has(left) && !GAME_ROUTES.has(next)
   const menuSwitch = MENU_ROUTES.has(left) && MENU_ROUTES.has(next)
   if (leftGame || menuSwitch) {
     setTimeout(() => void import('@/composables/useInterstitial').then((m) => m.maybeShowInterstitial()), 700)

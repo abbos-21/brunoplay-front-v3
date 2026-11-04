@@ -45,6 +45,9 @@ export const adBusy = ref(false)
 /** true once a rewarded ad was really shown to the player (not when ads are off or skipped for them); withAd reads it */
 let rewardedAdShown = false
 
+/** rewarded placements that are NOT followed by an interstitial: Bruno's Ride starts a run right after the ad, a second ad would ruin it */
+const NO_INTERSTITIAL_AFTER = new Set<AdPlacement>(['RIDE_FREE'])
+
 let sdk: Promise<AdsgramGlobal> | null = null
 
 export function loadSdk(): Promise<AdsgramGlobal> {
@@ -161,7 +164,7 @@ export async function withAd<T>(placement: AdPlacement, action: (adViewId?: stri
     try {
       const result = await action(id)
       // the reward is in: an interstitial follows every rewarded ad, a moment later so the player sees the reward first
-      if (shown) setTimeout(() => void import('@/composables/useInterstitial').then((m) => m.maybeShowInterstitial({ afterReward: true })), 800)
+      if (shown && !NO_INTERSTITIAL_AFTER.has(placement)) setTimeout(() => void import('@/composables/useInterstitial').then((m) => m.maybeShowInterstitial({ afterReward: true })), 800)
       return result
     } catch (e) {
       if (id && apiCode(e) === 'AD_NOT_COMPLETED' && attempt < 12) {
