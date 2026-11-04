@@ -38,6 +38,12 @@ const router = createRouter({
       meta: { hideNav: true },
     },
     {
+      path: '/exchange',
+      name: 'exchange',
+      component: () => import('@/views/ExchangeView.vue'),
+      meta: { hideNav: true },
+    },
+    {
       path: '/withdraw/history',
       name: 'withdraw-history',
       component: () => import('@/views/WithdrawalHistoryView.vue'),

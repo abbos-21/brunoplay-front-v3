@@ -5,6 +5,7 @@ import { RouterLink } from 'vue-router'
 import AnimatedNumber from '@/components/AnimatedNumber.vue'
 import CloseButton from '@/components/CloseButton.vue'
 import { CoinImage, TonImage } from '@/assets/images'
+import { StarIcon } from '@/assets/svgs'
 import { useAuthStore } from '@/stores/auth'
 import { useWalletStore } from '@/stores/wallet'
 import { apiMessage } from '@/composables/apiError'
@@ -236,6 +237,14 @@ const close = useGoBack('/')
       >
         {{ submitting ? $t('Sending…') : $t('Withdraw') }}
       </button>
+
+      <RouterLink
+        to="/exchange"
+        class="self-center flex items-center gap-2 rounded-full border border-[#b9722a] bg-[#fff4d6] px-5 py-1.5 font-bold text-[#552a0f] text-[length:clamp(0.85rem,4.2vw,1.1rem)] shadow-[0px_3px_3px_rgba(0,0,0,0.2)] active:translate-y-px"
+      >
+        <img decoding="async" loading="lazy" :src="StarIcon" alt="" class="w-[1.3em]" />
+        {{ $t('Exchange stars for coins') }}
+      </RouterLink>
 
       <RouterLink
         to="/withdraw/history"

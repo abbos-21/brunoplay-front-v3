@@ -588,3 +588,17 @@ export interface AppInfo {
   minVersion: string
   topupTonBonusPercent?: number
 }
+
+/** stars → coins: the rate is set in the admin panel */
+export interface ExchangeInfo {
+  coinsPerStar: number
+  minStars: number
+  enabled: boolean
+}
+
+export interface ExchangeResult {
+  stars: number
+  coins: number
+  starsBalance: number
+  coinsBalance: number
+}

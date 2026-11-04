@@ -3,7 +3,7 @@ import type {
   SpinTierInfo, SpinResult, LiveWin,
   ChestState, ChestPickResult,
   RideInfo, RideRun, RideFinishResult,
-  PlayerGift, PaginatedResponse,
+  PlayerGift, PaginatedResponse, ExchangeInfo, ExchangeResult,
 } from '@/types';
 
 // === Spin ===
@@ -54,6 +54,15 @@ export function getGifts() {
 /** Gifts that have a picture uploaded in the admin panel: [{ key, imageV }]. The picture is at `/gift-images/{key}?v={imageV}`. */
 export function getGiftArt() {
   return client.get<{ gifts: { key: string; imageV: number }[] | null }>('/gifts/art').then((r) => r.data.gifts ?? []);
+}
+
+// === Stars → coins ===
+export function getExchange() {
+  return client.get<ExchangeInfo>('/exchange').then((r) => r.data);
+}
+
+export function exchangeStars(stars: number) {
+  return client.post<ExchangeResult>('/exchange', { stars }).then((r) => r.data);
 }
 
 export function sellGift(id: number) {
