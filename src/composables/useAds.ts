@@ -4,11 +4,10 @@ import { apiCode } from '@/api/client'
 import type { AdPlacement, AdProviderRef, AdView } from '@/types'
 import { t } from '@/i18n'
 import { markAd } from '@/composables/adClock'
-import { playTads, TadsSkipped } from '@/composables/tadsPlayer'
 import { playMonetag } from '@/composables/monetagPlayer'
 
 /**
- * Rewarded ads (Adsgram, TADS, ...: the admin panel decides which providers are on and in which order they are asked).
+ * Rewarded ads (Adsgram, Monetag, ...: the admin panel decides which providers are on and in which order they are asked).
  *
  * The server hands out a proof (adViewId) for one action. The player watches the ad in the provider's SDK, the provider tells
  * our server it was watched (a server-to-server callback), and only then the server accepts the proof. The action is therefore
@@ -90,16 +89,6 @@ async function playAd(blockId: string): Promise<void> {
  */
 const players: Record<string, (ref: AdProviderRef, adViewId: string) => Promise<void>> = {
   adsgram: (ref) => playAd(ref.blockId ?? ''),
-  tads: async (ref) => {
-    try {
-      await playTads(ref)
-      // TADS reports the ad when it STARTS, so the reward comes at once: the ad is over only after the wait from the admin panel
-      if (ref.waitSeconds) await wait(ref.waitSeconds * 1000)
-    } catch (e) {
-      if (e instanceof TadsSkipped) throw new AdError(t('Watch the ad to the end to continue'), 'skipped')
-      throw e
-    }
-  },
   monetag: async (ref, adViewId) => {
     const started = Date.now()
     await playMonetag(ref, adViewId)

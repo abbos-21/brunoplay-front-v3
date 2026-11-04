@@ -77,7 +77,6 @@ export type AdPlacement =
 export interface AdProviderRef {
   id: string
   blockId?: string // Adsgram
-  widgetId?: string // TADS
   zoneId?: string // Monetag (the proof id is passed to it as ymid)
   debug?: boolean
   /** the provider reports an ad when it starts: wait this long (the server also refuses the action before it) */
@@ -103,8 +102,6 @@ export interface AdsConfig {
   interstitial: { enabled: boolean; blockId: string; providers?: AdProviderRef[]; intervalSeconds: number; firstAfterSeconds: number }
   /** `available`: the player may do a sponsored task now; else `nextInSeconds` tells when (the admin sets the interval) */
   task: { enabled: boolean; blockId: string; coins: number; intervalMinutes: number; available: boolean; nextInSeconds: number }
-  /** a block of ad cards inside a screen (TADS TGB widget); nothing is paid for it */
-  banner: { enabled: boolean; provider: string; widgetId: string; debug: boolean }
   /** Monetag's Rewarded Popup as a task card: the tap opens a partner offer outside the game */
   popupTask: { enabled: boolean; provider: string; zoneId: string; coins: number; intervalMinutes: number; waitSeconds: number; available: boolean; nextInSeconds: number }
 }
