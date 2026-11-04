@@ -43,6 +43,9 @@ export class AdError extends Error {
 /** true while an ad is on screen (screens can dim their buttons) */
 export const adBusy = ref(false)
 
+/** true once a rewarded ad was really shown to the player (not when ads are off or skipped for them); withAd reads it */
+let rewardedAdShown = false
+
 let sdk: Promise<AdsgramGlobal> | null = null
 
 export function loadSdk(): Promise<AdsgramGlobal> {
@@ -130,6 +133,7 @@ export async function showAd(placement: AdPlacement): Promise<string | undefined
       if (!play) continue // a provider this app version does not know
       try {
         await play(ref, view.adViewId)
+        rewardedAdShown = true
         return view.adViewId
       } catch (e) {
         if (e instanceof AdError && e.kind === 'skipped') throw e // the player closed it: do not show another ad
@@ -150,7 +154,7 @@ export async function showAd(placement: AdPlacement): Promise<string | undefined
     throw new AdError(t('No ad is available right now, try again in a moment'), 'unavailable')
   } finally {
     adBusy.value = false
-    markAd() // an interstitial does not follow right after this ad
+    markAd()
   }
 }
 
@@ -161,10 +165,15 @@ const wait = (ms: number) => new Promise((r) => setTimeout(r, ms))
  * While Adsgram's callback has not reached the server yet the action answers AD_NOT_COMPLETED; that is retried briefly.
  */
 export async function withAd<T>(placement: AdPlacement, action: (adViewId?: string) => Promise<T>): Promise<T> {
+  rewardedAdShown = false
   const id = await showAd(placement)
+  const shown = rewardedAdShown
   for (let attempt = 0; ; attempt++) {
     try {
-      return await action(id)
+      const result = await action(id)
+      // the reward is in: an interstitial follows every rewarded ad, a moment later so the player sees the reward first
+      if (shown) setTimeout(() => void import('@/composables/useInterstitial').then((m) => m.maybeShowInterstitial({ afterReward: true })), 800)
+      return result
     } catch (e) {
       if (id && apiCode(e) === 'AD_NOT_COMPLETED' && attempt < 12) {
         await wait(700)

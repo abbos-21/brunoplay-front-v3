@@ -88,13 +88,16 @@ function providerList(cfg: NonNullable<AdsConfig['interstitial']>): AdProviderRe
   return cfg.blockId ? [{ id: 'adsgram', blockId: cfg.blockId }] : []
 }
 
-/** Shows an interstitial when it is switched on, the first minutes have passed and the gap since the last ad is over. */
-export async function maybeShowInterstitial(): Promise<boolean> {
+/**
+ * Shows an interstitial when it is switched on, the first minutes have passed and the gap since the last ad is over.
+ * After a rewarded ad (`afterReward`) it follows every single time: the first-minutes rule and the gap do not apply (the admin switch does).
+ */
+export async function maybeShowInterstitial(opts: { afterReward?: boolean } = {}): Promise<boolean> {
   if (showing || adBusy.value || document.hidden) return false
   const cfg = (await fetchAdsConfig())?.interstitial
   const list = cfg?.enabled ? providerList(cfg) : []
   if (!cfg || !list.length) return false
-  if (msSinceOpen() < cfg.firstAfterSeconds * 1000 || msSinceLastAd() < cfg.intervalSeconds * 1000) return false
+  if (!opts.afterReward && (msSinceOpen() < cfg.firstAfterSeconds * 1000 || msSinceLastAd() < cfg.intervalSeconds * 1000)) return false
   if (showing || adBusy.value) return false
   showing = true
   let shown = 0
