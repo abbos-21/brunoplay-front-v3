@@ -142,6 +142,8 @@ export function wheelSlots(all: ResolvedPrize[]): ResolvedPrize[] {
   const empty = all.find((r) => r.kind === 'empty')
   const real = all.filter((r) => r.kind !== 'empty')
   if (!real.length) return Array.from({ length: 8 }, () => empty!)
+  // two outcomes only (a win and nothing): the wheel alternates them, four of each
+  if (empty && real.length === 1) return Array.from({ length: 8 }, (_, i) => (i % 2 === 0 ? real[0]! : empty))
   const n = empty ? 7 : 8
   const gifts = real.filter((r) => r.kind === 'gift')
   const others = real.filter((r) => r.kind !== 'gift')

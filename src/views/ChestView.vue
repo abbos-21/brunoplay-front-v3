@@ -20,13 +20,14 @@ const router = useRouter()
 const games = useGamesStore()
 const toast = useToast()
 
-const CHESTS = 9
+const CHESTS = 3
 
 // A round is paid once; the server draws its prizes at that moment, so the order of the taps changes nothing.
 // A paid round survives leaving the app: it is resumed from the server.
 const auth = useAuthStore()
 const topUp = useTopUp()
-const PICKS = computed(() => games.chest?.picksPerRound ?? 3)
+const PICKS = computed(() => games.chest?.picksPerRound ?? 1)
+const WIN_STARS = computed(() => games.chest?.winStars ?? ROUND_COST.value * 3)
 const ROUND_COST = computed(() => games.chest?.roundCostStars ?? 10)
 // the balance is unknown until the player has loaded (then the round can start, the server checks it)
 const canPay = computed(() => !auth.user || auth.user.starsBalance >= ROUND_COST.value)
@@ -123,7 +124,7 @@ async function pick(i: number) {
   if (!started.value) return
   busy.value = true
   slot.state = 'opening'
-  let done: { results: SpinPrize[]; coins: number; stars: number } | null = null
+  let done: { results: SpinPrize[]; coins: number; stars: number; reveal: SpinPrize[] } | null = null
   try {
     let prize: SpinPrize
     if (isApiDisabled) {
@@ -136,6 +137,7 @@ async function pick(i: number) {
           results: (r.results ?? []).map(toPrize),
           coins: r.totalCoinsWon ?? 0,
           stars: r.totalStarsWon ?? 0,
+          reveal: (r.reveal ?? []).map(toPrize),
         }
       }
     }
@@ -158,10 +160,15 @@ async function pick(i: number) {
   busy.value = false
 }
 
-async function finish(done: { results: SpinPrize[]; coins: number; stars: number } | null) {
+async function finish(done: { results: SpinPrize[]; coins: number; stars: number; reveal: SpinPrize[] } | null) {
   finished.value = true
-  // the chests that were not opened are shown open and dimmed; the server does not reveal what was in them
-  for (const s of slots.value.filter((x) => x.state === 'closed')) s.state = 'ghost'
+  // the chests that were not opened are shown open and dimmed, with what was inside
+  slots.value.forEach((s, i) => {
+    if (s.state !== 'closed') return
+    const inside = done?.reveal[i]
+    if (inside) s.prize = describe(inside)
+    s.state = 'ghost'
+  })
   await new Promise((r) => setTimeout(r, 900))
 
   // an empty chest is not a win: the "You won!" screen lists only real prizes, and a round of empty chests just says so
@@ -215,8 +222,8 @@ async function finish(done: { results: SpinPrize[]; coins: number; stars: number
           :style="{ fontSize: u(30), marginTop: u(4) }"
         >
           <template v-if="!finished">
-            <template v-if="started">{{ $tn('Open {n} more chest|Open {n} more chests', remaining) }}</template>
-            <template v-else>{{ $t('Pay once, open {n} chests', { n: PICKS }) }}</template>
+            <template v-if="started">{{ remaining > 1 ? $tn('Open {n} more chest|Open {n} more chests', remaining) : $t('One of the chests holds {n} stars', { n: WIN_STARS }) }}</template>
+            <template v-else>{{ $t('One of 3 chests holds {n} stars', { n: WIN_STARS }) }}</template>
           </template>
           <template v-else>{{ $t('Nice! Want another round?') }}</template>
         </p>
@@ -239,7 +246,7 @@ async function finish(done: { results: SpinPrize[]; coins: number; stars: number
         </div>
 
         <!-- pick counter -->
-        <div class="flex items-center justify-center" :style="{ gap: u(16), marginTop: u(26) }">
+        <div v-if="PICKS > 1" class="flex items-center justify-center" :style="{ gap: u(16), marginTop: u(26) }">
           <span
             v-for="n in PICKS"
             :key="n"
@@ -287,7 +294,7 @@ async function finish(done: { results: SpinPrize[]; coins: number; stars: number
         class="w-full max-w-[16rem] rounded-3xl border-2 border-[#cf8741] bg-[#fff4d6] px-4 py-4 text-center text-[#552a0f] shadow-[0px_6px_10px_rgba(0,0,0,0.3)]"
       >
         <h2 class="font-extrabold leading-tight text-[length:clamp(1.3rem,6vw,1.6rem)]">{{ $t('Mega Chest') }}</h2>
-        <p class="mt-0.5 text-[#8a5a2b] font-bold text-[length:clamp(0.85rem,4vw,1rem)]">{{ $t('Open {n} chests', { n: PICKS }) }}</p>
+        <p class="mt-0.5 text-[#8a5a2b] font-bold text-[length:clamp(0.85rem,4vw,1rem)]">{{ $t('Open one of 3 chests: win {n} stars', { n: WIN_STARS }) }}</p>
         <button
           type="button"
           class="mt-4 w-full rounded-full border border-[#d9680f] bg-[#f96a07] py-2 flex items-center justify-center gap-1.5 font-bold text-white text-[length:clamp(1.05rem,5.2vw,1.35rem)] shadow-[inset_0px_3px_3px_rgba(255,255,255,0.25),inset_0px_-3px_3px_rgba(0,0,0,0.2)] active:translate-y-px"

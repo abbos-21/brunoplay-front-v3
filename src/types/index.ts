@@ -273,6 +273,9 @@ export interface ChestState {
   round: ChestRound | null
   roundCostStars: number
   picksPerRound: number
+  /** what the prize chest pays, as a multiple of the price, and in stars */
+  multiplier?: number
+  winStars?: number
 }
 
 export interface ChestPickResult {
@@ -283,6 +286,8 @@ export interface ChestPickResult {
   results?: ChestPrize[]
   totalCoinsWon?: number
   totalStarsWon?: number
+  /** when the round ends: what was in each chest, by slot */
+  reveal?: ChestPrize[]
 }
 
 // === Bruno's Ride ===
