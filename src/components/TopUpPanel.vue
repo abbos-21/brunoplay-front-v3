@@ -236,7 +236,7 @@ const tabBase =
             class="flex items-center gap-1.5 font-semibold text-[length:clamp(1.05rem,4.9vw,1.3rem)]"
           >
             <img decoding="async" loading="lazy" :src="TonImage" alt="" class="w-[clamp(1.4rem,6.5vw,1.7rem)] rounded-full" />
-            {{ busyPack === o.stars ? '…' : `${o.ton} TON` }}
+            {{ busyPack === o.stars ? '…' : `${Number(o.ton).toFixed(2)} TON` }}
           </span>
         </button>
       </div>
