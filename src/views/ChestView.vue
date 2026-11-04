@@ -208,7 +208,7 @@ async function finish(done: { results: SpinPrize[]; coins: number; stars: number
       class="relative z-10 w-full h-full overflow-y-auto overflow-x-hidden [container-type:inline-size] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
     >
       <div
-        class="min-h-full flex flex-col items-center overflow-x-clip"
+        class="relative min-h-full flex flex-col items-center overflow-x-clip"
         :style="{ padding: `${u(40)} ${u(20)} ${u(40)}` }"
       >
         <h1
@@ -228,9 +228,11 @@ async function finish(done: { results: SpinPrize[]; coins: number; stars: number
           <template v-else>{{ $t('Nice! Want another round?') }}</template>
         </p>
 
+        <!-- the chests sit in the middle of the screen; the buttons of a finished round hang below them -->
+        <div class="absolute inset-x-0 top-1/2 -translate-y-1/2" :style="{ paddingInline: u(20) }">
         <div
           class="grid grid-cols-3 w-full"
-          :style="{ gap: `${u(14)} ${u(10)}`, marginTop: u(66) }"
+          :style="{ gap: `${u(14)} ${u(10)}` }"
         >
           <ChestCard
             v-for="(s, i) in slots"
@@ -260,11 +262,7 @@ async function finish(done: { results: SpinPrize[]; coins: number; stars: number
           />
         </div>
 
-        <div
-          v-if="finished"
-          class="flex flex-col items-center"
-          :style="{ marginTop: u(34), gap: u(14) }"
-        >
+        <div v-if="finished" class="absolute inset-x-0 top-full flex flex-col items-center" :style="{ paddingTop: u(34), gap: u(14) }">
           <button
             type="button"
             class="bg-[#fbe166] text-[#552a0f] font-extrabold shadow-[0px_3px_2px_rgba(0,0,0,0.25),inset_0px_3px_4px_rgba(255,255,255,0.25),inset_0px_-3px_4px_rgba(0,0,0,0.25)] active:translate-y-px"
@@ -284,6 +282,7 @@ async function finish(done: { results: SpinPrize[]; coins: number; stars: number
           >
             {{ $t('Back to games') }}
           </button>
+        </div>
         </div>
       </div>
     </div>

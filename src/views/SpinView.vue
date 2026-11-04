@@ -75,7 +75,8 @@ const slots = computed<WheelSlot[]>(() =>
     return {
       img: shown.img,
       alt: prizeText(shown.prize),
-      chip: shown.kind === 'gift' || shown.kind === 'empty' ? undefined : `+${shown.prize.value.toLocaleString('en-US')}`,
+      chip: shown.kind === 'empty' ? t('Nothing') : shown.kind === 'gift' ? undefined : `+${shown.prize.value.toLocaleString('en-US')}`,
+      tone: shown.kind === 'empty' ? 'empty' : 'win',
     }
   }),
 )
@@ -147,8 +148,9 @@ function slotFor(prize: SpinPrize) {
 }
 
 function spinTo(slot: number, ms: number, turns: number) {
-  const slotAngle = 22.5 + 45 * slot
-  const jitter = (Math.random() - 0.5) * 30 // stay inside the sector
+  const sector = 360 / Math.max(1, wheelPrizes.value.length)
+  const slotAngle = sector * (slot + 0.5)
+  const jitter = (Math.random() - 0.5) * sector * 0.67 // stay inside the sector, away from its edges
   const current = ((rotation.value % 360) + 360) % 360
   // the arrow is at the top, so the slot's angle plus the wheel rotation must end up at 0°
   const delta = (((-slotAngle - jitter - current) % 360) + 360) % 360

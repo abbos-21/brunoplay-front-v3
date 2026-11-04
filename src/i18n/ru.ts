@@ -155,6 +155,7 @@ const ru: Record<string, string> = {
   'Spinning…': 'Крутим…',
   'Not enough stars': 'Недостаточно звёзд',
   'Empty this time. Try again!': 'В этот раз пусто. Попробуйте ещё!',
+  'Nothing': 'Пусто',
   '{n} of your spins were empty': 'Пустых вращений: {n}',
   Empty: 'Пусто',
   'Spin failed, please try again': 'Не удалось покрутить, попробуйте ещё раз',

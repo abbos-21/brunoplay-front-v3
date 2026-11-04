@@ -10,6 +10,8 @@ export interface WheelSlot {
   alt: string
   /** small caption under the prize (e.g. "+500") */
   chip?: string
+  /** colour of the sector on a two-sector wheel */
+  tone?: 'win' | 'empty'
 }
 
 const props = defineProps<{
@@ -78,20 +80,32 @@ const counterStyle = computed(() => ({
   transition: props.duration ? `transform ${props.duration}ms cubic-bezier(0.12, 0.7, 0.1, 1)` : 'none',
 }))
 
-// spokes: radius 68 → 324, one every 45°. Drawn with CSS (not the 1px SVG strokes) so they
+// the wheel has as many sectors as slots (8 normally, 2 for a win-or-nothing game)
+const N = computed(() => Math.max(1, props.slots.length))
+const HALVES = computed(() => props.slots.length === 2)
+
+// spokes: radius 68 → 324, one between every two sectors. Drawn with CSS (not the 1px SVG strokes) so they
 // keep a minimum thickness and never disappear when the wheel is small.
 const SPOKE_H = `max(1.5px, ${wu(2)})`
-const spokes = [-90, -45, 0, 45, 90, 135, 180, 225].map((a) => ({
+const spokes = computed(() => Array.from({ length: N.value }, (_, i) => -90 + (360 / N.value) * i).map((a) => ({
   position: 'absolute' as const,
   left: wu(C),
   // the line's own middle sits exactly on the wheel's centre, so it turns around the centre (no sideways drift)
   top: `calc(${wu(C)} - ${SPOKE_H} / 2)`,
-  width: wu(256),
   height: SPOKE_H,
   background: 'rgba(255,255,255,0.9)',
   transformOrigin: '0 50%',
-  transform: `rotate(${a}deg) translateX(${wu(68)})`,
-}))
+  transform: `rotate(${a}deg) translateX(${wu(HALVES.value ? 0 : 68)})`,
+  width: wu(HALVES.value ? 324 : 256),
+})))
+
+// two sectors: the right half (clockwise from the top) is slot 0, the left half slot 1
+const HALF_R = 322
+const halfPaths = [
+  `M ${C} ${C - HALF_R} A ${HALF_R} ${HALF_R} 0 0 1 ${C} ${C + HALF_R} L ${C} ${C} Z`,
+  `M ${C} ${C + HALF_R} A ${HALF_R} ${HALF_R} 0 0 1 ${C} ${C - HALF_R} L ${C} ${C} Z`,
+]
+const toneOf = (i: number) => props.slots[i]?.tone ?? (i === 0 ? 'win' : 'empty')
 
 // rim studs: one at the end of every spoke (the one at 0° starts under the pointer)
 const studs = [0, 45, 90, 135, 180, 225, 270, 315].map((a) => {
@@ -109,12 +123,12 @@ const studs = [0, 45, 90, 135, 180, 225, 270, 315].map((a) => {
 
 // prizes sit between spokes: 22.5° + 45° * i, clockwise from the top
 const prizes = computed(() =>
-  props.slots.slice(0, 8).map((slot, i) => {
-    const a = 22.5 + 45 * i
+  props.slots.map((slot, i) => {
+    const a = (360 / N.value) * (i + 0.5)
     // the red disc fills the 650px box (radius 325); keep r + size/2 well inside it
-    const r = 222
+    const r = HALVES.value ? 215 : 222
     const rad = (a * Math.PI) / 180
-    return { slot, style: place(168, C + r * Math.sin(rad), C - r * Math.cos(rad)) }
+    return { slot, style: place(HALVES.value ? 150 : 168, C + r * Math.sin(rad), C - r * Math.cos(rad)) }
   }),
 )
 
@@ -138,6 +152,22 @@ const pointers = [
     <img decoding="async" :src="WheelRimB" alt="" :style="place(730)" />
 
     <div class="absolute inset-0" :style="rotStyle">
+      <!-- a win-or-nothing wheel: two halves, green for the win and blue for nothing -->
+      <svg v-if="HALVES" class="absolute inset-0 h-full w-full" :viewBox="`0 0 ${SIZE} ${SIZE}`" aria-hidden="true">
+        <defs>
+          <radialGradient id="wheel-win" cx="50%" cy="50%" r="50%">
+            <stop offset="18%" stop-color="#7bea5c" />
+            <stop offset="70%" stop-color="#2fc21f" />
+            <stop offset="100%" stop-color="#17870f" />
+          </radialGradient>
+          <radialGradient id="wheel-empty" cx="50%" cy="50%" r="50%">
+            <stop offset="18%" stop-color="#6f86c4" />
+            <stop offset="70%" stop-color="#3f5599" />
+            <stop offset="100%" stop-color="#2b3b78" />
+          </radialGradient>
+        </defs>
+        <path v-for="(d, i) in halfPaths" :key="i" :d="d" :fill="toneOf(i) === 'win' ? 'url(#wheel-win)' : 'url(#wheel-empty)'" />
+      </svg>
       <span v-for="(s, i) in spokes" :key="i" :style="s" />
     </div>
 
@@ -151,8 +181,9 @@ const pointers = [
           <img decoding="async" :src="p.slot.img" :alt="p.slot.alt" class="block w-full drop-shadow-[0_4px_4px_rgba(0,0,0,0.25)]" />
           <span
             v-if="p.slot.chip"
-            class="absolute left-1/2 bottom-[4%] -translate-x-1/2 whitespace-nowrap font-extrabold text-white [text-shadow:0_2px_2px_rgba(0,0,0,0.6)]"
-            :style="{ fontSize: wu(30) }"
+            class="absolute left-1/2 -translate-x-1/2 whitespace-nowrap font-extrabold text-white [text-shadow:0_2px_2px_rgba(0,0,0,0.6)]"
+            :class="HALVES ? 'bottom-[-34%]' : 'bottom-[4%]'"
+            :style="{ fontSize: wu(HALVES ? 46 : 30) }"
           >
             {{ p.slot.chip }}
           </span>

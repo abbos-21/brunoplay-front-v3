@@ -142,8 +142,8 @@ export function wheelSlots(all: ResolvedPrize[]): ResolvedPrize[] {
   const empty = all.find((r) => r.kind === 'empty')
   const real = all.filter((r) => r.kind !== 'empty')
   if (!real.length) return Array.from({ length: 8 }, () => empty!)
-  // two outcomes only (a win and nothing): the wheel alternates them, four of each
-  if (empty && real.length === 1) return Array.from({ length: 8 }, (_, i) => (i % 2 === 0 ? real[0]! : empty))
+  // two outcomes only (a win and nothing): the wheel is cut in half, one half each
+  if (empty && real.length === 1) return [real[0]!, empty]
   const n = empty ? 7 : 8
   const gifts = real.filter((r) => r.kind === 'gift')
   const others = real.filter((r) => r.kind !== 'gift')
@@ -172,18 +172,8 @@ export function sortForList(items: ResolvedPrize[]): ResolvedPrize[] {
   return [...items].sort((a, b) => rank(a) - rank(b) || b.prize.value - a.prize.value)
 }
 
-/** Shown when the API has no tiers (e.g. dev mode with the API switched off). */
+/** Shown when the API has no tiers (e.g. dev mode with the API switched off): a win and nothing. */
 export const FALLBACK_PRIZES: SpinPrize[] = [
-  { type: 'gift', value: 500000, weight: 3, label: 'Heart' },
-  { type: 'gift', value: 15000, weight: 12, label: 'Apple' },
-  { type: 'gift', value: 8000, weight: 14, label: 'Ring' },
-  { type: 'gift', value: 7500, weight: 14, label: 'Watch' },
-  { type: 'gift', value: 10000, weight: 13, label: 'Cat' },
-  { type: 'gift', value: 20000, weight: 10, label: 'Panda' },
-  { type: 'gift', value: 400000, weight: 4, label: 'Cap' },
-  { type: 'gift', value: 1000000, weight: 1, label: 'Frog' },
-  { type: 'coins', value: 5000, weight: 15, label: 'Coins' },
-  { type: 'coins', value: 3000, weight: 20, label: 'Coins' },
-  { type: 'coins', value: 1500, weight: 25, label: 'Coins' },
-  { type: 'coins', value: 500, weight: 30, label: 'Coins' },
+  { type: 'stars', value: 1000, weight: 45, label: 'Stars' },
+  { type: 'empty', value: 0, weight: 55, label: 'Empty' },
 ]
