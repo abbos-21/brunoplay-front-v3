@@ -589,7 +589,7 @@ export interface AppInfo {
   topupTonBonusPercent?: number
 }
 
-/** stars → coins: the rate is set in the admin panel */
+/** coins → stars: the price of one star in coins is set in the admin panel */
 export interface ExchangeInfo {
   coinsPerStar: number
   minStars: number

@@ -10,16 +10,14 @@ import { apiMessage } from '@/composables/apiError'
 import { apiCode } from '@/api/client'
 import { getExchange, exchangeStars } from '@/api/games'
 import { useToast } from '@/composables/useToast'
-import { useTopUp } from '@/composables/useTopUp'
 import { useGoBack } from '@/composables/useGoBack'
 import type { ExchangeInfo } from '@/types'
 
 const auth = useAuthStore()
 const toast = useToast()
-const topUp = useTopUp()
 
 // used until the API answers (or when it is switched off in dev mode)
-const info = ref<ExchangeInfo>({ coinsPerStar: 10000, minStars: 1, enabled: true })
+const info = ref<ExchangeInfo>({ coinsPerStar: 20000, minStars: 1, enabled: true })
 const loaded = ref(false)
 onMounted(() => {
   getExchange()
@@ -29,19 +27,21 @@ onMounted(() => {
 })
 
 const num = (n: number) => n.toLocaleString('en-US')
-/** the rate may be a fraction (2.5 coins per star): show it without a long tail */
+/** the price may be a fraction (2.5 coins per star): show it without a long tail */
 const rateText = computed(() => num(Number(info.value.coinsPerStar.toFixed(4))))
 
-const stars = computed(() => auth.user?.starsBalance ?? 0)
+const coins = computed(() => auth.user?.coins ?? 0)
 const amountText = ref('')
 const submitting = ref(false)
 
 const amount = computed(() => Number(amountText.value) || 0)
-/** the server rounds down, so does the preview */
-const receive = computed(() => Math.floor(amount.value * info.value.coinsPerStar))
+/** the coins to pay: the server rounds up, so does the preview */
+const cost = computed(() => Math.ceil(amount.value * info.value.coinsPerStar))
 
+/** the most stars the player's coins can buy */
 function setMax() {
-  amountText.value = stars.value > 0 ? String(Math.floor(stars.value)) : ''
+  const most = Math.floor(Math.floor(coins.value) / info.value.coinsPerStar)
+  amountText.value = most > 0 ? String(most) : ''
 }
 
 function onAmountInput(e: Event) {
@@ -54,8 +54,7 @@ function onAmountInput(e: Event) {
 function validate(): string | null {
   if (!amount.value) return t('Enter the amount of stars')
   if (amount.value < info.value.minStars) return t('Minimum exchange is {n} stars', { n: num(info.value.minStars) })
-  if (auth.user && amount.value > stars.value) return t('Not enough stars')
-  if (receive.value < 1) return t('The amount is too small to exchange')
+  if (auth.user && cost.value > coins.value) return t('Not enough coins')
   return null
 }
 
@@ -74,12 +73,11 @@ async function submit() {
   try {
     const r = await exchangeStars(amount.value)
     auth.updateUser({ starsBalance: r.starsBalance, coins: r.coinsBalance })
-    toast.show(t('Exchanged: +{n} coins', { n: num(r.coins) }), 'success')
+    toast.show(t('Exchanged: +{n} stars', { n: num(r.stars) }), 'success')
     amountText.value = ''
   } catch (e) {
-    if (apiCode(e) === 'INSUFFICIENT_STARS') {
-      toast.show(t('Not enough stars'), 'warning')
-      topUp.open()
+    if (apiCode(e) === 'INSUFFICIENT_COINS') {
+      toast.show(t('Not enough coins'), 'warning')
     } else {
       toast.show(apiMessage(e, 'Exchange failed, please try again'), 'error')
     }
@@ -102,11 +100,11 @@ const close = useGoBack('/')
       <!-- star balance + close -->
       <div class="flex items-center justify-between gap-3">
         <div class="flex-1 min-w-0 flex items-center gap-2 h-[clamp(2.8rem,13vw,3.4rem)] rounded-full border border-[#552a0f] bg-[#cf8741] pl-1.5 pr-5 shadow-[inset_0px_-3px_4px_#935324]">
-          <img decoding="async" :src="StarIcon" :alt="$t('Stars')" class="h-[82%] w-auto aspect-square shrink-0" />
+          <img decoding="async" :src="CoinImage" :alt="$t('Coins')" class="h-[82%] w-auto aspect-square shrink-0" />
           <AnimatedNumber
-            kind="stars"
+            kind="coins"
             plain
-            :value="stars"
+            :value="coins"
             :ready="!!auth.user"
             class="flex-1 text-center font-extrabold text-white text-[length:clamp(1.2rem,6.4vw,1.7rem)]"
           />
@@ -119,7 +117,7 @@ const close = useGoBack('/')
 
       <!-- rate -->
       <div class="rounded-3xl border-2 border-[#cf8741] bg-[#fff4d6] px-3 py-2.5 shadow-[0px_4px_4px_rgba(0,0,0,0.25)]">
-        <p class="text-center text-[#8a5a2b] font-bold uppercase tracking-wide text-[length:clamp(0.65rem,3.1vw,0.8rem)]">{{ $t('Star rate') }}</p>
+        <p class="text-center text-[#8a5a2b] font-bold uppercase tracking-wide text-[length:clamp(0.65rem,3.1vw,0.8rem)]">{{ $t('Star price') }}</p>
         <p class="mt-1 flex items-center justify-center gap-2 font-extrabold text-[#552a0f] text-[length:clamp(1rem,5.2vw,1.4rem)]">
           <img decoding="async" :src="StarIcon" alt="" class="w-[1.4em]" />
           1
@@ -160,10 +158,10 @@ const close = useGoBack('/')
       <!-- summary -->
       <div class="rounded-3xl border-2 border-[#cf8741] bg-[#fff4d6] px-4 py-3 shadow-[0px_4px_4px_rgba(0,0,0,0.25)]">
         <div class="flex items-center justify-between text-[#552a0f] font-extrabold text-[length:clamp(1rem,5.2vw,1.4rem)]">
-          <span>{{ $t('You will get') }}</span>
+          <span>{{ $t('You will pay') }}</span>
           <span class="flex items-center gap-1.5 tabular-nums">
             <img decoding="async" :src="CoinImage" alt="" class="w-[1.3em]" />
-            {{ num(receive) }}
+            {{ num(cost) }}
           </span>
         </div>
       </div>
