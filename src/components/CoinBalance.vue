@@ -18,7 +18,7 @@ const coins = computed(() => user.value?.coins ?? FALLBACK_COINS)
 
 <template>
   <div
-    class="inline-flex gap-px items-center p-1 py-1.5 pe-1.5 relative z-[45] bg-[#fbe166] rounded-[50px] shadow-card"
+    class="inline-flex gap-px items-center p-1 ps-2 py-1.5 pe-1.5 relative z-[45] bg-[#fbe166] rounded-[50px] shadow-card"
   >
     <!-- the coin picture fills its whole box (the star has built-in margin), so it gets the gap itself and the same size as the star -->
     <img decoding="async" :src="CoinImage" :alt="$t('Coins')" class="w-[clamp(1.35rem,6.8vw,1.8rem)] me-[3px]" />
