@@ -126,8 +126,8 @@ const ru: Record<string, string> = {
   Popular: 'Популярное',
   Hot: 'Горячее',
   Common: 'Обычное',
-  'Pick a chest and win up to 5,000 coins': 'Выберите сундук и выиграйте до 5 000 монет',
-  'Spin the wheel for coins and stars': 'Крутите колесо за монеты и звёзды',
+  'Pick a chest to win all or nothing': 'Выберите сундук: всё или ничего',
+  'Spin the wheel to win 2x Stars': 'Крутите колесо и выигрывайте звёзды x2',
   'Drive, dodge and collect coins': 'Мчитесь, уворачивайтесь и собирайте монеты',
 
   // ── chest
