@@ -20,5 +20,16 @@ app.config.globalProperties.$tn = tn
 
 installSfx()
 
+// no zoom: iOS pinch gestures, double-tap zoom and ctrl+wheel (the viewport tag alone is not always obeyed)
+for (const ev of ['gesturestart', 'gesturechange', 'gestureend']) {
+  document.addEventListener(ev, (e) => e.preventDefault())
+}
+document.addEventListener('touchmove', (e) => { if (e.touches.length > 1) e.preventDefault() }, { passive: false })
+document.addEventListener('wheel', (e) => { if (e.ctrlKey) e.preventDefault() }, { passive: false })
+document.addEventListener('selectstart', (e) => {
+  const t = e.target as HTMLElement | null
+  if (!t?.closest?.('input, textarea, [contenteditable]')) e.preventDefault()
+})
+
 app.mount('#app')
 prefetchScreens()
