@@ -1,9 +1,11 @@
 <script setup lang="ts">
 import { FishingImage, ShopImage, GamesImage, TasksImage, FriendsImage } from '@/assets/images'
-import { onBeforeUnmount, onMounted } from 'vue'
+import { onBeforeUnmount, onMounted, watch } from 'vue'
 import { RouterLink, useRoute } from 'vue-router'
 import PendingDot from '@/components/PendingDot.vue'
 import { useTasksStore } from '@/stores/tasks'
+import { useGamesStore } from '@/stores/games'
+import { useTournamentAlerts } from '@/composables/useTournamentAlerts'
 import { useTaskAlerts } from '@/composables/useTaskAlerts'
 import { sponsoredWaiting } from '@/composables/sponsoredAlert'
 import { fetchAdsConfig } from '@/composables/useInterstitial'
@@ -11,17 +13,23 @@ import { fetchAdsConfig } from '@/composables/useInterstitial'
 const route = useRoute()
 const tasks = useTasksStore()
 const { hasNew } = useTaskAlerts()
+const games = useGamesStore()
+const tournamentAlerts = useTournamentAlerts()
+const onTournaments = () => route.path.startsWith('/games') || route.path.startsWith('/tournaments')
+// being on Games / a tournament page clears the badge (also when the list changes while the player is there)
+watch([() => route.path, () => games.tournaments], () => onTournaments() && tournamentAlerts.markSeen(), { deep: true })
 
 // learn about new tasks on any page: when the app opens, now and then, and when the player comes back to it
 const refresh = () => {
   void fetchAdsConfig() // sponsored tasks left today (cached for a minute)
+  void games.fetchTournaments().catch(() => {}) // a new or just started tournament raises the badge on Games
   return tasks.fetchTasks().catch(() => {})
 }
 let timer: ReturnType<typeof setInterval> | undefined
 const onVisible = () => document.visibilityState === 'visible' && refresh()
 onMounted(() => {
   refresh()
-  timer = setInterval(refresh, 120_000)
+  timer = setInterval(refresh, 60_000)
   document.addEventListener('visibilitychange', onVisible)
 })
 onBeforeUnmount(() => {
@@ -51,7 +59,12 @@ const navItems = [
         <img decoding="async" :src="item.img" :alt="$t(item.label)" :class="item.imgClass" />
         <h1 class="outlined [--outline:#532B23] -mt-2 sm:-mt-3 font-bold text-xs sm:text-sm">{{ $t(item.label) }}</h1>
         <Transition name="dot">
-          <PendingDot v-if="item.to === '/tasks' && (hasNew || sponsoredWaiting) && route.path !== '/tasks'" />
+          <PendingDot
+            v-if="
+              (item.to === '/tasks' && (hasNew || sponsoredWaiting) && route.path !== '/tasks') ||
+              (item.to === '/games' && tournamentAlerts.hasNew.value && !onTournaments())
+            "
+          />
         </Transition>
       </RouterLink>
     </nav>
