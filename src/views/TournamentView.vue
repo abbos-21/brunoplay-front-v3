@@ -10,6 +10,7 @@ import PlaceTrophy from '@/components/PlaceTrophy.vue'
 import { StarIcon } from '@/assets/svgs'
 import { CoinImage, TournamentBadge } from '@/assets/images'
 import { GiftIcon } from '@/assets/icons'
+import { giftPicture } from '@/views/spin-prizes'
 import { getLeaderboard } from '@/api/tournaments'
 import { useGamesStore } from '@/stores/games'
 import { useAuthStore } from '@/stores/auth'
@@ -222,10 +223,13 @@ const card = 'rounded-3xl border-2 border-[#cf8741] bg-[#fff4d6] shadow-[0px_4px
         <div v-if="podium.length" class="mt-3 flex items-end justify-center gap-2">
           <div v-for="x in podium" :key="x.place" class="flex-1 min-w-0 flex flex-col items-center">
             <PlaceTrophy :place="x.place" :class="x.place === 1 ? 'size-[clamp(2.6rem,13vw,3.4rem)]' : 'size-[clamp(2rem,10vw,2.7rem)]'" />
-            <div class="mt-1 flex flex-col items-center gap-0.5 font-extrabold text-[#552a0f] text-[length:clamp(0.78rem,3.9vw,1rem)] leading-tight">
+            <div class="mt-1 flex w-full flex-col items-center gap-1 font-extrabold text-[#552a0f] text-[length:clamp(0.78rem,3.9vw,1rem)] leading-tight">
               <span v-if="x.prize.coins > 0" class="inline-flex items-center gap-1 tabular-nums"><img decoding="async" loading="lazy" :src="CoinImage" alt="" class="w-[1.15em]" />{{ num(x.prize.coins) }}</span>
               <span v-if="x.prize.stars > 0" class="inline-flex items-center gap-1 tabular-nums"><img decoding="async" loading="lazy" :src="StarIcon" alt="" class="w-[1.15em]" />{{ num(x.prize.stars) }}</span>
-              <span v-if="x.prize.gift" class="inline-flex items-center gap-1 capitalize"><img decoding="async" loading="lazy" :src="GiftIcon" alt="" class="w-[1.2em]" />{{ x.prize.gift }}</span>
+              <span v-if="x.prize.gift" class="flex w-full flex-col items-center gap-0.5 text-center">
+                <img decoding="async" loading="lazy" :src="giftPicture(x.prize.gift) ?? GiftIcon" alt="" class="object-contain drop-shadow-[0_3px_3px_rgba(85,42,15,0.35)]" :class="x.place === 1 ? 'size-[clamp(3.2rem,16vw,4.2rem)]' : 'size-[clamp(2.6rem,13vw,3.4rem)]'" />
+                <span class="w-full break-words font-bold capitalize text-[#8a5a2b] text-[length:clamp(0.62rem,3.1vw,0.8rem)] leading-none">{{ x.prize.gift }}</span>
+              </span>
             </div>
             <div
               class="mt-2 w-full rounded-t-2xl border-2 border-b-0 flex items-start justify-center pt-1.5 font-extrabold text-white [text-shadow:0px_2px_2px_rgba(0,0,0,0.35)] text-[length:clamp(1.2rem,6vw,1.6rem)]"
@@ -242,7 +246,7 @@ const card = 'rounded-3xl border-2 border-[#cf8741] bg-[#fff4d6] shadow-[0px_4px
             <span class="flex-1 min-w-0 flex flex-wrap items-center justify-end gap-x-3 gap-y-0.5 font-extrabold text-[#552a0f]">
               <span v-if="p.coins > 0" class="inline-flex items-center gap-1 tabular-nums"><img decoding="async" loading="lazy" :src="CoinImage" alt="" class="w-[1.2em]" />{{ num(p.coins) }}</span>
               <span v-if="p.stars > 0" class="inline-flex items-center gap-1 tabular-nums"><img decoding="async" loading="lazy" :src="StarIcon" alt="" class="w-[1.2em]" />{{ num(p.stars) }}</span>
-              <span v-if="p.gift" class="inline-flex items-center gap-1 capitalize"><img decoding="async" loading="lazy" :src="GiftIcon" alt="" class="w-[1.3em]" />{{ p.gift }}</span>
+              <span v-if="p.gift" class="inline-flex items-center gap-1.5 capitalize"><img decoding="async" loading="lazy" :src="giftPicture(p.gift) ?? GiftIcon" alt="" class="size-[2.2em] object-contain" />{{ p.gift }}</span>
             </span>
           </li>
         </ul>

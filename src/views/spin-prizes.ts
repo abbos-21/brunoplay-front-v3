@@ -51,6 +51,16 @@ const uploadedImg = (key: string | undefined): string | undefined => {
   return key && v ? `${client.defaults.baseURL ?? '/api'}/gift-images/${encodeURIComponent(key)}?v=${v}` : undefined
 }
 
+/**
+ * The picture of a gift named by its catalogue key (a tournament prize has only the key): the one uploaded in the admin panel,
+ * else the bundled artwork when the key matches one, else nothing (the caller shows its own icon).
+ */
+export function giftPicture(key: string): string | undefined {
+  loadGiftArt()
+  const k = key.toLowerCase()
+  return uploadedImg(key) ?? GIFTS.find((g) => k.includes(g.key))?.img
+}
+
 export type PrizeKind = 'gift' | 'coins' | 'stars' | 'empty'
 
 /** the picture of an empty slot / an empty chest: a grey token with a cross */
