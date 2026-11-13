@@ -8,8 +8,7 @@ import HamburgerButton from '@/components/HamburgerButton.vue'
 import SlidePanel from '@/components/SlidePanel.vue'
 import PlaceTrophy from '@/components/PlaceTrophy.vue'
 import { StarIcon } from '@/assets/svgs'
-import { CoinImage, TournamentBadge } from '@/assets/images'
-import { GiftIcon } from '@/assets/icons'
+import { CoinImage, TournamentBadge, MyGiftsImage } from '@/assets/images'
 import { giftPicture } from '@/views/spin-prizes'
 import { getLeaderboard } from '@/api/tournaments'
 import { useGamesStore } from '@/stores/games'
@@ -227,7 +226,7 @@ const card = 'rounded-3xl border-2 border-[#cf8741] bg-[#fff4d6] shadow-[0px_4px
               <span v-if="x.prize.coins > 0" class="inline-flex items-center gap-1 tabular-nums"><img decoding="async" loading="lazy" :src="CoinImage" alt="" class="w-[1.15em]" />{{ num(x.prize.coins) }}</span>
               <span v-if="x.prize.stars > 0" class="inline-flex items-center gap-1 tabular-nums"><img decoding="async" loading="lazy" :src="StarIcon" alt="" class="w-[1.15em]" />{{ num(x.prize.stars) }}</span>
               <span v-if="x.prize.gift" class="flex w-full flex-col items-center gap-0.5 text-center">
-                <img decoding="async" loading="lazy" :src="giftPicture(x.prize.gift) ?? GiftIcon" alt="" class="object-contain drop-shadow-[0_3px_3px_rgba(85,42,15,0.35)]" :class="x.place === 1 ? 'size-[clamp(3.2rem,16vw,4.2rem)]' : 'size-[clamp(2.6rem,13vw,3.4rem)]'" />
+                <img decoding="async" loading="lazy" :src="giftPicture(x.prize.gift) ?? MyGiftsImage" alt="" class="gift-anim object-contain drop-shadow-[0_3px_3px_rgba(85,42,15,0.35)]" :class="x.place === 1 ? 'size-[clamp(3.2rem,16vw,4.2rem)]' : 'size-[clamp(2.6rem,13vw,3.4rem)]'" :style="{ animationDelay: (x.place - 1) * -0.55 + 's' }" />
                 <span class="w-full break-words font-bold capitalize text-[#8a5a2b] text-[length:clamp(0.62rem,3.1vw,0.8rem)] leading-none">{{ x.prize.gift }}</span>
               </span>
             </div>
@@ -246,7 +245,7 @@ const card = 'rounded-3xl border-2 border-[#cf8741] bg-[#fff4d6] shadow-[0px_4px
             <span class="flex-1 min-w-0 flex flex-wrap items-center justify-end gap-x-3 gap-y-0.5 font-extrabold text-[#552a0f]">
               <span v-if="p.coins > 0" class="inline-flex items-center gap-1 tabular-nums"><img decoding="async" loading="lazy" :src="CoinImage" alt="" class="w-[1.2em]" />{{ num(p.coins) }}</span>
               <span v-if="p.stars > 0" class="inline-flex items-center gap-1 tabular-nums"><img decoding="async" loading="lazy" :src="StarIcon" alt="" class="w-[1.2em]" />{{ num(p.stars) }}</span>
-              <span v-if="p.gift" class="inline-flex items-center gap-1.5 capitalize"><img decoding="async" loading="lazy" :src="giftPicture(p.gift) ?? GiftIcon" alt="" class="size-[2.2em] object-contain" />{{ p.gift }}</span>
+              <span v-if="p.gift" class="inline-flex items-center gap-1.5 capitalize"><img decoding="async" loading="lazy" :src="giftPicture(p.gift) ?? MyGiftsImage" alt="" class="gift-anim size-[2.2em] object-contain" :style="{ animationDelay: (p.place % 4) * -0.7 + 's' }" />{{ p.gift }}</span>
             </span>
           </li>
         </ul>
@@ -298,3 +297,23 @@ const card = 'rounded-3xl border-2 border-[#cf8741] bg-[#fff4d6] shadow-[0px_4px
     <SlidePanel v-model="isMenuOpen" />
   </div>
 </template>
+
+<style scoped>
+/* the prize gifts float up and down, tilt a little and squash on landing, each one out of step with the next */
+.gift-anim {
+  transform-origin: 50% 90%;
+  animation: gift-float 2.6s ease-in-out infinite;
+  will-change: transform;
+}
+@keyframes gift-float {
+  0%   { transform: translateY(0) rotate(-3deg) scale(1, 1); }
+  25%  { transform: translateY(-4%) rotate(0deg) scale(1.03, 1.04); }
+  50%  { transform: translateY(-6%) rotate(3deg) scale(1.04, 1.05); }
+  75%  { transform: translateY(-2%) rotate(0deg) scale(1.02, 1.02); }
+  92%  { transform: translateY(0) rotate(-2deg) scale(1.06, 0.94); }
+  100% { transform: translateY(0) rotate(-3deg) scale(1, 1); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .gift-anim { animation: none; }
+}
+</style>
