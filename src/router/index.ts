@@ -56,9 +56,15 @@ const router = createRouter({
       meta: { hideNav: true },
     },
     {
+      path: '/games/chest',
+      name: 'games-chest',
+      component: () => import('@/views/ChestView.vue'),
+      meta: { hideNav: true },
+    },
+    {
       path: '/games/roulette',
       name: 'games-roulette',
-      component: () => import('@/views/ChestView.vue'),
+      component: () => import('@/views/RouletteView.vue'),
       meta: { hideNav: true },
     },
     {
@@ -112,7 +118,7 @@ if (import.meta.env.DEV) {
 
 // natural pauses, the only places where an interstitial ad may follow: leaving a game, and moving between the screens of the bottom menu.
 // It only shows when the admin switched it on and the gap since the last ad is over (see useInterstitial).
-const GAME_ROUTES = new Set(['games-ride', 'games-spin', 'games-roulette'])
+const GAME_ROUTES = new Set(['games-ride', 'games-spin', 'games-chest', 'games-roulette'])
 // Bruno's Ride has the rewarded ad only (to start a run when the stars ran out): no interstitial when leaving it either
 const NO_LEAVE_AD = new Set(['games-ride'])
 const MENU_ROUTES = new Set(['home', 'shop', 'games', 'tasks', 'friends'])

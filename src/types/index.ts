@@ -205,6 +205,19 @@ export interface SpinPrize {
   starValue?: number
 }
 
+/** Roulette: the price of a spin and every prize it can win (a gift is worth its star value) */
+export interface RouletteInfo {
+  costStars: number
+  prizes: SpinPrize[]
+}
+
+export interface RouletteResult {
+  prize: SpinPrize
+  spent: number
+  coins: number
+  stars: number
+}
+
 export interface SpinTierInfo {
   tier: SpinTier
   name: string

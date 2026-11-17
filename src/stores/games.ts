@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia';
 import { ref } from 'vue';
 import type {
-  SpinTierInfo, SpinResult, LiveWin, ChestState, ChestPickResult, RideInfo, RideRun, RideFinishResult,
+  SpinTierInfo, SpinResult, LiveWin, RouletteInfo, ChestState, ChestPickResult, RideInfo, RideRun, RideFinishResult,
   PlayerGift, Tournament,
 } from '@/types';
 import * as gamesApi from '@/api/games';
@@ -14,6 +14,7 @@ export const useGamesStore = defineStore('games', () => {
   const spinTiers = ref<SpinTierInfo[]>([]);
   const spinLiveWins = ref<LiveWin[]>([]);
   const lastSpinResult = ref<SpinResult | null>(null);
+  const roulette = ref<RouletteInfo | null>(null);
 
   // Chest
   const chest = ref<ChestState | null>(null);
@@ -37,6 +38,24 @@ export const useGamesStore = defineStore('games', () => {
   }
 
   /** the latest big wins of everybody (page 1 of the winners list) */
+  // --- Roulette ---
+  async function fetchRoulette() {
+    roulette.value = await gamesApi.getRoulette();
+    return roulette.value;
+  }
+
+  async function spinRoulette() {
+    isLoading.value = true;
+    try {
+      const result = await gamesApi.spinRoulette();
+      const auth = useAuthStore();
+      auth.updateUser({ starsBalance: result.stars, coins: result.coins });
+      return result;
+    } finally {
+      isLoading.value = false;
+    }
+  }
+
   async function fetchSpinLiveWins() {
     spinLiveWins.value = (await gamesApi.getSpinWinners(1)).data ?? [];
   }
@@ -162,10 +181,10 @@ export const useGamesStore = defineStore('games', () => {
   }
 
   return {
-    spinTiers, spinLiveWins, lastSpinResult,
+    spinTiers, spinLiveWins, lastSpinResult, roulette,
     chest, rideInfo, activeRun, gifts, tournaments, activeTournament,
     isLoading,
-    fetchSpinTiers, fetchSpinLiveWins, playSpin,
+    fetchSpinTiers, fetchSpinLiveWins, playSpin, fetchRoulette, spinRoulette,
     fetchChest, startChestRound, pickChest,
     fetchRideInfo, startRide, finishRide,
     fetchGifts, sellGift, claimGift,

@@ -1,6 +1,6 @@
 import client from './client';
 import type {
-  SpinTierInfo, SpinResult, LiveWin,
+  SpinTierInfo, SpinResult, LiveWin, RouletteInfo, RouletteResult,
   ChestState, ChestPickResult,
   RideInfo, RideRun, RideFinishResult,
   PlayerGift, PaginatedResponse, ExchangeInfo, ExchangeResult, StarWdInfo, StarWithdrawal,
@@ -17,6 +17,16 @@ export function playSpin(tier: string, count: number) {
 
 export function getSpinWinners(page = 1) {
   return client.get<PaginatedResponse<LiveWin>>('/spin/winners', { params: { page } }).then((r) => r.data);
+}
+
+// === Roulette ===
+export function getRoulette() {
+  return client.get<RouletteInfo>('/roulette').then((r) => r.data);
+}
+
+/** One spin: the server charges it, draws the prize and pays it. */
+export function spinRoulette() {
+  return client.post<RouletteResult>('/roulette/spin').then((r) => r.data);
 }
 
 // === Chest ===

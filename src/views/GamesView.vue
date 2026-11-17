@@ -2,13 +2,14 @@
 import { computed, onMounted, ref } from 'vue'
 import { RouterLink } from 'vue-router'
 import { useGamesStore } from '@/stores/games'
+import { isApiDisabled } from '@/api/client'
 import { useCountdown } from '@/composables/useCountdown'
 import { TournamentBadge } from '@/assets/images'
 import CoinBalance from '@/components/CoinBalance.vue'
 import StarBalance from '@/components/StarBalance.vue'
 import HamburgerButton from '@/components/HamburgerButton.vue'
 import SlidePanel from '@/components/SlidePanel.vue'
-import { GameMegaChest, GameSpin, GameRide } from '@/assets/images'
+import { GameMegaChest, GameSpin, GameRide, GameRoulette } from '@/assets/images'
 
 const isMenuOpen = ref(false)
 const games = useGamesStore()
@@ -22,6 +23,8 @@ const { formatted } = useCountdown(() => {
 
 onMounted(() => {
   games.fetchTournaments().catch(() => {})
+  // the Roulette is shown only when the server lets this player in (it answers "not found" to everybody else while it is being tested)
+  games.fetchRoulette().catch(() => {})
 })
 
 const gameCards = [
@@ -32,7 +35,7 @@ const gameCards = [
     tag: 'Popular',
     hint: 'Pick a chest to win all or nothing',
     img: GameMegaChest,
-    to: '/games/roulette',
+    to: '/games/chest',
     accent: '#de2623',
     accentDark: '#a81a18',
   },
@@ -48,6 +51,17 @@ const gameCards = [
     accentDark: '#c85405',
   },
   {
+    key: 'roulette',
+    motion: 'game-roulette',
+    title: 'Roulette',
+    tag: 'New',
+    hint: 'Spin the reel and win gifts, coins and stars',
+    img: GameRoulette,
+    to: '/games/roulette',
+    accent: '#195fd8',
+    accentDark: '#123f93',
+  },
+  {
     key: 'ride',
     motion: 'game-car',
     title: 'Bruno’s Ride',
@@ -59,6 +73,8 @@ const gameCards = [
     accentDark: '#1f7414',
   },
 ]
+
+const visibleCards = computed(() => gameCards.filter((c) => c.key !== 'roulette' || games.roulette || isApiDisabled))
 </script>
 
 <template>
@@ -106,7 +122,7 @@ const gameCards = [
       </article>
 
       <article
-        v-for="game in gameCards"
+        v-for="game in visibleCards"
         :key="game.key"
         class="shrink-0 rounded-3xl border-2 border-[#cf8741] bg-[#fff4d6] p-3 shadow-[0px_4px_4px_rgba(0,0,0,0.25)]"
       >
@@ -177,6 +193,9 @@ const gameCards = [
 .game-car {
   animation: car 0.9s ease-in-out infinite;
 }
+.game-roulette {
+  animation: roulette 3.2s ease-in-out infinite;
+}
 .game-pulse {
   animation: pulse 1.8s ease-in-out infinite;
 }
@@ -218,6 +237,16 @@ const gameCards = [
   }
   50% {
     transform: rotate(10deg) scale(1.04);
+  }
+}
+/* the reel slides one way, then back, as if it was about to stop */
+@keyframes roulette {
+  0%,
+  100% {
+    transform: translateX(-5%) scale(1.04);
+  }
+  50% {
+    transform: translateX(5%) scale(1.04);
   }
 }
 /* the car bounces along the road */
