@@ -10,7 +10,6 @@ import SpinWinOverlay from '@/components/SpinWinOverlay.vue'
 import { ArrowLeftSVG, StarIcon } from '@/assets/svgs'
 import ChevronSVG from '@/assets/svgs/roulette-chevron.svg?url'
 import { CoinImage } from '@/assets/images'
-import { LiveTiles } from '@/assets/images/roulette'
 import { useGamesStore } from '@/stores/games'
 import { useAuthStore } from '@/stores/auth'
 import { useToast } from '@/composables/useToast'
@@ -71,13 +70,19 @@ function setDemo(on: boolean) {
 const enough = computed(() => demo.value || !auth.user || auth.user.starsBalance >= cost.value)
 
 // ───────────────────────── live wins ─────────────────────────
-type Tile = { key: number; img: string; bg: string; title: string }
-const tiles = computed<Tile[]>(() =>
-  games.spinLiveWins.slice(0, 12).map((w) => ({
+/** 500 → "500", 2500 → "2.5K", 1000000 → "1M" */
+const shortCost = (n: number) =>
+  n >= 1_000_000 ? `${Number((n / 1_000_000).toFixed(1))}M` : n >= 1000 ? `${Number((n / 1000).toFixed(1))}K` : String(n)
+type LiveItem = { key: number; img: string; title: string; name: string; amount: string; stars: boolean }
+// the same ticker as in the Spin game: the real latest wins, each with the picture of the prize that was won
+const tiles = computed<LiveItem[]>(() =>
+  games.spinLiveWins.map((w) => ({
     key: w.id,
     img: winImage(w, prizeList.value),
-    bg: LiveTiles[w.id % LiveTiles.length]!,
     title: `${w.username}: ${w.prizeValue.toLocaleString('en-US')} ${w.prizeType}`,
+    name: w.username,
+    amount: shortCost(w.prizeValue),
+    stars: w.prizeType !== 'coins',
   })),
 )
 let liveTimer: ReturnType<typeof setInterval> | undefined
@@ -351,15 +356,24 @@ watch(
           </div>
         </div>
 
-        <!-- live wins -->
-        <h1 class="title">{{ $t('Live Wins') }}</h1>
-        <div class="tiles">
+        <!-- live wins: a "LIVE" tag and a ticker of the latest wins (as in the Spin game) -->
+        <div class="live">
+          <span class="live-tag"><i />{{ $t('Live') }}</span>
           <p v-if="!tiles.length" class="nowins">{{ $t('No winners yet') }}</p>
-          <TransitionGroup v-else name="tile" tag="div" class="tiles-row">
-            <div v-for="(tl, i) in tiles" :key="tl.key" class="tile" :class="{ first: i === 0 }" :title="tl.title" :style="{ backgroundImage: `url(${tl.bg})` }">
-              <img decoding="async" :src="tl.img" alt="" />
+          <div v-else class="ticker">
+            <div class="live-track" :style="{ '--dur': `${Math.max(20, tiles.length * 5)}s` }">
+              <div v-for="copy in 2" :key="copy" class="live-copy" :aria-hidden="copy === 2">
+                <div v-for="t in tiles" :key="`${copy}-${t.key}`" class="live-item" :title="t.title">
+                  <img decoding="async" :src="t.img" :alt="copy === 1 ? t.title : ''" class="live-img" />
+                  <span class="live-name">
+                    {{ t.name }}
+                    <img decoding="async" :src="t.stars ? StarIcon : CoinImage" alt="" class="live-cur" />
+                    <b>{{ t.amount }}</b>
+                  </span>
+                </div>
+              </div>
             </div>
-          </TransitionGroup>
+          </div>
         </div>
 
         <!-- the reel -->
@@ -473,78 +487,100 @@ watch(
   min-width: 0;
 }
 
-.title {
-  margin-top: calc(var(--u) * 26);
-  text-align: center;
-  font-weight: 800;
-  line-height: 1.1;
-  letter-spacing: 0.01em;
-  color: #fff;
-  font-size: calc(var(--u) * 64);
-  text-shadow: 0 calc(var(--u) * 3) calc(var(--u) * 3) rgba(0, 0, 0, 0.25);
+.live {
+  display: flex;
+  align-items: center;
+  gap: calc(var(--u) * 14);
+  margin: calc(var(--u) * 26) calc(var(--u) * 38) 0;
+  padding: calc(var(--u) * 12);
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  background: rgba(0, 0, 0, 0.25);
 }
-.tiles {
-  margin-top: calc(var(--u) * 14);
-  height: calc(var(--u) * 150);
-  padding-left: calc(var(--u) * 16);
-  overflow: hidden;
-}
-.tiles-row {
-  position: relative;
+.live-tag {
+  flex: none;
   display: flex;
   align-items: center;
   gap: calc(var(--u) * 10);
-  width: max-content;
-  height: 100%;
+  padding: calc(var(--u) * 8) calc(var(--u) * 22);
+  border-radius: 999px;
+  background: #e5261b;
+  color: #fff;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-size: calc(var(--u) * 26);
+}
+.live-tag i {
+  width: calc(var(--u) * 14);
+  height: calc(var(--u) * 14);
+  border-radius: 50%;
+  background: #fff;
+  animation: live-pulse 2s ease-in-out infinite;
 }
 .nowins {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  height: 100%;
+  min-width: 0;
+  flex: 1;
+  padding: 0 calc(var(--u) * 8);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
   font-weight: 700;
-  color: rgba(255, 255, 255, 0.6);
-  font-size: calc(var(--u) * 30);
+  color: rgba(255, 255, 255, 0.7);
+  font-size: calc(var(--u) * 28);
 }
-.tile {
-  flex: none;
-  width: calc(var(--u) * 120);
-  height: calc(var(--u) * 120);
-  border-radius: calc(var(--u) * 30);
-  background-size: cover;
-  background-position: center;
+.ticker {
+  min-width: 0;
+  flex: 1;
+  overflow: hidden;
+  -webkit-mask-image: linear-gradient(to right, transparent, #000 8%, #000 92%, transparent);
+  mask-image: linear-gradient(to right, transparent, #000 8%, #000 92%, transparent);
+}
+.live-track {
   display: flex;
   align-items: center;
-  justify-content: center;
-  box-shadow:
-    0 calc(var(--u) * 3) calc(var(--u) * 2) rgba(0, 0, 0, 0.25),
-    inset 0 calc(var(--u) * 3) calc(var(--u) * 4) rgba(255, 255, 255, 0.25),
-    inset 0 calc(var(--u) * -3) calc(var(--u) * 4) rgba(0, 0, 0, 0.25);
+  width: max-content;
+  animation: live-scroll var(--dur, 30s) linear infinite;
 }
-.tile.first {
-  width: calc(var(--u) * 140);
-  height: calc(var(--u) * 140);
+.live-track:hover {
+  animation-play-state: paused;
 }
-.tile img {
-  width: 82%;
-  height: 82%;
+.live-copy {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: calc(var(--u) * 26);
+  padding-right: calc(var(--u) * 26);
+}
+.live-item {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: calc(var(--u) * 12);
+}
+.live-img {
+  width: calc(var(--u) * 62);
+  height: calc(var(--u) * 62);
+  max-width: none;
   object-fit: contain;
-  filter: drop-shadow(0 calc(var(--u) * 3) calc(var(--u) * 3) rgba(0, 0, 0, 0.3));
+  filter: drop-shadow(0 2px 2px rgba(0, 0, 0, 0.35));
 }
-/* a new win slides in from the left and pushes the others along */
-.tile-enter-active {
-  transition: transform 0.55s cubic-bezier(0.2, 1.3, 0.4, 1), opacity 0.4s;
+.live-name {
+  display: flex;
+  align-items: center;
+  gap: calc(var(--u) * 8);
+  white-space: nowrap;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.9);
+  font-size: calc(var(--u) * 28);
 }
-.tile-enter-from {
-  opacity: 0;
-  transform: translateX(-60%) scale(0.7);
+.live-cur {
+  width: 1.1em;
+  max-width: none;
 }
-.tile-leave-active {
-  position: absolute;
-  opacity: 0;
-}
-.tile-move {
-  transition: transform 0.45s ease;
+.live-name b {
+  color: #fff;
+  font-variant-numeric: tabular-nums;
 }
 
 /* the reel */
@@ -576,9 +612,10 @@ watch(
 .viewport {
   position: relative;
   width: 100%;
-  height: calc(var(--u) * 480);
-  margin: calc(var(--u) * 6) 0;
-  overflow: hidden;
+  height: calc(var(--u) * 296);
+  margin: calc(var(--u) * 34) 0;
+  /* clips the sides only: a winning picture may grow above the box */
+  clip-path: inset(calc(var(--u) * -120) 0);
 }
 .strip {
   position: absolute;
@@ -769,6 +806,19 @@ watch(
   height: calc(var(--u) * 40);
 }
 
+@keyframes live-scroll {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+@keyframes live-pulse {
+  50% {
+    opacity: 0.35;
+  }
+}
 @keyframes chev-down {
   0%,
   100% {
@@ -864,6 +914,8 @@ watch(
 }
 @media (prefers-reduced-motion: reduce) {
   .chev,
+  .live-track,
+  .live-tag i,
   .spin::after,
   .roulette:not(.spinning):not(.landed) .slot .art {
     animation: none;
