@@ -103,9 +103,11 @@ onMounted(() => {
     games.fetchSpinLiveWins().catch(() => {})
   }
   load()
-  timer = setInterval(() => games.fetchSpinLiveWins().catch(() => {}), 15000)
+  // not while a spin is turning: the ticker would show the player's own win before the wheel stops
+  timer = setInterval(() => !spinning.value && games.fetchSpinLiveWins().catch(() => {}), 15000)
 })
 onUnmounted(() => {
+  games.settleBalance()
   if (timer) clearInterval(timer)
   if (settleTimer) clearTimeout(settleTimer)
 })
@@ -205,9 +207,16 @@ async function spin() {
   } catch (e) {
     toast.show(apiMessage(e, 'Spin failed, please try again'), 'error')
   } finally {
+    if (!result.value) games.settleBalance() // nothing to show (empty draw, error): the balance may change; a win waits for its screen to close
     spinning.value = false
     progress.value = { current: 0, total: 0 }
   }
+}
+
+/** the balance grows only when the "You won" screen is closed */
+function closeWin() {
+  result.value = null
+  games.settleBalance()
 }
 
 // ───────────────────────── modals ─────────────────────────
@@ -382,7 +391,7 @@ function openWinners() {
       </div>
     </div>
 
-    <SpinWinOverlay v-if="result" :result="result" @close="result = null" />
+    <SpinWinOverlay v-if="result" :result="result" @close="closeWin" />
 
     <SpinPrizesModal v-if="modal === 'prizes'" :prizes="shownPrizes" @close="modal = null" />
     <SpinWinnersModal

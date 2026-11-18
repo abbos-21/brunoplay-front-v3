@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue'
+import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import ChestCard from '@/components/ChestCard.vue'
 import SpinWinOverlay from '@/components/SpinWinOverlay.vue'
@@ -80,6 +80,15 @@ onMounted(async () => {
     toast.show(apiMessage(e, 'Could not load the chests'), 'error')
   }
 })
+
+/** the balance grows only when the "You won" screen is closed */
+function closeWin() {
+  result.value = null
+  games.settleBalance()
+}
+
+// leaving in the middle of the reveal must not leave the won prizes out of the balance
+onBeforeUnmount(() => games.settleBalance())
 
 function reset() {
   slots.value = freshSlots()
@@ -175,6 +184,7 @@ async function finish(done: { results: SpinPrize[]; coins: number; stars: number
   const results = (done?.results.length ? done.results : [...won.value]).filter((p) => p.type !== 'empty')
   if (!results.length) {
     toast.show(t('Empty this time. Try again!'), 'info')
+    games.settleBalance()
     return
   }
   result.value = {
@@ -315,6 +325,6 @@ async function finish(done: { results: SpinPrize[]; coins: number; stars: number
       </div>
     </div>
 
-    <SpinWinOverlay v-if="result" :result="result" unit="chest" @close="result = null" />
+    <SpinWinOverlay v-if="result" :result="result" unit="chest" @close="closeWin" />
   </div>
 </template>

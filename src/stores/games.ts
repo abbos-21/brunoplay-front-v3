@@ -2,10 +2,11 @@ import { defineStore } from 'pinia';
 import { ref } from 'vue';
 import type {
   SpinTierInfo, SpinResult, LiveWin, RouletteInfo, ChestState, ChestPickResult, RideInfo, RideRun, RideFinishResult,
-  PlayerGift, Tournament,
+  PlayerGift, Tournament, User,
 } from '@/types';
 import * as gamesApi from '@/api/games';
 import * as tournamentsApi from '@/api/tournaments';
+import * as userApi from '@/api/user';
 import { withAd } from '@/composables/useAds';
 import { useAuthStore } from './auth';
 
@@ -32,6 +33,26 @@ export const useGamesStore = defineStore('games', () => {
 
   const isLoading = ref(false);
 
+  // --- The balance is not a spoiler ---
+  // The server has already paid the prize when the answer arrives, but the player must not see it before the reel / wheel / chest has
+  // shown it. So the price is taken off the balance at once, and the real balance (the prize included) is kept back until the view calls
+  // settleBalance() at the moment the prize is revealed.
+  let held: Partial<User> | null = null;
+
+  /** show the price as spent, keep the rest of the new balance back */
+  function holdBalance(final: Partial<User>, spent: number) {
+    const auth = useAuthStore();
+    held = final;
+    if (auth.user && spent > 0) auth.updateUser({ starsBalance: Math.max(0, auth.user.starsBalance - spent) });
+  }
+
+  /** the prize has been shown: now the balance may change (safe to call any time, also twice) */
+  function settleBalance() {
+    if (!held) return;
+    useAuthStore().updateUser(held);
+    held = null;
+  }
+
   // --- Spin ---
   async function fetchSpinTiers() {
     spinTiers.value = await gamesApi.getSpinTiers();
@@ -48,8 +69,7 @@ export const useGamesStore = defineStore('games', () => {
     isLoading.value = true;
     try {
       const result = await gamesApi.spinRoulette();
-      const auth = useAuthStore();
-      auth.updateUser({ starsBalance: result.stars, coins: result.coins });
+      holdBalance({ starsBalance: result.stars, coins: result.coins }, result.spent);
       return result;
     } finally {
       isLoading.value = false;
@@ -66,8 +86,15 @@ export const useGamesStore = defineStore('games', () => {
       const result = await gamesApi.playSpin(tier, count);
       lastSpinResult.value = result;
       const auth = useAuthStore();
-      if (typeof result.stars === 'number') auth.updateUser({ starsBalance: result.stars });
-      await auth.fetchUser();
+      const price = (spinTiers.value.find((x) => x.tier === tier)?.costStars ?? 0) * count;
+      const spent = result.spent ?? price;
+      try {
+        // the whole new balance of the player (the prizes included), kept back until the wheel has stopped
+        holdBalance(await userApi.getMe(), spent);
+      } catch {
+        if (typeof result.stars === 'number') holdBalance({ starsBalance: result.stars }, spent);
+        else await auth.fetchUser();
+      }
       return result;
     } finally {
       isLoading.value = false;
@@ -95,7 +122,12 @@ export const useGamesStore = defineStore('games', () => {
     const r = await gamesApi.pickChest(slot);
     if (r.finished) {
       chest.value = chest.value ? { ...chest.value, round: null } : chest.value;
-      await useAuthStore().fetchUser();
+      // the prizes are paid now, but shown only when the chests have been opened (the view settles the balance then)
+      try {
+        holdBalance(await userApi.getMe(), 0);
+      } catch {
+        await useAuthStore().fetchUser();
+      }
     }
     return r;
   }
@@ -181,7 +213,7 @@ export const useGamesStore = defineStore('games', () => {
   }
 
   return {
-    spinTiers, spinLiveWins, lastSpinResult, roulette,
+    spinTiers, spinLiveWins, lastSpinResult, roulette, settleBalance,
     chest, rideInfo, activeRun, gifts, tournaments, activeTournament,
     isLoading,
     fetchSpinTiers, fetchSpinLiveWins, playSpin, fetchRoulette, spinRoulette,

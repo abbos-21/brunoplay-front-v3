@@ -263,7 +263,7 @@ async function spin() {
   center = winIdx
   mid.value = winIdx
 
-  // the win
+  // the win (the balance grows when the "You won" screen is closed)
   landed.value = true
   try {
     getTelegram()?.HapticFeedback.notificationOccurred('success')
@@ -291,6 +291,7 @@ function wait(ms: number) {
 
 function closeResult() {
   result.value = null
+  games.settleBalance()
   landed.value = false
 }
 
@@ -314,7 +315,7 @@ onMounted(() => {
     })
   }
   games.fetchSpinLiveWins().catch(() => {})
-  liveTimer = setInterval(() => games.fetchSpinLiveWins().catch(() => {}), 15000)
+  liveTimer = setInterval(() => !spinning.value && games.fetchSpinLiveWins().catch(() => {}), 15000)
   resetStrip()
   void nextTick(() => {
     measure()
@@ -325,6 +326,7 @@ onMounted(() => {
   })
 })
 onBeforeUnmount(() => {
+  games.settleBalance()
   clearInterval(liveTimer)
   cancelAnimationFrame(raf)
   ro?.disconnect()
