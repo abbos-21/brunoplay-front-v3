@@ -17,7 +17,7 @@ const props = defineProps<{ modelValue: boolean }>()
 const emit = defineEmits<{ (e: 'update:modelValue', value: boolean): void }>()
 
 type Tab = 'stars' | 'ton'
-const tab = ref<Tab>('stars')
+const tab = ref<Tab>('ton')
 const loadError = ref(false)
 const busyPack = ref<number | null>(null)
 
