@@ -52,7 +52,7 @@ const gameCards = [
   },
   {
     key: 'roulette',
-    motion: 'game-roulette',
+    motion: 'game-crystal',
     title: 'Roulette',
     tag: 'New',
     hint: 'Spin the reel and win gifts, coins and stars',
@@ -132,6 +132,10 @@ const visibleCards = computed(() => gameCards.filter((c) => c.key !== 'roulette'
             :class="{ 'grayscale opacity-70': !game.to }"
           >
             <img decoding="async" loading="lazy" :src="game.img" :alt="$t(game.title)" class="game-art w-full h-full object-cover" :class="game.motion" />
+            <!-- the Roulette cover: little stars twinkle around the crystal -->
+            <template v-if="game.key === 'roulette'">
+              <i v-for="n in 5" :key="n" class="spark" :class="`spark-${n}`" aria-hidden="true" />
+            </template>
           </div>
 
           <div class="flex-1 min-w-0">
@@ -193,9 +197,27 @@ const visibleCards = computed(() => gameCards.filter((c) => c.key !== 'roulette'
 .game-car {
   animation: car 0.9s ease-in-out infinite;
 }
-.game-roulette {
-  animation: roulette 3.2s ease-in-out infinite;
+.game-crystal {
+  animation: crystal 4.2s ease-in-out infinite;
 }
+.spark {
+  position: absolute;
+  width: 16%;
+  aspect-ratio: 1;
+  background: #fff8c9;
+  clip-path: polygon(50% 0, 62% 38%, 100% 50%, 62% 62%, 50% 100%, 38% 62%, 0 50%, 38% 38%);
+  filter: drop-shadow(0 0 3px #ffe27a);
+  opacity: 0;
+  transform: translate(-50%, -50%) scale(0.3);
+  animation: twinkle 2.6s ease-in-out infinite;
+  pointer-events: none;
+  z-index: 2;
+}
+.spark-1 { left: 39%; top: 20%; animation-delay: 0s; }
+.spark-2 { left: 63%; top: 31%; animation-delay: 0.7s; }
+.spark-3 { left: 23%; top: 44%; animation-delay: 1.4s; }
+.spark-4 { left: 82%; top: 53%; animation-delay: 2s; }
+.spark-5 { left: 12%; top: 53%; animation-delay: 1.05s; }
 .game-pulse {
   animation: pulse 1.8s ease-in-out infinite;
 }
@@ -239,14 +261,31 @@ const visibleCards = computed(() => gameCards.filter((c) => c.key !== 'roulette'
     transform: rotate(10deg) scale(1.04);
   }
 }
-/* the reel slides one way, then back, as if it was about to stop */
-@keyframes roulette {
+/* the crystal floats and breathes, its light pulsing */
+@keyframes crystal {
   0%,
   100% {
-    transform: translateX(-5%) scale(1.04);
+    transform: translateY(2%) scale(1.02);
+    filter: brightness(1) saturate(1);
   }
   50% {
-    transform: translateX(5%) scale(1.04);
+    transform: translateY(-3%) scale(1.09);
+    filter: brightness(1.18) saturate(1.15);
+  }
+}
+@keyframes twinkle {
+  0%,
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.3) rotate(0);
+  }
+  45% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1) rotate(45deg);
+  }
+  70% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.4) rotate(90deg);
   }
 }
 /* the car bounces along the road */
@@ -273,8 +312,12 @@ const visibleCards = computed(() => gameCards.filter((c) => c.key !== 'roulette'
 
 @media (prefers-reduced-motion: reduce) {
   .game-tile::after,
-  .game-art {
+  .game-art,
+  .spark {
     animation: none;
+  }
+  .spark {
+    display: none;
   }
 }
 </style>
