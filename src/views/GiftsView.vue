@@ -112,8 +112,10 @@ async function act(g: PlayerGift, action: 'sell' | 'claim') {
           {{ $t('We could not send it:') }} {{ g.rejectReason }}
         </p>
 
-        <div v-if="g.status === 'OWNED'" class="mt-3 grid grid-cols-2 gap-2">
+        <div v-if="g.status === 'OWNED'" class="mt-3 grid gap-2" :class="g.source === 'tournament' ? 'grid-cols-1' : 'grid-cols-2'">
+          <!-- a tournament prize is only for the collection or for the real gift: it cannot be sold for stars -->
           <button
+            v-if="g.source !== 'tournament'"
             type="button"
             :disabled="games.isLoading"
             class="rounded-full border border-[#d9680f] bg-[#f96a07] py-1.5 font-bold text-white text-[length:clamp(0.85rem,4.2vw,1.1rem)] disabled:opacity-60 active:translate-y-px"
