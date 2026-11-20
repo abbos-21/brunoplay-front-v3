@@ -662,8 +662,9 @@ watch(
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: calc(var(--u) * 10);
-  width: calc(var(--u) * 200);
+  gap: calc(var(--u) * 8);
+  width: fit-content;
+  padding: 0 calc(var(--u) * 18) 0 calc(var(--u) * 12);
   height: calc(var(--u) * 62);
   margin-top: calc(var(--u) * 6);
   border-radius: calc(var(--u) * 45);
