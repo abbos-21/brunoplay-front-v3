@@ -11,7 +11,7 @@ import {
 import { reactive } from 'vue'
 import client from '@/api/client'
 import { getGiftArt } from '@/api/games'
-import { CoinImage } from '@/assets/images'
+import { CoinImage, GiftBoxImage } from '@/assets/images'
 import { StarIcon } from '@/assets/svgs'
 import type { SpinPrize } from '@/types'
 
@@ -99,14 +99,16 @@ export function resolvePrizes(prizes: SpinPrize[]): ResolvedPrize[] {
     // the catalogue key (heart, apple, ...) when the server sends it, else the label
     const label = `${prize.gift ?? ''} ${prize.label ?? ''}`.toLowerCase()
     const byLabel = GIFTS.find((g) => label.includes(g.key))
-    const art = byLabel ?? GIFTS[giftIndex % GIFTS.length]!
+    // a gift the server named but that has no picture of its own gets a neutral gift box, never another gift's artwork;
+    // the position-based artwork is only for a list without gift keys (the offline demo)
+    const art = byLabel ?? (prize.gift ? undefined : GIFTS[giftIndex % GIFTS.length])
     giftIndex++
     return {
       prize,
       kind: 'gift',
-      img: uploadedImg(prize.gift) ?? art.img,
+      img: uploadedImg(prize.gift) ?? art?.img ?? GiftBoxImage,
       amount: num(prize.value),
-      name: prize.label || art.key,
+      name: prize.label || art?.key || prize.gift || 'Gift',
     }
   })
 }
@@ -128,7 +130,12 @@ export function winImage(w: { prizeType: string; prizeValue: number; gift?: stri
     const bundled = GIFTS.find((g) => w.gift!.toLowerCase().includes(g.key))
     if (bundled) return bundled.img
   }
-  return gifts.find((r) => r.prize.value === w.prizeValue)?.img ?? GIFTS[0]!.img
+  return gifts.find((r) => r.prize.value === w.prizeValue)?.img ?? GiftBoxImage
+}
+
+/** the picture of one prize now (it follows the pictures uploaded in the admin panel, which may arrive after a screen drew the prize) */
+export function prizePicture(r: ResolvedPrize): string {
+  return r.kind === 'gift' ? resolvePrizes([r.prize])[0]!.img : r.img
 }
 
 /** roughly what a prize is worth, to sort gifts, stars and coins together (a coin is a tiny fraction of a star) */

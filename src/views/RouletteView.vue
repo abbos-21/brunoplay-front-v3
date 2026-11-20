@@ -18,7 +18,7 @@ import { playSfx } from '@/composables/useSfx'
 import { getTelegram } from '@/composables/useTelegram'
 import { apiMessage } from '@/composables/apiError'
 import { apiCode, isApiDisabled } from '@/api/client'
-import { resolvePrizes, winImage, type ResolvedPrize } from '@/views/spin-prizes'
+import { prizePicture, resolvePrizes, winImage, type ResolvedPrize } from '@/views/spin-prizes'
 import type { RouletteResult, SpinPrize, SpinResult } from '@/types'
 
 const router = useRouter()
@@ -45,9 +45,11 @@ const FALLBACK: SpinPrize[] = [
 ]
 const FALLBACK_COST = 15
 
-const prizeList = computed<SpinPrize[]>(() => (games.roulette?.prizes.length ? games.roulette.prizes : FALLBACK))
+// the design's prizes are only for the offline demo; with the API on, nothing is shown until the server's list has arrived
+const prizeList = computed<SpinPrize[]>(() => games.roulette?.prizes ?? (isApiDisabled ? FALLBACK : []))
 const resolved = computed<ResolvedPrize[]>(() => resolvePrizes(prizeList.value))
-const cost = computed(() => games.roulette?.costStars ?? FALLBACK_COST)
+const ready = computed(() => resolved.value.length > 0)
+const cost = computed(() => games.roulette?.costStars ?? (isApiDisabled ? FALLBACK_COST : 0))
 
 /** the demo switch is kept on this phone; without the API there is nothing to credit, so it is always a demo */
 const DEMO_KEY = 'bp.roulette.demo'
@@ -193,7 +195,7 @@ function drawLocal(): SpinPrize {
 }
 
 async function spin() {
-  if (spinning.value) return
+  if (spinning.value || !ready.value) return
   if (!enough.value) {
     toast.show(t('Not enough stars'), 'warning')
     topUp.open()
@@ -386,7 +388,7 @@ watch(
               <div v-for="(it, i) in strip" :key="it.id" class="slot" :class="{ win: landed && i === mid }">
                 <div class="art-box">
                   <i v-if="landed && i === mid" class="glow" aria-hidden="true" />
-                  <img :ref="setArt(i)" decoding="async" :src="it.r.img" :alt="it.r.name" class="art" :class="{ coin: it.r.kind !== 'gift', pop: landed && i === mid }" />
+                  <img :ref="setArt(i)" decoding="async" :src="prizePicture(it.r)" :alt="it.r.name" class="art" :class="{ coin: it.r.kind !== 'gift', pop: landed && i === mid }" />
                 </div>
                 <span class="pill">
                   <img decoding="async" :src="it.r.kind === 'coins' ? CoinImage : StarIcon" alt="" />
@@ -405,7 +407,7 @@ watch(
             <button type="button" class="ghost" :disabled="spinning" @click="openModal('settings')">{{ $t('Settings') }}</button>
             <button type="button" class="ghost" :disabled="spinning" @click="openModal('prizes')">{{ $t('Prizes List') }}</button>
           </div>
-          <button type="button" class="spin" :disabled="spinning" @click="spin">
+          <button type="button" class="spin" :disabled="spinning || !ready" @click="spin">
             <span class="spin-label">{{ spinning ? $t('Spinning…') : $t('Spin') }}</span>
             <span v-if="!spinning" class="spin-cost">
               <template v-if="demo">{{ $t('Demo') }}</template>
