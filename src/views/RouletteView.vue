@@ -76,9 +76,9 @@ const enough = computed(() => demo.value || !auth.user || auth.user.starsBalance
 const shortCost = (n: number) =>
   n >= 1_000_000 ? `${Number((n / 1_000_000).toFixed(1))}M` : n >= 1000 ? `${Number((n / 1000).toFixed(1))}K` : String(n)
 type LiveItem = { key: number; img: string; title: string; name: string; amount: string; stars: boolean }
-// the same ticker as in the Spin game: the real latest wins, each with the picture of the prize that was won
+// the same ticker as in the Spin game, but only the Roulette's own latest wins, each with the picture of the prize that was won
 const tiles = computed<LiveItem[]>(() =>
-  games.spinLiveWins.map((w) => ({
+  games.rouletteLiveWins.map((w) => ({
     key: w.id,
     img: winImage(w, prizeList.value),
     title: `${w.username}: ${w.prizeValue.toLocaleString('en-US')} ${w.prizeType}`,
@@ -284,7 +284,7 @@ async function spin() {
   const stars = won.type === 'stars' ? won.value : 0
   result.value = { results: [{ ...won, label: won.label ?? resolveWon(won).name }], totalCoinsWon: coins, totalStarsWon: stars }
   spinning.value = false
-  void games.fetchSpinLiveWins().catch(() => {})
+  void games.fetchRouletteLiveWins().catch(() => {})
 }
 
 function wait(ms: number) {
@@ -316,8 +316,8 @@ onMounted(() => {
       else toast.show(apiMessage(e, 'Could not load the game'), 'error')
     })
   }
-  games.fetchSpinLiveWins().catch(() => {})
-  liveTimer = setInterval(() => !spinning.value && games.fetchSpinLiveWins().catch(() => {}), 15000)
+  games.fetchRouletteLiveWins().catch(() => {})
+  liveTimer = setInterval(() => !spinning.value && games.fetchRouletteLiveWins().catch(() => {}), 15000)
   resetStrip()
   void nextTick(() => {
     measure()

@@ -171,16 +171,6 @@ const tabBase =
           type="button"
           :class="[
             tabBase,
-            tab === 'stars' ? 'bg-[#c17e23] text-white' : 'bg-[#fde7b8] text-[#552a0f]',
-          ]"
-          @click="tab = 'stars'"
-        >
-          {{ $t('Stars') }}
-        </button>
-        <button
-          type="button"
-          :class="[
-            tabBase,
             tab === 'ton' ? 'bg-[#c17e23] text-white' : 'bg-[#fde7b8] text-[#552a0f]',
           ]"
           @click="tab = 'ton'"
@@ -192,6 +182,16 @@ const tabBase =
           >
             +{{ tonPercent }}%
           </span>
+        </button>
+        <button
+          type="button"
+          :class="[
+            tabBase,
+            tab === 'stars' ? 'bg-[#c17e23] text-white' : 'bg-[#fde7b8] text-[#552a0f]',
+          ]"
+          @click="tab = 'stars'"
+        >
+          {{ $t('Stars') }}
         </button>
       </div>
 

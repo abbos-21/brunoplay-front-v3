@@ -15,8 +15,8 @@ export function playSpin(tier: string, count: number) {
   return client.post<SpinResult>('/spin', { tier, count }).then((r) => r.data);
 }
 
-export function getSpinWinners(page = 1) {
-  return client.get<PaginatedResponse<LiveWin>>('/spin/winners', { params: { page } }).then((r) => r.data);
+export function getSpinWinners(page = 1, game?: string) {
+  return client.get<PaginatedResponse<LiveWin>>('/spin/winners', { params: { page, ...(game ? { game } : {}) } }).then((r) => r.data);
 }
 
 // === Roulette ===

@@ -14,6 +14,7 @@ export const useGamesStore = defineStore('games', () => {
   // Spin
   const spinTiers = ref<SpinTierInfo[]>([]);
   const spinLiveWins = ref<LiveWin[]>([]);
+  const rouletteLiveWins = ref<LiveWin[]>([]);
   const lastSpinResult = ref<SpinResult | null>(null);
   const roulette = ref<RouletteInfo | null>(null);
 
@@ -78,6 +79,11 @@ export const useGamesStore = defineStore('games', () => {
 
   async function fetchSpinLiveWins() {
     spinLiveWins.value = (await gamesApi.getSpinWinners(1)).data ?? [];
+  }
+
+  /** the latest wins of the Roulette only */
+  async function fetchRouletteLiveWins() {
+    rouletteLiveWins.value = (await gamesApi.getSpinWinners(1, 'roulette')).data ?? [];
   }
 
   async function playSpin(tier: string, count: number) {
@@ -213,10 +219,10 @@ export const useGamesStore = defineStore('games', () => {
   }
 
   return {
-    spinTiers, spinLiveWins, lastSpinResult, roulette, settleBalance,
+    spinTiers, spinLiveWins, rouletteLiveWins, lastSpinResult, roulette, settleBalance,
     chest, rideInfo, activeRun, gifts, tournaments, activeTournament,
     isLoading,
-    fetchSpinTiers, fetchSpinLiveWins, playSpin, fetchRoulette, spinRoulette,
+    fetchSpinTiers, fetchSpinLiveWins, fetchRouletteLiveWins, playSpin, fetchRoulette, spinRoulette,
     fetchChest, startChestRound, pickChest,
     fetchRideInfo, startRide, finishRide,
     fetchGifts, sellGift, claimGift,
