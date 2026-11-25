@@ -401,7 +401,7 @@ export interface DailyClaimResult {
 
 // === Tasks ===
 export type TaskCategory = 'MAIN' | 'OTHER'
-export type TaskType = 'CHANNEL_JOIN' | 'CHANNEL_BOOST' | 'INVITE_FRIENDS' | 'OPEN_LINK' | 'WATCH_ADS'
+export type TaskType = 'CHANNEL_JOIN' | 'CHANNEL_BOOST' | 'INVITE_FRIENDS' | 'OPEN_LINK' | 'WATCH_ADS' | 'BOT_START'
 
 export interface Task {
   id: number
