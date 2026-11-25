@@ -7,7 +7,7 @@ import { useTasksStore } from '@/stores/tasks'
 import { useGamesStore } from '@/stores/games'
 import { useTournamentAlerts } from '@/composables/useTournamentAlerts'
 import { useTaskAlerts } from '@/composables/useTaskAlerts'
-import { sponsoredWaiting } from '@/composables/sponsoredAlert'
+import { probeSponsored, sponsoredWaiting } from '@/composables/sponsoredAlert'
 import { fetchAdsConfig } from '@/composables/useInterstitial'
 
 const route = useRoute()
@@ -21,7 +21,8 @@ watch([() => route.path, () => games.tournaments], () => onTournaments() && tour
 
 // learn about new tasks on any page: when the app opens, now and then, and when the player comes back to it
 const refresh = () => {
-  void fetchAdsConfig() // sponsored tasks left today (cached for a minute)
+  // sponsored tasks left today (cached for a minute); when one may be done, Adsgram is asked out of sight whether it has one
+  void fetchAdsConfig().then((c) => c?.task.enabled && c.task.available && probeSponsored(c.task.blockId))
   void games.fetchTournaments().catch(() => {}) // a new or just started tournament raises the badge on Games
   return tasks.fetchTasks().catch(() => {})
 }
