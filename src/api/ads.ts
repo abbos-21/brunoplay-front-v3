@@ -11,6 +11,11 @@ export function reportAdFailed(placement: AdPlacement, reason = '') {
   return client.post<{ fallback: boolean; ad: AdView | null }>('/ads/failed', { placement, reason: reason.slice(0, 300) }).then((r) => r.data);
 }
 
+/** The ad of a provider that sends the server no notice (GigaPub) is finished: true when the server took the report. */
+export function reportAdDone(adViewId: string, provider: string) {
+  return client.post<{ ok: boolean }>('/ads/done', { adViewId, provider }).then((r) => r.data.ok)
+}
+
 export function getAdsConfig() {
   return client.get<AdsConfig>('/ads/config').then((r) => r.data);
 }

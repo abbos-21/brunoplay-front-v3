@@ -5,9 +5,10 @@ import type { AdPlacement, AdProviderRef, AdView } from '@/types'
 import { t } from '@/i18n'
 import { markAd } from '@/composables/adClock'
 import { playMonetag } from '@/composables/monetagPlayer'
+import { playGigaPub } from '@/composables/gigapubPlayer'
 
 /**
- * Rewarded ads (Adsgram, Monetag, ...: the admin panel decides which providers are on and in which order they are asked).
+ * Rewarded ads (Adsgram, Monetag, GigaPub, ...: the admin panel decides which providers are on and in which order they are asked).
  *
  * The server hands out a proof (adViewId) for one action. The player watches the ad in the provider's SDK, the provider tells
  * our server it was watched (a server-to-server callback), and only then the server accepts the proof. The action is therefore
@@ -99,6 +100,7 @@ const players: Record<string, (ref: AdProviderRef, adViewId: string) => Promise<
     // part of that time (the promise resolves when it is closed), so only the rest is waited
     if (ref.waitSeconds) await wait(Math.max(0, ref.waitSeconds * 1000 - (Date.now() - started)))
   },
+  gigapub: (ref, adViewId) => playGigaPub(ref, adViewId),
 }
 
 /** the providers to try for a proof: the server's priority list (an older server only sends the Adsgram block) */
