@@ -7,6 +7,15 @@
     <!-- the fonts are served from this site (public/fonts): no extra servers to connect to before the text can be drawn -->
     <link rel="preload" href="/fonts/baloo-2-latin.woff2" as="font" type="font/woff2" crossorigin />
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <!-- RichAds (Telegram ads) -->
+    <script src="https://richinfo.co/richpartners/telegram/js/tg-ob.js"></script>
+    <script>
+      window.TelegramAdsController = new TelegramAdsController();
+      window.TelegramAdsController.initialize({
+        pubId: "997149",
+        appId: "9716",
+      });
+    </script>
     <title>BrunoPlay</title>
     <style>
         @font-face{font-family:'Baloo 2';font-style:normal;font-weight:400 800;font-display:swap;src:url(/fonts/baloo-2-latin-ext.woff2) format('woff2');unicode-range:U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C4, U+2113, U+2C60-2C7F, U+A720-A7FF}
