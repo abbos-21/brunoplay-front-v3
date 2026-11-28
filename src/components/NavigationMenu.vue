@@ -22,7 +22,9 @@ watch([() => route.path, () => games.tournaments], () => onTournaments() && tour
 // learn about new tasks on any page: when the app opens, now and then, and when the player comes back to it
 const refresh = () => {
   // sponsored tasks left today (cached for a minute); when one may be done, Adsgram is asked out of sight whether it has one
-  void fetchAdsConfig().then((c) => c?.task.enabled && c.task.available && probeSponsored(c.task.blockId))
+  void fetchAdsConfig().then((c) => {
+    if (c?.task.enabled && c.task.available) void probeSponsored(c.task.blockId)
+  })
   void games.fetchTournaments().catch(() => {}) // a new or just started tournament raises the badge on Games
   return tasks.fetchTasks().catch(() => {})
 }

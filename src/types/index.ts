@@ -542,6 +542,8 @@ export interface TournamentPrize {
   coins: number
   stars: number
   gift: string
+  /** what the gift is worth in stars (absent without a gift) */
+  giftStars?: number
 }
 
 export interface Tournament {

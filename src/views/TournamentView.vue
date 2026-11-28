@@ -228,6 +228,7 @@ const card = 'rounded-3xl border-2 border-[#cf8741] bg-[#fff4d6] shadow-[0px_4px
               <span v-if="x.prize.gift" class="flex w-full flex-col items-center gap-0.5 text-center">
                 <img decoding="async" loading="lazy" :src="giftPicture(x.prize.gift) ?? MyGiftsImage" alt="" class="gift-anim object-contain drop-shadow-[0_3px_3px_rgba(85,42,15,0.35)]" :class="x.place === 1 ? 'size-[clamp(3.2rem,16vw,4.2rem)]' : 'size-[clamp(2.6rem,13vw,3.4rem)]'" :style="{ animationDelay: (x.place - 1) * -0.55 + 's' }" />
                 <span class="w-full break-words font-bold capitalize text-[#8a5a2b] text-[length:clamp(0.62rem,3.1vw,0.8rem)] leading-none">{{ x.prize.gift }}</span>
+                <span v-if="x.prize.giftStars" class="mt-0.5 inline-flex items-center gap-0.5 rounded-full bg-[#fde7b8] border border-[#e3b66f] px-1.5 py-px tabular-nums leading-none text-[length:clamp(0.62rem,3.1vw,0.8rem)]"><img decoding="async" loading="lazy" :src="StarIcon" alt="" class="w-[1.1em]" />{{ num(x.prize.giftStars) }}</span>
               </span>
             </div>
             <div
@@ -245,7 +246,7 @@ const card = 'rounded-3xl border-2 border-[#cf8741] bg-[#fff4d6] shadow-[0px_4px
             <span class="flex-1 min-w-0 flex flex-wrap items-center justify-end gap-x-3 gap-y-0.5 font-extrabold text-[#552a0f]">
               <span v-if="p.coins > 0" class="inline-flex items-center gap-1 tabular-nums"><img decoding="async" loading="lazy" :src="CoinImage" alt="" class="w-[1.2em]" />{{ num(p.coins) }}</span>
               <span v-if="p.stars > 0" class="inline-flex items-center gap-1 tabular-nums"><img decoding="async" loading="lazy" :src="StarIcon" alt="" class="w-[1.2em]" />{{ num(p.stars) }}</span>
-              <span v-if="p.gift" class="inline-flex items-center gap-1.5 capitalize"><img decoding="async" loading="lazy" :src="giftPicture(p.gift) ?? MyGiftsImage" alt="" class="gift-anim size-[2.2em] object-contain" :style="{ animationDelay: (p.place % 4) * -0.7 + 's' }" />{{ p.gift }}</span>
+              <span v-if="p.gift" class="inline-flex items-center gap-1.5 capitalize"><img decoding="async" loading="lazy" :src="giftPicture(p.gift) ?? MyGiftsImage" alt="" class="gift-anim size-[2.2em] object-contain" :style="{ animationDelay: (p.place % 4) * -0.7 + 's' }" />{{ p.gift }}<span v-if="p.giftStars" class="inline-flex items-center gap-0.5 rounded-full bg-[#fff4d6] border border-[#e3b66f] px-1.5 tabular-nums text-[0.8em]"><img decoding="async" loading="lazy" :src="StarIcon" alt="" class="w-[1.1em]" />{{ num(p.giftStars) }}</span></span>
             </span>
           </li>
         </ul>
